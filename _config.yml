@@ -10,7 +10,7 @@ locale                   : "en-US"
 title                    : "Luxi (Lucy) Wang"
 title_separator          : "-"
 name                     : &name "Luxi"
-description              : &description "PhD candidate in Finance"
+description              : &description "Ph.D. student in Finance"
 url                      : https://slucyp.github.io # the base hostname & protocol for your site e.g. "https://mmistakes.github.io"
 baseurl                  : "" # the subpath of your site, e.g. "/blog"
 repository               : "slucyp/slucyp.github.io"
@@ -82,7 +82,7 @@ analytics:
 author:
   name             : "Luxi (Lucy) Wang"
   avatar           : "profile.png"
-  bio              : "PhD student in Finance"
+  bio              : "Ph.D. student in Finance"
   location         : "Pittsburgh, PA, USA"
   employer         :
   pubmed           : #"https://www.ncbi.nlm.nih.gov/pubmed/?term=john+snow"
