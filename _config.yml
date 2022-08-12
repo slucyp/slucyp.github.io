@@ -7,7 +7,7 @@
 
 # Site Settings
 locale                   : "en-US"
-title                    : "Luxi (Lucy) Wang｜Pitt Finance"
+title                    : "Luxi (Lucy) Wang"
 title_separator          : "-"
 name                     : &name "Luxi"
 description              : &description "PhD candidate in Finance"
@@ -81,7 +81,7 @@ analytics:
 # Site Author
 author:
   name             : "Luxi (Lucy) Wang"
-  avatar           : "profile_1.png"
+  avatar           : "profile.png"
   bio              : "PhD student in Finance"
   location         : "Pittsburgh, PA, USA"
   employer         :
