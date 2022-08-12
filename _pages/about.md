@@ -12,7 +12,9 @@ Welcome to my website! I am a 5th year Ph.D. student majoring in Finance at Katz
 
 I primarily work in the area of empirical corporate finance. Specifically, my research interest lies at the intersection of Mergers and Acquisitions (M&A), labor finance, and innovation. My dissertation examines whether M&A transactions lead to a reallocation in innovative labor (i.e., inventors) analogous to real asset reallocation across firms. In addition, I am also interested in empirical banking. 
 
-You can download my CV [here](https://slucyp.github.io/files/Luxi_Wang_CV.pdf) and reach me by Email: luxi.wang@pitt.edu
+You can download my CV [here](https://slucyp.github.io/files/Luxi_Wang_CV.pdf) and reach me by Email: [luxi.wang@pitt.edu](luxi.wang@pitt.edu)
+
+
 
 
 
