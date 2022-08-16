@@ -29,7 +29,7 @@ author_profile: true
 ## Work in Progress
 - Corporate Cash Holding, with David J. Denis
 
-<span style="font-family:serif;">
+  <span style="font-family:serif;">
   Corporate cash has become an increasingly large component of corporate balance sheets over the past fifty years.  We survey the literature on corporate cash holdings that assesses (i) cross-sectional and time-series patterns in cash holdings; (ii) theoretical explanations for these patterns; and (iii) recent empirical evidence that sheds light on the primary causes and consequences of such holdings. </span>
 
 
