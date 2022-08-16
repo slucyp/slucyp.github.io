@@ -26,6 +26,12 @@ author_profile: true
   <span style="font-family:serif;">
   The rapid increase in U.S. house prices during the 2001-2006 period was accompanied by a historically rapid expansion of bank assets. We exploit cross-regional variation in local housing booms to study how housing demand shocks affected the growth of the banking sector. We estimate the effect of housing demand shocks that are orthogonal to local non-housing demand shocks and a range of observed local credit supply shocks. We employ several instrumental variables that plausibly identify variation in local housing demand that is exogenous to local banks. We find that the housing boom had a large effect on bank asset growth — the cross-regional elasticity of bank growth with respect to housing demand shocks is around 0.6. The regional elasticity estimate suggests that in aggregate, non-credit-supply-induced housing demand shocks can potentially account for more than a third of the growth of the banking sector during this period. </span>
 
+## Work in Progress
+- Corporate Cash Holding, with David J. Denis
+
+<span style="font-family:serif;">
+  Corporate cash has become an increasingly large component of corporate balance sheets over the past fifty years.  We survey the literature on corporate cash holdings that assesses (i) cross-sectional and time-series patterns in cash holdings; (ii) theoretical explanations for these patterns; and (iii) recent empirical evidence that sheds light on the primary causes and consequences of such holdings. </span>
+
 
 
 
