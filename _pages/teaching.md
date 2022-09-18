@@ -7,7 +7,9 @@ author_profile: true
 
 ## Instructor
 - Corporate Finance (Undergrad), Katz Graduate School of Business, University of Pittsburgh
-	- 2021 Spring, 2021 Fall, 2022 Fall (Schedule)  
+	- 2021 Spring, 2021 Fall, 2022 Fall
+- Math & Econ BootCamp (Incoming Ph.D. students)
+	- 2018 Summer
 
 ## Teaching Assistant
 - Financial Management (MBA), Katz Graduate School of Business, University of Pittsburgh, 2019 Fall
