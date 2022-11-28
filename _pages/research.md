@@ -16,7 +16,7 @@ author_profile: true
 {% endfor %}
 
 ## Publications
-- [Housing Booms and Bank Growth](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3749564#:~:text=House%20prices%20and%20the%20banking,house%20prices%20grew%20by%2053%25.) (with [M.Flannery](https://warrington.ufl.edu/directory/person/5205/) and [Leming Lin](https://sites.google.com/site/leminglin)), Journal of Financial Intermediation, _Forthcoming_
+- [Housing Booms and Bank Growth](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3749564#:~:text=House%20prices%20and%20the%20banking,house%20prices%20grew%20by%2053%25.) (with [M.Flannery](https://warrington.ufl.edu/directory/person/5205/) and [Leming Lin](https://sites.google.com/site/leminglin)), Journal of Financial Intermediation, 52, 100993, 2022
 
 ## Working Papers
 - The Human Capital Reallocation of M&A: Inventor-level analysis, _Draft Available Upon Request_
