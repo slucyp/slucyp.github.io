@@ -25,7 +25,11 @@ author_profile: true
   **Abstract:** Mergers and acquisitions (M&A) of innovative firms lead to a significant restructuring of the inventor labor force driven by abnormally high turnover for target firm inventors. Following the merger, inventors in the combined entity (primarily acquiring-firm and newly-hired inventors) file more citation-weighted patents. Departing inventors also increase patenting productivity significantly, and the non-merging firms hiring these inventors improve patenting performance. Overall, these findings indicate that mergers have an economically important impact on the restructuring and productivity of the labor force and provide novel evidence of positive spillover effects of M&A on non-merging firms through post-merger labor restructuring. </span>
 
 ## Work in Progress
-- Corporate Cash Holding, with [David J. Denis](https://business.pitt.edu/professors/david-j-denis/)
+- Antitrust Policies and Corporate Innovation, with Gaurav Kankanhalli and Daniel Ferres
+- ESG-driven Corporate Divestments, with Frederik Schlingemann and Ren\'e Stulz
+
+## Other Work
+- Corporate Cash Holding, with [David J. Denis](https://business.pitt.edu/professors/david-j-denis/), Book chapter in preparation for inclusion in the Handbook of Corporate Finance, to be published by Edward Elgar
 
 
 
