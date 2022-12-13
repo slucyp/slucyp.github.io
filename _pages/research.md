@@ -26,7 +26,7 @@ author_profile: true
 
 ## Work in Progress
 - Antitrust Policies and Corporate Innovation, with Gaurav Kankanhalli and Daniel Ferres
-- ESG-driven Corporate Divestments, with Frederik Schlingemann and Ren&eacute Stulz
+- ESG-driven Corporate Divestments, with Frederik Schlingemann and René Stulz
 
 ## Other Work
 - Corporate Cash Holding, with [David J. Denis](https://business.pitt.edu/professors/david-j-denis/), Book chapter in preparation for inclusion in the Handbook of Corporate Finance, to be published by Edward Elgar
