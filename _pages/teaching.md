@@ -8,6 +8,7 @@ author_profile: true
 ## Instructor
 - Corporate Finance (Undergrad), Katz Graduate School of Business, University of Pittsburgh
 	- 2021 Spring, 2021 Fall, 2022 Fall
+	- The recipient of *The Doris & Douglas Bernstein Doctoral Student Teaching Award* in 2022, University of Pittsburgh 
 - Math & Econ BootCamp (Incoming Ph.D. students)
 	- 2018 Summer
 
