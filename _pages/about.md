@@ -8,7 +8,7 @@ redirect_from:
   - /about.html
 ---
 
-Welcome to my website! I’m a postdoctoral research associate at Judge Business School, University of Cambridge. I received my PhD in Finance from the University of Pittsburgh in 2023. I am an Advisory Editor for the Review of Financial Studies since September, 2023.  
+Welcome to my website! I’m a Postdoctoral Research Associate at Judge Business School, University of Cambridge. I received my PhD in Finance from the University of Pittsburgh in 2023. I am an Advisory Editor for the Review of Financial Studies since September, 2023.  
 
 
 
@@ -38,7 +38,7 @@ You can download my CV [here](https://slucyp.github.io/files/Luxi_Wang_CV.pdf) a
   <details>
     <summary>Abstract</summary>
     <span style="font-family:serif;">
-    This paper studies the impact of departed inventors after M\&As on non-merging firms. Following M&As in innovative firms, the non-merging firms hiring these departed inventors from merging firms significantly improve their patenting performance. Further, I use the state-level variation in the enforceability of non-compete agreements as an instrument for the firms hiring these inventors to establish the causal relationship of the spillover effect. The existence of positive spillover effects suggests that the benefits of mergers are plausibly underestimated and extend beyond the merging companies.</span>
+    This paper studies the impact of departed inventors after M&As on non-merging firms. Following M&As in innovative firms, the non-merging firms hiring these departed inventors from merging firms significantly improve their patenting performance. Further, I use the state-level variation in the enforceability of non-compete agreements as an instrument for the firms hiring these inventors to establish the causal relationship of the spillover effect. The existence of positive spillover effects suggests that the benefits of mergers are plausibly underestimated and extend beyond the merging companies.</span>
   </details>
 
 - **Antitrust Regulations and Corporate Innovation Strategies: Evidence from the 2010 Horizontal Merger Guidelines**, with [Gaurav Kankanhalli](https://gauravkankanhalli.com/) and Daniel Ferres
