@@ -7,10 +7,10 @@
 
 # Site Settings
 locale                   : "en-US"
-title                    : "Luxi (Lucy) Wang | Pitt Finance"
+title                    : "Luxi (Lucy) Wang"
 title_separator          : "-"
 name                     : &name "Luxi"
-description              : &description "Ph.D. student in Finance"
+description              : &description "Postdoc @ University of Cambridge"
 url                      : https://slucyp.github.io # the base hostname & protocol for your site e.g. "https://mmistakes.github.io"
 baseurl                  : "" # the subpath of your site, e.g. "/blog"
 repository               : "slucyp/slucyp.github.io"
@@ -82,12 +82,12 @@ analytics:
 author:
   name             : "Luxi (Lucy) Wang"
   avatar           : "profile.png"
-  bio              : "Ph.D. student in Finance"
-  location         : "Pittsburgh, PA, USA"
+  bio              : "Research Associate"
+  location         : "Cambridge, UK"
   employer         :
   pubmed           : #"https://www.ncbi.nlm.nih.gov/pubmed/?term=john+snow"
   googlescholar    : #"http://yourfullgooglescholarurl.com"
-  email            : "luxi.wang@pitt.edu"
+  email            : "l.wang@jbs.cam.ac.uk"
   researchgate     :  # example: "https://www.researchgate.net/profile/yourprofile"
   uri              :
   bitbucket        :
@@ -174,13 +174,13 @@ kramdown:
 
 
 # Collections
-collections:
-  teaching:
-    output: true
-    permalink: /:collection/:path/
-  research:
-    output: true
-    permalink: /:collection/:path/
+# collections:
+  # teaching:
+  #   output: true
+  #   permalink: /:collection/:path/
+  # research:
+  #   output: true
+  #   permalink: /:collection/:path/
   # portfolio:
   #   output: true
   #   permalink: /:collection/:path/
