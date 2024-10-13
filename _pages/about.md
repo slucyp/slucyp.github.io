@@ -12,7 +12,7 @@ Welcome to my website! I’m a Postdoctoral Research Associate at Judge Business
 
 
 
-I primarily work in the area of empirical corporate finance. My research focuses on the intersection of Mergers and Acquisitions (M&A), labor finance with an emphasis on inventors, corporate innovation, and climate finance. I am also interested in empirical banking.
+I work in the area of empirical corporate finance. My research focuses on Mergers and Acquisitions (M&A), labor finance with an emphasis on inventors, corporate innovation, and climate finance. I am also interested in empirical banking.
 
 **I am on the job market during the 2024-2025 academic year.**
 
