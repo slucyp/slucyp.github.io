@@ -22,10 +22,6 @@ You can download my CV [here](https://slucyp.github.io/files/Luxi_Wang_CV.pdf) a
 ## Peer-reviewed Publications
 - [Housing Booms and Bank Growth](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3749564#:~:text=House%20prices%20and%20the%20banking,house%20prices%20grew%20by%2053%25.) (with [M.Flannery](https://warrington.ufl.edu/directory/person/5205/) and [Leming Lin](https://sites.google.com/site/leminglin)), _Journal of Financial Intermediation_, 52, 100993, 2022
 
-## Book Chapter
-- [Corporate Cash Holding](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4425890), with [David J. Denis](https://business.pitt.edu/professors/david-j-denis/), Handbook of Corporate Finance, 2024
-
-
 ## Working Papers and Selected Work in Progress
 - [The Human Capital Reallocation of M&A: Inventor-level analysis (JMP)](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4819472)
    <details>
@@ -51,6 +47,9 @@ You can download my CV [here](https://slucyp.github.io/files/Luxi_Wang_CV.pdf) a
 - **ESG-driven Corporate Divestments**, with Frederik Schlingemann and René Stulz
 
 - **Inventor CEO and Earning Management**, with Jenny Chu
+
+## Book Chapter
+- [Corporate Cash Holding](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4425890), with [David J. Denis](https://business.pitt.edu/professors/david-j-denis/), Handbook of Corporate Finance, 2024
 
 
 
