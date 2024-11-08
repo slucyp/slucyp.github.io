@@ -44,9 +44,9 @@ You can download my CV [here](https://slucyp.github.io/files/Luxi_Wang_CV.pdf) a
     This study investigates how changes in the stringency of antitrust regulations concerning anti-competitive mergers and acquisitions (M&As) influence firms’ innovation strategies. We do so by exploiting the 2010 United States Department of Justice and Federal Trade Commission announcement of revised horizontal merger guidelines, which represented a notable relaxation of various thresholds concerning the classification of anti-competitive M&A deals. We measure firms' exposures to the revised guidelines by examining market reactions to their initial announcement, and identify firms with positive Cumulative Abnormal Returns (CARs). Using a difference-in-differences approach, we attribute the value creation to two channels: (1) market power channel, where exposed firms show improved operating performance, and (2) innovation channel, where exposed firms’ innovation performance improves in terms of the number and economic value of the patents they file. Focusing on the latter channel, we provide novel evidence that exposed firms increase their collaborative innovation. Our results shed new light on an important yet indirect potential consequence of relaxed antitrust enforcement in altering the costs and benefits of firms engaging in innovation collaboration with peers.</span>
   </details>
 
-- **ESG-driven Corporate Divestments**, with Frederik Schlingemann and René Stulz
+- **ESG-driven Corporate Divestments**, with [Frederik Schlingemann](https://business.pitt.edu/professors/frederik-p-schlingemann/) and [René Stulz](https://fisher.osu.edu/people/stulz.1)
 
-- **Inventor CEO and Earning Management**, with Jenny Chu
+- **Firm innovation and Accounting Quality**, with [Jenny Chu](https://www.jbs.cam.ac.uk/people/jenny-chu/) and [Kai Wai Hui](https://www.hkubs.hku.hk/people/kai-wai-hui/)
 
 ## Book Chapter
 - [Corporate Cash Holding](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4425890), with [David J. Denis](https://business.pitt.edu/professors/david-j-denis/), Handbook of Corporate Finance, 2024
