@@ -8,7 +8,7 @@ redirect_from:
   - /about.html
 ---
 
-Welcome to my website! I’m a Postdoctoral Research Associate at Judge Business School, University of Cambridge. I received my PhD in Finance from the University of Pittsburgh in 2023. I am an Advisory Editor for [the Review of Financial Studies](https://academic.oup.com/rfs/pages/Editorial_Board) since September, 2023.  
+Welcome to my website! I’m a Postdoctoral Research Associate at [Judge Business School, University of Cambridge](https://www.jbs.cam.ac.uk/people/lucy-wang/). I received my PhD in Finance from the University of Pittsburgh in 2023. I am an Advisory Editor for [the Review of Financial Studies](https://academic.oup.com/rfs/pages/Editorial_Board) since September, 2023.  
 
 
 
