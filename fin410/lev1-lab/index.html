@@ -1,0 +1,913 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Leverage Lab Part 1</title><style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
+<title>Leverage Lab Part 1</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+/* Layout: a CFO's case binder. Sticky score bar, a mission index, then one mission per view: briefing, lab, questions. */
+:root{
+  --bg:#F4F3F1; --surface:#FFFFFF; --surface-2:#ECE9E6; --ink:#1D1A1C; --muted:#5F585C; --line:#D9D3CF;
+  --accent:#9E1B32; --accent-ink:#FFFFFF; --accent-soft:#F5E4E7;
+  --debt:#2E5E80; --equity:#9E1B32; --gov:#A8761A;
+  --good:#21783A; --good-bg:#E3F1E6; --bad:#B4410D; --bad-bg:#FAE8DE;
+  --f-display:"Archivo","Arial Narrow",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#151315; --surface:#1E1B1E; --surface-2:#292528; --ink:#F0EBED; --muted:#ABA1A6; --line:#3B3539;
+  --accent:#E2586F; --accent-ink:#1A0A0E; --accent-soft:#3A1B22;
+  --debt:#74A9CE; --equity:#E2586F; --gov:#D9AB4B;
+  --good:#63C580; --good-bg:#15301E; --bad:#F2925F; --bad-bg:#3A2016; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#151315; --surface:#1E1B1E; --surface-2:#292528; --ink:#F0EBED; --muted:#ABA1A6; --line:#3B3539;
+  --accent:#E2586F; --accent-ink:#1A0A0E; --accent-soft:#3A1B22;
+  --debt:#74A9CE; --equity:#E2586F; --gov:#D9AB4B;
+  --good:#63C580; --good-bg:#15301E; --bad:#F2925F; --bad-bg:#3A2016; color-scheme:dark}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.55}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+a{color:var(--accent)}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+sub{font-size:.72em}
+.num,.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+
+/* top bar */
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--surface);border-bottom:1px solid var(--line)}
+.bar-in{max-width:1040px;margin:0 auto;display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.brand{font-family:var(--f-display);font-stretch:118%;font-weight:800;letter-spacing:-.01em;font-size:1.05rem;text-decoration:none;color:var(--ink);display:flex;align-items:baseline;gap:8px}
+.brand small{font-family:var(--f-mono);font-weight:400;font-size:.72rem;color:var(--muted);letter-spacing:.04em}
+.bar-sp{flex:1}
+.score{font-family:var(--f-mono);font-size:.85rem;display:flex;align-items:center;gap:8px}
+.score b{font-weight:600;color:var(--accent)}
+.meter{width:90px;height:6px;background:var(--surface-2);border-radius:3px;overflow:hidden}
+.meter i{display:block;height:100%;background:var(--accent);width:0;transition:width .4s}
+.btn{appearance:none;border:1px solid var(--ink);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:6px;font-weight:600;cursor:pointer;font-size:.92rem}
+.btn:hover{filter:brightness(1.15)}
+.btn:disabled{opacity:.4;cursor:default;filter:none}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn.ghost:hover{border-color:var(--ink)}
+.btn.accent{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.link-btn{appearance:none;background:none;border:0;color:var(--accent);font-weight:600;cursor:pointer;padding:4px 0;font-size:.9rem;text-decoration:underline;text-underline-offset:3px}
+
+/* page */
+.wrap{max-width:1040px;margin:0 auto;padding-block:28px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.eyebrow{font-family:var(--f-mono);font-size:.74rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.08}
+h1{font-size:clamp(2rem,5.4vw,3.3rem);font-stretch:112%;font-weight:850;letter-spacing:-.02em}
+h2{font-size:1.45rem;font-stretch:108%;font-weight:750;letter-spacing:-.01em}
+h3{font-size:1.05rem;font-weight:700}
+p{margin:0}
+.lede{font-size:1.08rem;color:var(--muted);max-width:66ch}
+.stack{display:flex;flex-direction:column;gap:14px}
+.sec{margin-top:40px;display:flex;flex-direction:column;gap:16px}
+.sec-h{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;border-bottom:2px solid var(--ink);padding-bottom:8px}
+.sec-h .eyebrow{margin-left:auto}
+
+/* hero */
+.hero{display:grid;grid-template-columns:1.15fr 1fr;gap:36px;align-items:start}
+.hero > *{min-width:0}
+.hero h1 span{color:var(--accent)}
+.fund{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px;display:flex;flex-direction:column;gap:14px}
+.fund-opts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.fund-opt{appearance:none;border:1.5px solid var(--line);background:var(--bg);border-radius:8px;padding:10px 8px;cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:2px}
+.fund-opt b{font-family:var(--f-display);font-stretch:110%;font-size:1.05rem}
+.fund-opt span{font-size:.78rem;color:var(--muted)}
+.fund-opt[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.cap-bar{display:flex;height:34px;border-radius:6px;overflow:hidden;font-family:var(--f-mono);font-size:.75rem}
+.cap-bar div{display:flex;align-items:center;justify-content:center;transition:flex-grow .5s;overflow:hidden;white-space:nowrap}
+.cap-eq{background:var(--equity);color:var(--accent-ink)}
+.cap-dt{background:var(--debt);color:var(--surface)}
+.fund-say{min-height:5.2em;font-size:.95rem}
+
+/* mission grid */
+.mgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.mcard{display:flex;flex-direction:column;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;text-decoration:none;color:var(--ink);transition:border-color .15s,transform .15s}
+.mcard:hover{border-color:var(--ink);transform:translateY(-2px)}
+.mcard .mn{font-family:var(--f-display);font-stretch:125%;font-weight:900;font-size:2.2rem;line-height:1;color:var(--accent)}
+.mcard h3{font-size:1.15rem;font-stretch:108%}
+.mcard p{font-size:.86rem;color:var(--muted);flex:1}
+.mcard .mmeta{display:flex;justify-content:space-between;align-items:center;font-family:var(--f-mono);font-size:.75rem;color:var(--muted)}
+.mcard .meter{width:100%}
+.mcard.final{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.mcard.final p,.mcard.final .mmeta{color:var(--bg);opacity:.75}
+.mcard.final .mn{color:var(--bg)}
+
+/* mission header */
+.m-head{display:flex;flex-direction:column;gap:10px}
+.back{font-family:var(--f-mono);font-size:.8rem;text-decoration:none;color:var(--muted)}
+.back:hover{color:var(--accent)}
+.terms{margin:22px 0 0;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 16px;display:flex;flex-direction:column}
+.terms-h{margin-bottom:4px}
+.term{display:grid;grid-template-columns:11em minmax(0,1fr);gap:4px 16px;padding:7px 0;border-top:1px solid var(--line);font-size:.93rem}
+.terms-h + .term{border-top:0}
+.term dt{font-weight:600}
+.term dd{margin:0;color:var(--muted)}
+@media (max-width:560px){.term{grid-template-columns:1fr;gap:0}}
+.brief{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.brief > div{background:var(--surface);border-left:3px solid var(--accent);padding:14px 16px;border-radius:0 8px 8px 0;font-size:.93rem;min-width:0}
+.brief h3{margin-bottom:6px;font-size:.98rem}
+.brief ul{margin:0;padding-left:18px}
+.brief li+li{margin-top:3px}
+.f{font-family:var(--f-mono);font-size:.86em;background:var(--surface-2);padding:1px 6px;border-radius:4px;white-space:nowrap}
+.fblock{font-family:var(--f-mono);font-size:.9rem;background:var(--surface-2);padding:8px 12px;border-radius:6px;overflow-x:auto;white-space:nowrap}
+
+/* lab */
+.lab{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:18px}
+.lab-controls{display:flex;flex-wrap:wrap;gap:16px 28px;align-items:center}
+.ctrl{display:flex;flex-direction:column;gap:4px;min-width:min(280px,100%);flex:1}
+.ctrl label{font-size:.85rem;font-weight:600;display:flex;justify-content:space-between;gap:8px}
+.ctrl output{font-family:var(--f-mono);color:var(--accent);font-weight:600}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;padding:3px;gap:3px;flex-wrap:wrap;background:var(--bg)}
+.seg button{appearance:none;border:0;background:transparent;padding:7px 12px;border-radius:6px;cursor:pointer;font-weight:600;font-size:.86rem;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.lab-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}
+.lab-grid > *{min-width:0}
+.charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr));gap:20px}
+figure{margin:0;display:flex;flex-direction:column;gap:6px;min-width:0}
+figcaption{font-size:.82rem;font-weight:600;color:var(--muted)}
+svg.chart{width:100%;height:auto;display:block;overflow:visible}
+.chart .grid{stroke:var(--line);stroke-width:1}
+.chart .axis{stroke:var(--muted);stroke-width:1}
+.chart .tick{fill:var(--muted);font-family:var(--f-mono);font-size:11px}
+.chart .alabel{fill:var(--muted);font-family:var(--f-body);font-size:12px}
+.chart .slabel{font-family:var(--f-body);font-size:12px;font-weight:600}
+.note{font-size:.9rem;color:var(--muted);background:var(--bg);border-radius:8px;padding:10px 14px}
+.note b{color:var(--ink)}
+.readout{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0}
+.readout div{background:var(--bg);border-radius:8px;padding:8px 12px}
+.readout dt{font-size:.74rem;color:var(--muted);font-family:var(--f-mono);letter-spacing:.03em}
+.readout dd{margin:0;font-family:var(--f-mono);font-size:1.12rem;font-weight:600;font-variant-numeric:tabular-nums}
+.legend{list-style:none;margin:0;padding:0;display:flex;gap:14px;flex-wrap:wrap;font-size:.84rem}
+.legend li{display:flex;align-items:center;gap:6px}
+.legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+.pie-wrap{display:flex;flex-direction:column;align-items:center;gap:10px}
+.pie-wrap svg{width:min(250px,100%);height:auto}
+
+/* tables */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+table.tbl{border-collapse:collapse;width:100%;font-size:.9rem;font-variant-numeric:tabular-nums}
+.tbl th,.tbl td{padding:7px 12px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+.tbl th:first-child,.tbl td:first-child{text-align:left;font-family:var(--f-body)}
+.tbl td{font-family:var(--f-mono)}
+.tbl thead th{font-family:var(--f-mono);font-size:.78rem;color:var(--muted);font-weight:600;background:var(--bg)}
+.tbl tr:last-child td{border-bottom:0}
+.tbl .hl{background:var(--accent-soft)}
+.tbl .key td{font-weight:600}
+.tbl .unk{color:var(--accent);font-weight:600}
+.tbl .best{background:var(--good-bg);color:var(--good);font-weight:600}
+.tbl td.up{color:var(--good)} .tbl td.dn{color:var(--bad)}
+
+/* questions */
+.qs{display:flex;flex-direction:column;gap:14px}
+.q{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px;display:flex;flex-direction:column;gap:12px}
+.q-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.q-tag{font-family:var(--f-mono);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);font-weight:600}
+.q-pts{font-family:var(--f-mono);font-size:.74rem;color:var(--muted);border:1px solid var(--line);border-radius:20px;padding:2px 9px;white-space:nowrap}
+.q-pts.got{color:var(--good);border-color:var(--good);background:var(--good-bg)}
+.q-pts.miss{color:var(--bad);border-color:var(--bad)}
+.q-prompt{font-size:1rem;max-width:72ch}
+.opts{display:flex;flex-direction:column;gap:7px}
+.opts.chips{flex-direction:row;flex-wrap:wrap}
+.opt{appearance:none;display:flex;gap:10px;align-items:flex-start;text-align:left;background:var(--bg);border:1.5px solid var(--line);border-radius:8px;padding:9px 12px;cursor:pointer;font-size:.94rem}
+.opts.chips .opt{padding:7px 12px}
+.opt:hover:not(:disabled){border-color:var(--ink)}
+.opt:disabled{cursor:default}
+.opt-key{font-family:var(--f-mono);font-size:.74rem;font-weight:600;color:var(--muted);padding-top:2px}
+.opt.is-right{border-color:var(--good);background:var(--good-bg)}
+.opt.is-right .opt-key{color:var(--good)}
+.opt.is-wrong{border-color:var(--bad);background:var(--bad-bg)}
+.opt.is-wrong .opt-key{color:var(--bad)}
+.fb{border-radius:8px;padding:10px 14px;font-size:.93rem;max-width:80ch}
+.fb.good{background:var(--good-bg);border-left:3px solid var(--good)}
+.fb.bad{background:var(--bad-bg);border-left:3px solid var(--bad)}
+.fb.info{background:var(--surface-2);border-left:3px solid var(--muted)}
+.num-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.num-field{display:flex;align-items:center;border:1.5px solid var(--line);border-radius:8px;background:var(--bg);overflow:hidden}
+.num-field:focus-within{border-color:var(--accent)}
+.num-field span{padding:0 10px;font-family:var(--f-mono);color:var(--muted);font-size:.9rem}
+.num-field input{border:0;background:transparent;color:var(--ink);font-family:var(--f-mono);font-size:1rem;padding:9px 4px;width:9.5em;outline:none}
+.num-field input:disabled{opacity:.7}
+.qfig{max-width:560px}
+
+/* sort game */
+.deck{display:grid;grid-template-columns:1fr;gap:12px;justify-items:center;text-align:center;padding:8px 0}
+.card{background:var(--bg);border:1.5px solid var(--ink);border-radius:12px;padding:22px 20px;max-width:460px;width:100%;font-size:1.05rem;font-weight:500;box-shadow:4px 4px 0 var(--line);animation:deal .35s ease-out}
+@keyframes deal{from{transform:translateY(-10px) rotate(-2deg);opacity:.3}to{transform:none;opacity:1}}
+.bins{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;max-width:460px}
+.bin{appearance:none;border:2px dashed var(--line);border-radius:10px;padding:14px 10px;background:var(--surface);cursor:pointer;font-weight:700;font-family:var(--f-display);font-stretch:108%;font-size:1rem;display:flex;flex-direction:column;gap:2px}
+.bin small{font-family:var(--f-body);font-weight:400;font-size:.76rem;color:var(--muted)}
+.bin:hover{border-style:solid;border-color:var(--ink)}
+.bin.b1{color:var(--accent)} .bin.b2{color:var(--debt)}
+.sorted{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;text-align:left}
+.sorted ul{margin:6px 0 0;padding-left:18px;font-size:.9rem}
+.sorted li.miss{color:var(--bad)}
+
+.sig-row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:8px 0;border-bottom:1px solid var(--line)}
+.sig-row:last-of-type{border-bottom:0}
+.yn{display:inline-flex;gap:6px}
+.yn button{appearance:none;border:1.5px solid var(--line);background:var(--bg);border-radius:6px;padding:6px 14px;cursor:pointer;font-weight:600}
+.yn button[aria-pressed="true"]{border-color:var(--ink);background:var(--ink);color:var(--bg)}
+.yn button.is-right{border-color:var(--good);background:var(--good-bg);color:var(--good)}
+.yn button.is-wrong{border-color:var(--bad);background:var(--bad-bg);color:var(--bad)}
+.peck{display:flex;gap:8px;flex-wrap:wrap}
+.peck-seq{display:flex;gap:8px;flex-wrap:wrap;align-items:center;min-height:42px}
+.peck-seq span{font-family:var(--f-mono);font-size:.85rem;background:var(--surface-2);border-radius:6px;padding:7px 10px}
+.peck-seq em{font-style:normal;color:var(--muted)}
+
+/* recap bars */
+.rbars{display:flex;flex-direction:column;gap:10px}
+.rbar{display:grid;grid-template-columns:150px 1fr;gap:12px;align-items:center;font-size:.85rem}
+.rbar-track{display:flex;height:28px;border-radius:5px;overflow:hidden;background:var(--surface-2)}
+.rbar-track div{display:flex;align-items:center;padding:0 6px;font-family:var(--f-mono);font-size:.72rem;white-space:nowrap;overflow:hidden;transition:width .5s}
+.seg-d{background:var(--debt);color:var(--surface)}
+.seg-s{background:var(--equity);color:var(--accent-ink)}
+.seg-c{background:var(--gov);color:var(--surface)}
+.seg-q{background:repeating-linear-gradient(45deg,var(--surface-2),var(--surface-2) 6px,var(--line) 6px,var(--line) 12px);color:var(--muted)}
+
+.foot-nav{display:flex;justify-content:space-between;gap:12px;margin-top:44px;flex-wrap:wrap}
+.foot-nav a{text-decoration:none}
+.small{font-size:.84rem;color:var(--muted)}
+
+/* formula sheet */
+.sheet{position:fixed;inset:0;z-index:20;background:color-mix(in srgb,var(--ink) 45%,transparent);display:flex;justify-content:flex-end}
+.sheet-in{background:var(--surface);width:min(520px,100%);height:100%;overflow-y:auto;padding:20px;padding-top:calc(20px + env(safe-area-inset-top,0px));padding-bottom:calc(20px + env(safe-area-inset-bottom,0px));padding-right:max(20px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:14px;box-shadow:-8px 0 30px rgba(0,0,0,.2)}
+.sheet-in h3{margin-top:6px;font-size:.8rem;font-family:var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.sheet-in .fblock,.brief .fblock{white-space:normal}
+.sheet-close{align-self:flex-end}
+
+.rank{display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:24px}
+.rank-big{font-family:var(--f-display);font-stretch:125%;font-weight:900;font-size:clamp(2.6rem,8vw,4.4rem);line-height:1;color:var(--accent)}
+.rank > *{min-width:0}
+
+@media (max-width:760px){
+  .hero,.lab-grid{grid-template-columns:1fr}
+  .rank{grid-template-columns:1fr}
+  .rbar{grid-template-columns:1fr;gap:4px}
+  .fund-opts{grid-template-columns:1fr}
+  .bar-in{gap:8px}
+  .meter.top{display:none}
+  .tbl th,.tbl td{padding:6px 8px}
+  .tbl td:first-child,.tbl th:first-child{white-space:normal;min-width:7.5em}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+</style>
+
+<div class="bar"><div class="bar-in">
+  <a class="brand" href="#hq">Leverage Lab <small>FIN 410 · CH 16 · PART 1</small></a>
+  <span class="bar-sp"></span>
+  <span class="score" aria-live="polite"><span class="meter top"><i id="top-meter"></i></span><span><b id="top-pts">0</b> / <span id="top-max">0</span> pts</span></span>
+  <button class="btn ghost" id="open-sheet" type="button">Formula sheet</button>
+</div></div>
+
+<main class="wrap" id="main"></main>
+
+<div class="sheet" id="sheet" hidden>
+  <div class="sheet-in" role="dialog" aria-label="Formula sheet">
+    <button class="btn ghost sheet-close" id="close-sheet" type="button">Close</button>
+    <h2>Formula sheet</h2>
+    <h3>Value and cost of capital</h3>
+    <div class="fblock">V = D + S &nbsp;·&nbsp; V<sub>op</sub> = FCF(1 + g) / (WACC − g)</div>
+    <div class="fblock">WACC = w<sub>d</sub>(1 − T)r<sub>d</sub> + w<sub>s</sub>r<sub>s</sub></div>
+    <div data-part="1" class="stack"><h3>Business risk</h3>
+    <div class="fblock">Q<sub>BE</sub> = F / (P − V)</div>
+    <h3>Financial leverage</h3>
+    <div class="fblock">ROIC = EBIT(1 − T) / Operating capital &nbsp;·&nbsp; ROE = NI / Equity</div>
+    <div class="fblock">Debt raises ROE only if ROIC &gt; r<sub>d</sub>(1 − T)</div></div>
+    <h3>Modigliani–Miller</h3>
+    <div class="fblock">No taxes: V<sub>L</sub> = V<sub>U</sub> &nbsp;·&nbsp; r<sub>sL</sub> = r<sub>sU</sub> + (D/S)(r<sub>sU</sub> − r<sub>d</sub>)</div>
+    <div class="fblock">Corporate taxes: V<sub>L</sub> = V<sub>U</sub> + T<sub>c</sub>D &nbsp;·&nbsp; r<sub>sL</sub> = r<sub>sU</sub> + (D/S)(r<sub>sU</sub> − r<sub>d</sub>)(1 − T<sub>c</sub>)</div>
+    <div class="fblock">Miller: V<sub>L</sub> = V<sub>U</sub> + [1 − (1 − T<sub>c</sub>)(1 − T<sub>s</sub>) / (1 − T<sub>d</sub>)] D</div>
+    <div data-part="2" class="stack"><h3>Trade-off theory</h3>
+    <div class="fblock">V<sub>L</sub> = V<sub>U</sub> + PV(tax shield) − PV(financial distress costs)</div>
+    <h3>Optimal structure</h3>
+    <div class="fblock">Hamada: b = b<sub>U</sub>[1 + (1 − T)(w<sub>d</sub>/w<sub>s</sub>)]</div>
+    <div class="fblock">CAPM: r<sub>s</sub> = r<sub>RF</sub> + b(RP<sub>M</sub>)</div>
+    <h3>Recapitalization</h3>
+    <div class="fblock">P<sub>Post</sub> = (V<sub>opNew</sub> − D<sub>Old</sub>) / n<sub>Prior</sub></div>
+    <div class="fblock">n<sub>Post</sub> = n<sub>Prior</sub> − (D<sub>New</sub> − D<sub>Old</sub>) / P<sub>Post</sub></div>
+    <div class="fblock">S<sub>Post</sub> = (1 − w<sub>d</sub>) V<sub>opNew</sub></div></div>
+  </div>
+</div>
+
+<script>
+const PART=1, OTHER_URL='https://slucyp.github.io/fin410/lev2-lab/';
+/* ---------- helpers ---------- */
+const $=(s,r=document)=>r.querySelector(s);
+const fmt=(x,d=2)=>Number(x).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
+const usd=(x,d=2)=>(x<0?'−$':'$')+fmt(Math.abs(x),d);
+const pct=(x,d=2)=>fmt(x,d)+'%';
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const el=h=>{const t=document.createElement('template');t.innerHTML=h.trim();return t.content.firstElementChild;};
+const strip=h=>String(h).replace(/<[^>]+>/g,'');
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+function nice(a,b,n=5){const raw=(b-a)/n,mag=10**Math.floor(Math.log10(raw)),f=raw/mag,st=(f<1.5?1:f<3?2:f<7?5:10)*mag;const o=[];for(let v=Math.ceil(a/st-1e-9)*st;v<=b+1e-9;v+=st)o.push(+v.toFixed(8));return o;}
+const line=(f,x0,x1,n=80)=>Array.from({length:n+1},(_,i)=>{const x=x0+(x1-x0)*i/n;return[x,f(x)];});
+let CLIP=0;
+const SUB=t=>String(t).replace(/_([A-Za-z]+)/g,'<tspan baseline-shift="sub" font-size="9">$1</tspan>');
+function chart(svg,c){
+  svg._c=c;svg.classList.add('chart');const bw=svg.getBoundingClientRect().width,cw=c.w||600;
+  const W=Math.round(Math.max(330,Math.min(cw,bw||cw))),H=Math.round((c.h||300)*Math.max(.82,W/cw)),m=Object.assign({l:c.yl?74:58,r:24,t:20,b:46},c.m||{});
+  const X=v=>m.l+(v-c.x0)/(c.x1-c.x0)*(W-m.l-m.r), Y=v=>H-m.b-(v-c.y0)/(c.y1-c.y0)*(H-m.t-m.b);
+  const cid='clip'+(++CLIP);
+  let s=`<defs><clipPath id="${cid}"><rect x="${m.l}" y="${m.t-4}" width="${W-m.l-m.r+4}" height="${H-m.t-m.b+8}"/></clipPath></defs>`;
+  (c.yt||nice(c.y0,c.y1)).forEach(v=>{s+=`<line class="grid" x1="${m.l}" x2="${W-m.r}" y1="${Y(v)}" y2="${Y(v)}"/><text class="tick" x="${m.l-8}" y="${Y(v)+4}" text-anchor="end">${c.fy(v)}</text>`;});
+  (c.xt||nice(c.x0,c.x1)).forEach(v=>{s+=`<text class="tick" x="${X(v)}" y="${H-m.b+18}" text-anchor="middle">${c.fx(v)}</text>`;});
+  s+=`<line class="axis" x1="${m.l}" x2="${W-m.r}" y1="${H-m.b}" y2="${H-m.b}"/>`;
+  if(c.xl)s+=`<text class="alabel" x="${(m.l+W-m.r)/2}" y="${H-8}" text-anchor="middle">${SUB(c.xl)}</text>`;
+  if(c.yl)s+=`<text class="alabel" transform="translate(13 ${(m.t+H-m.b)/2}) rotate(-90)" text-anchor="middle">${c.yl}</text>`;
+  (c.vlines||[]).forEach(v=>{s+=`<line x1="${X(v.x)}" x2="${X(v.x)}" y1="${m.t}" y2="${H-m.b}" style="stroke:${v.color||'var(--muted)'};stroke-dasharray:4 4;stroke-width:1.5"/>`;if(v.label)s+=`<text class="slabel" x="${X(v.x)+(v.dx??6)}" y="${m.t+10}" text-anchor="${v.anchor||'start'}" style="fill:${v.color||'var(--muted)'}">${v.label}</text>`;});
+  s+=`<g clip-path="url(#${cid})">`;
+  (c.series||[]).forEach(se=>{const d=se.pts.map((p,i)=>(i?'L':'M')+X(p[0]).toFixed(1)+' '+Y(p[1]).toFixed(1)).join('');s+=`<path d="${d}" style="fill:none;stroke:${se.color};stroke-width:${se.w||2.5};${se.dash?'stroke-dasharray:'+se.dash+';':''}opacity:${se.op??1};stroke-linejoin:round"/>`;});
+  s+=`</g>`;
+  (c.series||[]).forEach(se=>{if(se.label){const p=se.lp||se.pts[se.pts.length-1];s+=`<text class="slabel" x="${X(p[0])+(se.dx||0)}" y="${Y(p[1])+(se.dy??-8)}" text-anchor="${se.anchor||'end'}" style="fill:${se.color};opacity:${se.op??1}">${SUB(se.label)}</text>`;}});
+  (c.dots||[]).forEach(d=>{s+=`<circle cx="${X(d.x)}" cy="${Y(d.y)}" r="${d.r||5}" style="fill:${d.color};stroke:var(--surface);stroke-width:2"/>`;if(d.label)s+=`<text class="slabel" x="${X(d.x)+(d.dx??8)}" y="${Y(d.y)+(d.dy??-8)}" text-anchor="${d.anchor||'start'}" style="fill:${d.color}">${SUB(d.label)}</text>`;});
+  svg.setAttribute('viewBox',`0 0 ${W} ${H}`);svg.innerHTML=s;
+}
+
+/* ---------- state ---------- */
+const LS='fin410-leverage-lab-part'+PART;
+let ST={a:{}};
+try{const s=localStorage.getItem(LS);if(s){const p=JSON.parse(s);if(p&&p.a)ST=p;}}catch(e){}
+function save(){try{localStorage.setItem(LS,JSON.stringify(ST));}catch(e){}updateScore();}
+const rec=id=>(ST.a[id]||(ST.a[id]={}));
+const PR={}; // practice records (not saved, not scored)
+const REG={};
+const reg=(m,id,max)=>{REG[id]={m,max};};
+const GROUPS={};
+function grp(k){const key='g_'+k;if(!ST.a[key]){ST.a[key]={ver:0,par:GROUPS[k](true)};save();}return ST.a[key];}
+function regroup(k){const g=grp(k);g.ver++;g.par=GROUPS[k](false);Object.keys(Q).forEach(id=>{if(Q[id].group===k){const r=rec(id);if(!r.done){delete r.tries;delete r.last;}delete PR[id];}});save();rerender();}
+function activeRec(q){
+  const r=rec(q.id);
+  if(q.group){const g=grp(q.group);if(r.done&&r.ver!==g.ver){if(!PR[q.id]||PR[q.id].ver!==g.ver)PR[q.id]={ver:g.ver,practice:true};return PR[q.id];}return r;}
+  return PR[q.id]||r;
+}
+function parOf(q){if(q.group)return grp(q.group).par;const a=activeRec(q);if(a.practice)return a.par;if(!a.par){a.par=q.gen?q.gen():{};save();}return a.par;}
+const resolved=id=>{const q=Q[id];return q?!!activeRec(q).done:!!rec(id).done;};
+function missionScore(m){let got=0,max=0;for(const[id,r]of Object.entries(REG))if(r.m===m){max+=r.max;got+=(ST.a[id]&&ST.a[id].pts)||0;}return{got,max};}
+function totalScore(){let got=0,max=0;for(const[id,r]of Object.entries(REG)){if(!MB[r.m])continue;max+=r.max;got+=(ST.a[id]&&ST.a[id].pts)||0;}return{got,max};}
+function updateScore(){const t=totalScore();$('#top-pts').textContent=t.got;$('#top-max').textContent=t.max;$('#top-meter').style.width=(t.max?100*t.got/t.max:0)+'%';}
+
+/* ---------- question engine ---------- */
+const Q={};
+function ptsBadge(q,a){const full=q.pts||10;if(a.practice)return`<span class="q-pts">Practice</span>`;if(a.done)return`<span class="q-pts ${a.pts>0?'got':'miss'}">${a.pts>0?'+'+a.pts:'0'} / ${full} pts</span>`;return`<span class="q-pts">${full} pts</span>`;}
+function renderQ(id){return Q[id].type==='num'?numQ(id):mcQ(id);}
+function mcQ(id){
+  const q=Q[id];const w=el(`<div class="q" id="q-${id}"></div>`);
+  function paint(){
+    const a=activeRec(q);const par=q.group?grp(q.group).par:null;
+    const opts=q.optsF?q.optsF(par):q.opts, ans=q.ansF?q.ansF(par):q.ans;
+    const prompt=typeof q.prompt==='function'?q.prompt(par):q.prompt;
+    w.innerHTML=`<div class="q-head"><span class="q-tag">${q.tag||'Question'}</span>${ptsBadge(q,a)}</div><div class="q-prompt">${prompt}</div><div class="opts${q.chips?' chips':''}"></div><div class="fb" hidden></div>`;
+    const box=w.querySelector('.opts'),fb=w.querySelector('.fb');
+    opts.forEach((o,i)=>{const b=el(`<button type="button" class="opt"><span class="opt-key">${'ABCDEFGH'[i]}</span><span>${o}</span></button>`);
+      if(a.done){b.disabled=true;if(i===ans)b.classList.add('is-right');if(i===a.choice&&i!==ans)b.classList.add('is-wrong');}
+      else b.onclick=()=>{a.done=true;a.choice=i;a.correct=i===ans;if(!a.practice){a.pts=a.correct?(q.pts||10):0;if(q.group)a.ver=grp(q.group).ver;save();}paint();q.onChange&&q.onChange();};
+      box.append(b);});
+    if(a.done){const ex=typeof q.explain==='function'?q.explain(par):q.explain;fb.hidden=false;fb.className='fb '+(a.correct?'good':'bad');fb.innerHTML=(a.correct?'<b>Correct.</b> ':`<b>Not quite.</b> The answer is <b>${strip(opts[ans])}</b>. `)+ex;}
+  }
+  paint();return w;
+}
+function parseAns(s,q){let v=parseFloat(String(s).replace(/[−–]/g,'-').replace(/[,$\s%]/g,''));if(isNaN(v))return NaN;if(q.kind==='pct'&&Math.abs(v)<1&&Math.abs(q._ans)>=1)v*=100;return v;}
+function isClose(v,a,q){const tol=q.tol!=null?q.tol:Math.max(0.005*Math.abs(a),0.01);return Math.abs(v-a)<=tol+1e-9;}
+function showAns(q,a){const d=q.dp!=null?q.dp:2;return(q.pre||'')+fmt(a,d)+(q.kind==='pct'?'%':'')+(q.sufText?' '+q.sufText:'');}
+function numQ(id){
+  const q=Q[id];const w=el(`<div class="q" id="q-${id}"></div>`);
+  function paint(){
+    const a=activeRec(q),par=parOf(q),ans=q.ans(par);q._ans=ans;
+    const full=q.pts||10;
+    w.innerHTML=`<div class="q-head"><span class="q-tag">${q.tag||'Calculate'}</span>${ptsBadge(q,a)}</div><div class="q-prompt">${q.prompt(par)}</div>${q.fig?'<svg class="chart qfig"></svg>':''}
+      <form class="num-row" novalidate><div class="num-field">${q.pre?`<span>${q.pre}</span>`:''}<input id="in-${id}" inputmode="decimal" autocomplete="off" aria-label="Your answer" ${a.done?'disabled':''}>${q.suf?`<span>${q.suf}</span>`:''}</div><button class="btn" ${a.done?'disabled':''}>Check</button></form>
+      <div class="fb" hidden></div>${a.done&&q.gen&&!q.group?'<div><button type="button" class="link-btn" data-new>Try new numbers (practice)</button></div>':''}`;
+    const inp=w.querySelector('input'),fb=w.querySelector('.fb');inp.value=a.last||'';
+    if(q.fig){const sv=w.querySelector('svg');q.fig(sv,par,!!a.done);if(w.isConnected)chart(sv,sv._c);}
+    if(a.done){fb.hidden=false;fb.className='fb '+(a.correct?'good':'bad');fb.innerHTML=(a.correct?`<b>Correct${a.tries>1?' on the second try':''}.</b> `:`<b>The answer is ${showAns(q,ans)}.</b> `)+q.sol(par);}
+    else if(a.tries>0){fb.hidden=false;fb.className='fb bad';fb.innerHTML=`<b>Not yet.</b> ${a.msg||''} You have one more try${a.practice?'':' for half credit'}.${q.hint?' Hint: '+q.hint:''}`;}
+    w.querySelector('form').onsubmit=e=>{e.preventDefault();
+      const v=parseAns(inp.value,q);
+      if(isNaN(v)){fb.hidden=false;fb.className='fb info';fb.innerHTML='Type a number, for example 12.5.';return;}
+      a.last=inp.value;a.tries=(a.tries||0)+1;const ok=isClose(v,ans,q);a.msg=ok?'':`${showAns(q,v)} isn't it.`;
+      if(ok){a.done=true;a.correct=true;if(!a.practice)a.pts=a.tries===1?full:Math.ceil(full/2);}
+      else if(a.tries>=2){a.done=true;a.correct=false;if(!a.practice)a.pts=0;}
+      if(!a.practice){if(q.group)a.ver=grp(q.group).ver;save();}
+      paint();if(!a.done)w.querySelector('input').focus();q.onChange&&q.onChange();};
+    const nb=w.querySelector('[data-new]');if(nb)nb.onclick=()=>{PR[id]={practice:true,par:q.gen()};paint();w.querySelector('input').focus();};
+  }
+  paint();return w;
+}
+function addQ(m,id,def){def.id=id;def.m=m;Q[id]=def;reg(m,id,def.pts||10);}
+
+/* ---------- MISSION 1: Risk Radar ---------- */
+const SORT_CARDS=[
+  {id:'c1',t:'Customer demand swings with the economy.',bin:'B',why:'Uncertain unit sales is a core source of business risk.'},
+  {id:'c2',t:'Interest is due every quarter, whatever sales turn out to be.',bin:'F',why:'Fixed financing charges are what create financial risk. You must pay interest no matter what.'},
+  {id:'c3',t:'The price customers will pay next year is uncertain.',bin:'B',why:'Output-price uncertainty moves EBIT before financing enters the picture.'},
+  {id:'c4',t:'The firm raises its debt ratio from 20% to 50%.',bin:'F',why:'Financial risk depends on the amount of debt (and preferred stock) in the capital structure.'},
+  {id:'c5',t:'Steel and fuel costs could spike.',bin:'B',why:'Input-cost uncertainty is business risk.'},
+  {id:'c6',t:'Most costs are fixed, so EBIT swings hard when sales move.',bin:'B',why:'High operating leverage (DOL) raises business risk. It is about fixed operating costs, not fixed financing costs.'},
+  {id:'c7',t:'The firm issues preferred stock with fixed dividends.',bin:'F',why:'Preferred stock, like debt, adds fixed claims ahead of common stockholders.'},
+  {id:'c8',t:'A product-liability lawsuit could hit.',bin:'B',why:'Product and other liability exposure is listed as a business-risk factor.'},
+  {id:'c9',t:'Stockholders’ ROE swings more than the firm’s ROIC.',bin:'F',why:'ROIC reflects business risk. The extra volatility pushed onto ROE comes from leverage.'},
+  {id:'c10',t:'A new competitor opens across the street.',bin:'B',why:'Competition affects demand and prices, which is business risk.'},
+  {id:'c11',t:'EBIT, NOPAT and ROIC are hard to forecast.',bin:'B',why:'This is the definition of business risk: uncertainty in future EBIT, NOPAT and ROIC.'},
+];
+reg('risk','risk_sort',SORT_CARDS.length*2);
+addQ('risk','risk_pair1',{tag:'Which is riskier?',prompt:'Which business has more <b>business risk</b>?',opts:['An electric utility that sells power to a growing region','A company that builds luxury yachts'],ans:1,
+  explain:'Yacht demand collapses in a downturn, prices are hard to hold, and a shipyard carries heavy fixed costs. Electricity demand is steady, so a utility’s EBIT is far more predictable.'});
+addQ('risk','risk_pair2',{tag:'Operating leverage',prompt:'Two food trucks each sell 12,000 meals a year at $10. <b>Truck A</b>: fixed costs $60,000, variable cost $3 a meal. <b>Truck B</b>: fixed costs $15,000, variable cost $8 a meal. If sales fall 10%, whose EBIT falls by the larger percentage?',
+  opts:['Truck A','Truck B','They fall by the same percentage'],ans:0,
+  explain:'Truck A’s EBIT is 12,000 × $7 − $60,000 = $24,000; losing 1,200 meals costs $8,400, a 35% drop. Truck B’s EBIT is $9,000; losing 1,200 meals costs $2,400, a 26.7% drop. More fixed cost relative to variable cost means more operating leverage and more business risk.'});
+addQ('risk','risk_be',{type:'num',tag:'Operating breakeven',pre:'',suf:'meals',dp:0,tol:0.5,
+  gen:()=>{const m=pick([3,4,5,6,8]),P=pick([12,15,18,20,25]),F=pick([12000,18000,24000,30000,36000,48000]);return{F,P,V:P-m};},
+  prompt:p=>`A food truck has fixed costs of <b>${usd(p.F,0)}</b> a year, sells meals at <b>${usd(p.P,0)}</b>, and spends <b>${usd(p.V,0)}</b> of variable cost per meal. How many meals must it sell for EBIT to break even?`,
+  ans:p=>p.F/(p.P-p.V),
+  sol:p=>`Q<sub>BE</sub> = F / (P − V) = ${usd(p.F,0)} / (${usd(p.P,0)} − ${usd(p.V,0)}) = <b>${fmt(p.F/(p.P-p.V),0)} meals</b>. Below that volume EBIT is negative; above it, every meal adds ${usd(p.P-p.V,0)}.`,
+  fig:(svg,p,done)=>{const qb=p.F/(p.P-p.V),x1=qb*2,y1=p.P*x1;
+    chart(svg,{w:560,h:270,x0:0,x1,y0:0,y1,fx:v=>fmt(v,0),fy:v=>'$'+fmt(v/1000,0)+'k',xl:'Meals sold (Q)',
+      series:[{pts:line(x=>p.P*x,0,x1,2),color:'var(--accent)',label:'Revenue = P × Q'},{pts:line(x=>p.F+p.V*x,0,x1,2),color:'var(--debt)',label:'Total cost = F + V × Q',dy:16},{pts:[[0,p.F],[x1,p.F]],color:'var(--gov)',dash:'5 5',w:1.8,label:'Fixed cost F',dy:-6}],
+      dots:done?[{x:qb,y:p.P*qb,color:'var(--ink)',label:'Breakeven: '+fmt(qb,0),anchor:'end',dx:-10,dy:-10}]:[]});}
+});
+
+function sortGame(id,cards){
+  const w=el(`<div class="q"></div>`);
+  function paint(){
+    const r=rec(id);r.c=r.c||{};const left=cards.filter(c=>!(c.id in r.c));
+    const got=Object.values(r.c).filter(Boolean).length*2,max=cards.length*2;
+    let h=`<div class="q-head"><span class="q-tag">Sort the deck · ${Math.min(cards.length-left.length+(left.length?1:0),cards.length)} of ${cards.length}</span><span class="q-pts ${r.done?(got>0?'got':'miss'):''}">${r.done?'+'+got:got} / ${max} pts</span></div>`;
+    if(r.fb)h+=`<div class="fb ${r.fb.ok?'good':'bad'}"><b>${r.fb.ok?'Right.':'Not quite.'}</b> “${r.fb.t}” is <b>${r.fb.bin==='B'?'business':'financial'} risk</b>. ${r.fb.why}</div>`;
+    if(left.length){const c=left[0];
+      h+=`<div class="deck"><div class="card">${c.t}</div><div class="bins"><button type="button" class="bin b1" data-b="B">Business risk<small>uncertainty in EBIT, ROIC</small></button><button type="button" class="bin b2" data-b="F">Financial risk<small>added by debt and preferred</small></button></div></div>`;
+    }else{
+      const li=b=>cards.filter(c=>c.bin===b).map(c=>`<li class="${r.c[c.id]?'':'miss'}">${c.t}${r.c[c.id]?'':' (you missed this one)'}</li>`).join('');
+      h+=`<div class="sorted"><div><h3 style="color:var(--accent)">Business risk</h3><ul>${li('B')}</ul></div><div><h3 style="color:var(--debt)">Financial risk</h3><ul>${li('F')}</ul></div></div>`;
+    }
+    w.innerHTML=h;
+    w.querySelectorAll('[data-b]').forEach(b=>b.onclick=()=>{const c=left[0],ok=b.dataset.b===c.bin;r.c[c.id]=ok;r.fb={ok,t:c.t,bin:c.bin,why:c.why};r.pts=Object.values(r.c).filter(Boolean).length*2;r.done=Object.keys(r.c).length===cards.length;save();paint();});
+  }
+  paint();return w;
+}
+
+function renderRisk(main){
+  main.append(missionHead('risk','Before any debt shows up, how risky is the business itself? Then: what extra risk does debt pile onto stockholders?'));
+  main.append(terms([['Business risk','Uncertainty in future EBIT, NOPAT and ROIC.'],['Financial risk','Extra risk placed on common stockholders when the firm uses debt or preferred stock.'],['Operating leverage','How much of total cost is fixed. Breakeven: Q<sub>BE</sub> = F / (P − V).']]));
+  main.append(secHead('Round 1','Sort the deck','2 pts per card'));
+  main.append(sortGame('risk_sort',SORT_CARDS));
+  main.append(secHead('Round 2','Compare the businesses'));
+  const qs=el('<div class="qs"></div>');['risk_pair2','risk_be'].forEach(i=>qs.append(renderQ(i)));main.append(qs);
+}
+
+/* ---------- MISSION 2: Stress Test ---------- */
+addQ('stress','st_roic',{tag:'Read the lab',prompt:'Drag EBIT from $400 to $3,200. Which measure is <b>identical</b> for Firm U and Firm L at every EBIT?',opts:['ROE','Net income','ROIC','Taxes paid'],ans:2,
+  explain:'ROIC = EBIT(1 − T) / operating capital. EBIT isn’t affected by interest, and operating capital doesn’t depend on how it is financed, so leverage leaves ROIC unchanged.'});
+addQ('stress','st_why',{tag:'At EBIT = $2,400',prompt:'ROE<sub>L</sub> = 9.8% beats ROE<sub>U</sub> = 9.0%. Which of these is <b>not</b> a reason?',opts:['L pays more in total to its investors: $1,560 + $320 = $1,880 vs. $1,800','L pays less tax: $520 vs. $600, thanks to the interest tax shield','L ties up less equity: $16,000 vs. $20,000','L generates a higher EBIT than U'],ans:3,
+  explain:'Both firms have the same EBIT of $2,400. Leverage boosts ROE through the tax shield, the larger total payout to investors, and the smaller equity base.'});
+addQ('stress','st_rule',{tag:'The rule',prompt:'Leverage raises ROE (adds value for shareholders) only when…',opts:['ROIC is greater than the after-tax cost of debt, r<sub>d</sub>(1 − T)','ROIC is greater than the pre-tax cost of debt, r<sub>d</sub>','EBIT is greater than interest expense','The firm has more equity than debt'],ans:0,
+  explain:'At EBIT = $1,600, ROIC = 6.0% = r<sub>d</sub>(1 − T) = 8% × 0.75, and both ROEs equal 6.0%. Above that, debt helps shareholders; below it (EBIT = $1,200, ROIC 4.5%), ROE<sub>L</sub> falls to 4.1%, below ROE<sub>U</sub>.'});
+addQ('stress','st_roe',{type:'num',tag:'New firm',suf:'%',kind:'pct',tol:0.05,
+  gen:()=>{const C=pick([40000,50000,60000,80000]),w=pick([0.25,0.3,0.4,0.5]),rd=pick([6,7,8,9]),T=pick([21,25]),E=C*pick([0.08,0.1,0.12,0.14]);return{C,w,rd,T,E};},
+  prompt:p=>`Firm L has <b>${usd(p.C,0)}</b> of operating capital: <b>${usd(p.C*p.w,0)}</b> of debt at r<sub>d</sub> = <b>${p.rd}%</b>, the rest equity. EBIT is <b>${usd(p.E,0)}</b> and the tax rate is <b>${p.T}%</b>. What is Firm L’s ROE?`,
+  ans:p=>{const I=p.C*p.w*p.rd/100;return (p.E-I)*(1-p.T/100)/(p.C*(1-p.w))*100;},
+  sol:p=>{const D=p.C*p.w,I=D*p.rd/100,EBT=p.E-I,NI=EBT*(1-p.T/100),S=p.C-D;return`Interest = ${usd(D,0)} × ${p.rd}% = ${usd(I,0)}. EBT = ${usd(EBT,0)}. NI = ${usd(EBT,0)} × (1 − ${p.T/100}) = ${usd(NI,0)}. ROE = ${usd(NI,0)} / ${usd(S,0)} = <b>${pct(NI/S*100)}</b>. Compare ROIC = ${usd(p.E,0)} × ${1-p.T/100} / ${usd(p.C,0)} = ${pct(p.E*(1-p.T/100)/p.C*100)} against r<sub>d</sub>(1 − T) = ${pct(p.rd*(1-p.T/100))}.`;}
+});
+addQ('stress','st_cross',{type:'num',tag:'Break-even EBIT',pre:'$',dp:0,
+  gen:()=>({C:pick([30000,50000,75000,120000]),D:pick([0.2,0.3,0.5]),rd:pick([5,6,7,9,10]),T:pick([21,25])}),
+  prompt:p=>`Firms U and L each have <b>${usd(p.C,0)}</b> of capital. L finances ${p.D*100}% of it with debt at <b>${p.rd}%</b>; the tax rate is ${p.T}%. At what EBIT do the two firms earn exactly the <b>same ROE</b>?`,
+  ans:p=>p.rd/100*p.C,
+  sol:p=>`The ROEs match when ROIC = r<sub>d</sub>(1 − T). So EBIT(1 − T)/Capital = r<sub>d</sub>(1 − T), and EBIT = r<sub>d</sub> × Capital = ${p.rd}% × ${usd(p.C,0)} = <b>${usd(p.rd/100*p.C,0)}</b>. The tax rate and the amount of debt drop out. In the lecture example, 8% × $20,000 = $1,600.`
+});
+
+function renderStress(main){
+  main.append(missionHead('stress','Two firms, identical except for debt. Push EBIT up and down and watch who wins.'));
+  main.append(terms([['ROIC','EBIT(1 − T) / operating capital'],['ROE','Net income / equity'],['The two firms','$20,000 of capital each, 25% tax. U is all equity; L has $4,000 of debt at 8%.']]));
+  main.append(secHead('Lab','Stress-test the income statement'));
+  const lab=el(`<div class="lab">
+    <div class="lab-controls"><div class="ctrl"><label for="st-e">EBIT <output id="st-eo"></output></label><input id="st-e" type="range" min="400" max="3200" step="100" value="2400"></div>
+      <div class="seg" id="st-pre"><button type="button" data-e="2400">Case 1: $2,400</button><button type="button" data-e="1600">Case 2: $1,600</button><button type="button" data-e="1200">Case 3: $1,200</button></div></div>
+    <div class="lab-grid"><div class="tbl-wrap"><table class="tbl" id="st-tbl"></table></div>
+      <figure><figcaption>ROE vs. EBIT</figcaption><svg class="chart" id="st-ch"></svg></figure></div>
+    <p class="note" id="st-note"></p></div>`);
+  main.append(lab);
+  const s=$('#st-e',lab);
+  function upd(){const E=+s.value,I=320,T=.25;const u={EBT:E,tax:E*T,NI:E*(1-T)},l={EBT:E-I,tax:(E-I)*T,NI:(E-I)*(1-T)};
+    const roic=E*(1-T)/20000*100,ru=u.NI/20000*100,rl=l.NI/16000*100;
+    $('#st-eo',lab).textContent=usd(E,0);
+    lab.querySelectorAll('#st-pre button').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.e===E)));
+    const cls=rl>ru+1e-9?'up':rl<ru-1e-9?'dn':'';
+    $('#st-tbl',lab).innerHTML=`<thead><tr><th></th><th>Firm U</th><th>Firm L</th></tr></thead><tbody>
+      <tr><td>EBIT</td><td>${usd(E,0)}</td><td>${usd(E,0)}</td></tr>
+      <tr><td>Interest</td><td>$0</td><td>${usd(I,0)}</td></tr>
+      <tr><td>EBT</td><td>${usd(u.EBT,0)}</td><td>${usd(l.EBT,0)}</td></tr>
+      <tr><td>Taxes (25%)</td><td>${usd(u.tax,0)}</td><td>${usd(l.tax,0)}</td></tr>
+      <tr class="key"><td>Net income</td><td>${usd(u.NI,0)}</td><td>${usd(l.NI,0)}</td></tr>
+      <tr><td>NI + interest</td><td>${usd(u.NI,0)}</td><td>${usd(l.NI+I,0)}</td></tr>
+      <tr><td>Equity</td><td>$20,000</td><td>$16,000</td></tr>
+      <tr class="key"><td>ROIC</td><td>${pct(roic,1)}</td><td>${pct(roic,1)}</td></tr>
+      <tr class="key hl"><td>ROE</td><td>${pct(ru,1)}</td><td class="${cls}">${pct(rl,1)}</td></tr></tbody>`;
+    chart($('#st-ch',lab),{w:520,h:300,x0:400,x1:3200,y0:0,y1:14,xt:[400,1200,2000,2800],yt:[0,2,4,6,8,10,12,14],fx:v=>'$'+fmt(v,0),fy:v=>v+'%',xl:'EBIT',
+      series:[{pts:line(x=>x*.75/20000*100,400,3200,2),color:'var(--debt)',label:'ROE U = ROIC',lp:[3200,12],dy:16},{pts:line(x=>(x-320)*.75/16000*100,400,3200,2),color:'var(--accent)',label:'ROE L',lp:[3200,13.5],dy:-6},{pts:[[400,6],[3200,6]],color:'var(--gov)',dash:'5 5',w:1.6,label:'r_d(1 − T) = 6%',lp:[400,6],anchor:'start',dx:4,dy:-6}],
+      vlines:[{x:E,color:'var(--ink)'}],dots:[{x:E,y:ru,color:'var(--debt)',r:4},{x:E,y:rl,color:'var(--accent)',r:4}]});
+    $('#st-note',lab).innerHTML=roic>6.001?`<b>ROIC ${pct(roic,1)} &gt; r<sub>d</sub>(1 − T) = 6.0%.</b> Every dollar borrowed earns more than its after-tax cost, so leverage lifts ROE.`:roic<5.999?`<b>ROIC ${pct(roic,1)} &lt; 6.0%.</b> The debt now costs more than it earns. Firm L’s shareholders do worse than Firm U’s: this is financial risk.`:`<b>ROIC = 6.0% = r<sub>d</sub>(1 − T).</b> Leverage neither helps nor hurts; both ROEs are 6.0%.`;
+  }
+  s.oninput=upd;lab.querySelectorAll('#st-pre button').forEach(b=>b.onclick=()=>{s.value=b.dataset.e;upd();});upd();
+  main.append(secHead('Questions','Explain what you saw'));
+  const qs=el('<div class="qs"></div>');['st_rule','st_roe'].forEach(i=>qs.append(renderQ(i)));main.append(qs);
+}
+
+/* ---------- MISSION 3: MM ---------- */
+const MILLER_G=1-(1-.25)*(1-.12)/(1-.30);
+addQ('mm','mm_assume',{tag:'Assumptions',prompt:'Which of these is <b>not</b> one of the MM assumptions?',opts:['No transactions costs','No restrictions or costs to short sales','Individuals can borrow at the same rate as corporations','Firms face bankruptcy costs when they borrow heavily'],ans:3,
+  explain:'MM ignore bankruptcy (financial distress) costs. Adding them back is exactly what the trade-off theory does in Part 2.'});
+addQ('mm','mm_house',{tag:'The house',prompt:'A house has a market value of $1M. Owner A finances it 50% debt / 50% equity; Owner B uses 25% debt / 75% equity. In an MM world with no taxes, what is each house worth?',opts:['A’s house is worth more because debt is cheaper','B’s house is worth more because it is less risky','Both are worth $1M; financing only splits the value','It depends on the mortgage rate'],ans:2,
+  explain:'“The size of a pizza doesn’t change no matter how you divvy it up.” Prop I without taxes: V<sub>L</sub> = V<sub>U</sub>.'});
+addQ('mm','mm_wacc0',{tag:'Prop II, no taxes',prompt:'With no taxes, the firm replaces equity with “cheaper” debt (r<sub>d</sub> &lt; r<sub>sL</sub>). What happens to WACC?',opts:['It falls, because more weight goes on cheaper debt','It stays constant, because r<sub>sL</sub> rises just enough to offset the cheaper debt','It rises, because equity gets riskier','It falls until D/S = 1, then rises'],ans:1,
+  explain:'r<sub>sL</sub> = r<sub>sU</sub> + (D/S)(r<sub>sU</sub> − r<sub>d</sub>). The apparent savings from debt are exactly offset by a higher required return on the remaining equity, so WACC = r<sub>sU</sub> at every leverage level.'});
+addQ('mm','mm_rs0',{type:'num',tag:'Prop II, no taxes',suf:'%',kind:'pct',tol:0.03,
+  gen:()=>{const rsU=pick([10,11,12,13,14]);return{rsU,rd:pick([5,6,7,8]),DS:pick([0.25,0.5,0.75,1,1.5])};},
+  prompt:p=>`No taxes. An unlevered firm has r<sub>sU</sub> = <b>${p.rsU}%</b>. It recapitalizes to D/S = <b>${p.DS}</b> with debt costing r<sub>d</sub> = <b>${p.rd}%</b>. What is the levered cost of equity, r<sub>sL</sub>?`,
+  ans:p=>p.rsU+p.DS*(p.rsU-p.rd),
+  sol:p=>`r<sub>sL</sub> = ${p.rsU}% + ${p.DS} × (${p.rsU}% − ${p.rd}%) = <b>${pct(p.rsU+p.DS*(p.rsU-p.rd))}</b>. WACC stays at ${p.rsU}%.`});
+addQ('mm','mm_rsT',{type:'num',tag:'Prop II, corporate taxes',suf:'%',kind:'pct',tol:0.03,
+  gen:()=>({rsU:pick([10,11,12,13,14]),rd:pick([5,6,7,8]),DS:pick([0.25,0.5,0.75,1,1.5]),T:pick([21,25,30])}),
+  prompt:p=>`With corporate taxes of T<sub>c</sub> = <b>${p.T}%</b>: r<sub>sU</sub> = <b>${p.rsU}%</b>, r<sub>d</sub> = <b>${p.rd}%</b>, D/S = <b>${p.DS}</b>. What is r<sub>sL</sub>?`,
+  ans:p=>p.rsU+p.DS*(p.rsU-p.rd)*(1-p.T/100),
+  sol:p=>`r<sub>sL</sub> = ${p.rsU}% + ${p.DS} × (${p.rsU}% − ${p.rd}%) × (1 − ${p.T/100}) = <b>${pct(p.rsU+p.DS*(p.rsU-p.rd)*(1-p.T/100))}</b>. The risk premium is smaller by the factor (1 − T<sub>c</sub>) because interest is deductible.`});
+addQ('mm','mm_vl',{type:'num',tag:'Prop I, corporate taxes',pre:'$',suf:'million',sufText:'million',
+  gen:()=>({VU:pick([400,500,650,800,1200]),D:pick([100,150,200,250,300]),T:pick([21,25,30])}),
+  prompt:p=>`An all-equity firm is worth V<sub>U</sub> = <b>${usd(p.VU,0)} million</b>. It issues <b>${usd(p.D,0)} million</b> of permanent debt. The corporate tax rate is <b>${p.T}%</b>. Under MM with corporate taxes, what is V<sub>L</sub>?`,
+  ans:p=>p.VU+p.T/100*p.D,
+  sol:p=>`V<sub>L</sub> = V<sub>U</sub> + T<sub>c</sub>D = ${usd(p.VU,0)}M + ${p.T/100} × ${usd(p.D,0)}M = <b>${usd(p.VU+p.T/100*p.D)} million</b>. The tax shield r<sub>d</sub>DT each year is worth TD in present value.`});
+addQ('mm','mm_waccT',{tag:'Prop II, corporate taxes',prompt:'With corporate taxes only, what happens to WACC as the firm adds debt, and what does MM conclude?',opts:['WACC is constant; capital structure is irrelevant','WACC strictly decreases, so the firm should use (nearly) 100% debt','WACC falls, then rises; an interior optimum exists','WACC strictly increases, so the firm should avoid debt'],ans:1,
+  explain:'The cost of equity still rises, but by less (the (1 − T<sub>c</sub>) factor), and the after-tax cost of debt is even lower. Together these more than offset the rising r<sub>sL</sub>, so WACC falls with every dollar of debt.'});
+addQ('mm','mm_miller',{type:'num',tag:'Miller model',pre:'$',suf:'million',sufText:'million',
+  gen:()=>{for(let k=0;k<100;k++){const p={Tc:pick([21,25,30]),Td:pick([30,35,37]),Ts:pick([10,12,15,20]),VU:pick([500,600,800]),D:pick([100,200,300])};const g=1-(1-p.Tc/100)*(1-p.Ts/100)/(1-p.Td/100);if(g>0.03)return p;}return{Tc:25,Td:30,Ts:12,VU:600,D:200};},
+  prompt:p=>`Miller world: T<sub>c</sub> = <b>${p.Tc}%</b>, personal tax on debt income T<sub>d</sub> = <b>${p.Td}%</b>, personal tax on stock income T<sub>s</sub> = <b>${p.Ts}%</b>. V<sub>U</sub> = <b>${usd(p.VU,0)}M</b> and the firm issues <b>${usd(p.D,0)}M</b> of debt. What is V<sub>L</sub>?`,
+  ans:p=>p.VU+(1-(1-p.Tc/100)*(1-p.Ts/100)/(1-p.Td/100))*p.D,
+  sol:p=>{const g=1-(1-p.Tc/100)*(1-p.Ts/100)/(1-p.Td/100);return`Gain per $1 of debt = 1 − (1 − ${p.Tc/100})(1 − ${p.Ts/100}) / (1 − ${p.Td/100}) = ${fmt(g,4)}. V<sub>L</sub> = ${usd(p.VU,0)}M + ${fmt(g,4)} × ${usd(p.D,0)}M = <b>${usd(p.VU+g*p.D)} million</b>. Compare T<sub>c</sub>D = ${usd(p.Tc/100*p.D)}M without personal taxes.`;}});
+addQ('mm','mm_millerC',{tag:'Miller’s conclusion',prompt:'With T<sub>c</sub> = 25%, T<sub>d</sub> = 30% and T<sub>s</sub> = 12%, each $1 of debt raises value by about $0.06. What does the lecture conclude?',opts:['Debt no longer adds any value','Debt still adds value, but less than with corporate taxes alone, so firms should still use 100% debt','An interior optimal debt ratio now exists','Equity financing always dominates debt'],ans:1,
+  explain:'Personal taxes favor equity (gains are deferred until shares are sold and taxed at a lower rate), which lessens the corporate advantage of debt. The gain is still positive, so in Miller’s model firms should still use 100% debt. Only distress costs (Part 2) create an interior optimum.'});
+
+function renderMM(main){
+  main.append(missionHead('mm','“The size of a pizza doesn’t change no matter how you divvy it up.” Franco Modigliani. Unless the government is also eating.'));
+  main.append(terms([['MM Proposition I','How the value of the firm depends on its debt.'],['MM Proposition II','How the cost of equity changes as the firm adds debt.'],['Interest tax shield','Interest is tax-deductible, so debt shrinks the government’s slice.']]));
+  main.append(secHead('Lab','Slice the pizza'));
+  const lab=el(`<div class="lab">
+    <div class="lab-controls"><div class="seg" id="mm-w"><button type="button" data-w="notax">No taxes</button><button type="button" data-w="corp">Corporate taxes</button><button type="button" data-w="miller">+ Personal taxes</button></div>
+      <div class="ctrl"><label for="mm-d">Debt D <output id="mm-do"></output></label><input id="mm-d" type="range" min="0" max="600" step="10" value="300"></div></div>
+    <div class="lab-grid"><div class="pie-wrap"><svg id="mm-pie" viewBox="-110 -110 220 220" role="img" aria-label="Pie of firm value split between debt, equity and taxes"></svg>
+      <ul class="legend"><li><i style="background:var(--equity)"></i>Equity S</li><li><i style="background:var(--debt)"></i>Debt D</li><li><i style="background:var(--gov)"></i>Taxes (government)</li></ul></div>
+      <dl class="readout" id="mm-r"></dl></div>
+    <p class="note" id="mm-note"></p>
+    <div class="charts"><figure><figcaption>Prop I: firm value vs. debt</figcaption><svg class="chart" id="mm-v"></svg></figure>
+      <figure><figcaption>Prop II: cost of capital vs. D/S</figcaption><svg class="chart" id="mm-c"></svg><p class="note" id="mm-cn" hidden>Prop II for the Miller world is beyond this chapter. Switch worlds to see the cost-of-capital lines.</p></figure></div>
+    <p class="small">Pre-tax pie: EBIT = $120 forever, r<sub>sU</sub> = 12%, r<sub>d</sub> = 8%, so the pie is worth $1,000. T<sub>c</sub> = 25%, T<sub>d</sub> = 30%, T<sub>s</sub> = 12%.</p></div>`);
+  main.append(lab);
+  let world='corp';const ds=$('#mm-d',lab);
+  const WV={notax:{VU:1000,g:0},corp:{VU:750,g:.25},miller:{VU:750,g:MILLER_G}};
+  function arc(a0,a1,r){const p=a=>[Math.cos(a)*r,Math.sin(a)*r];const[x0,y0]=p(a0),[x1,y1]=p(a1);return`M0 0L${x0.toFixed(2)} ${y0.toFixed(2)}A${r} ${r} 0 ${a1-a0>Math.PI?1:0} 1 ${x1.toFixed(2)} ${y1.toFixed(2)}Z`;}
+  function upd(){const D=+ds.value,w=WV[world],VL=w.VU+w.g*D,S=VL-D,gov=1000-VL,DS=D/S;
+    $('#mm-do',lab).textContent=usd(D,0);
+    lab.querySelectorAll('#mm-w button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.w===world)));
+    let a=-Math.PI/2,s='';[[S,'var(--equity)'],[D,'var(--debt)'],[gov,'var(--gov)']].forEach(([v,c])=>{if(v<=0.01)return;const a1=a+2*Math.PI*v/1000;s+=v>=999.9?`<circle r="100" style="fill:${c}"/>`:`<path d="${arc(a,a1,100)}" style="fill:${c};stroke:var(--surface);stroke-width:1.5"/>`;a=a1;});
+    $('#mm-pie',lab).innerHTML=s;
+    const rs=world==='notax'?12+4*DS:world==='corp'?12+4*.75*DS:null, wacc=world==='notax'?12:world==='corp'?12*(1-.25*D/VL):null;
+    $('#mm-r',lab).innerHTML=[['V<sub>U</sub> (all equity)',usd(w.VU,0)],['V<sub>L</sub> = D + S',usd(VL,2)],['Debt D',usd(D,0)],['Equity S',usd(S,2)],['Taxes slice',usd(gov,2)],['D / S',fmt(DS,2)],['r<sub>sL</sub>',rs==null?'—':pct(rs)],['WACC',wacc==null?'—':pct(wacc)]].map(([k,v])=>`<div><dt>${k}</dt><dd>${v}</dd></div>`).join('');
+    $('#mm-note',lab).innerHTML=world==='notax'?`<b>No taxes: the pie never changes size.</b> V<sub>L</sub> = $1,000 at every D. Debt is cheaper, but r<sub>sL</sub> climbs just enough that WACC stays at 12%.`:world==='corp'?`<b>Corporate taxes: the government’s slice shrinks by T<sub>c</sub> × D.</b> Interest is deductible, so each $1 of debt adds $0.25 of value. At D = ${usd(D,0)}, the tax shield is worth ${usd(.25*D,2)}.`:`<b>Personal taxes: investors pay more tax on interest (30%) than on stock income (12%).</b> Each $1 of debt now adds only ${fmt(MILLER_G,4)}, about $0.06. At D = ${usd(D,0)}, that is ${usd(MILLER_G*D,2)}.`;
+    const op=k=>k===world?1:.28;
+    chart($('#mm-v',lab),{w:520,h:290,x0:0,x1:600,y0:700,y1:1050,xt:[0,150,300,450,600],yt:[700,800,900,1000],fx:v=>'$'+v,fy:v=>'$'+fmt(v,0),xl:'Debt D',
+      series:[{pts:[[0,1000],[600,1000]],color:'var(--ink)',op:op('notax'),label:'No taxes: V_L = V_U',dy:-8},{pts:[[0,750],[600,900]],color:'var(--accent)',op:op('corp'),label:'V_U + T_c·D',dy:-8},{pts:[[0,750],[600,750+600*MILLER_G]],color:'var(--gov)',op:op('miller'),label:'Miller: + 0.057·D',dy:18}],
+      vlines:[{x:D,color:'var(--muted)'}],dots:[{x:D,y:VL,color:world==='notax'?'var(--ink)':world==='corp'?'var(--accent)':'var(--gov)'}]});
+    const cs=$('#mm-c',lab),cn=$('#mm-cn',lab);
+    if(world==='miller'){cs.hidden=true;cn.hidden=false;}else{cs.hidden=false;cn.hidden=true;
+      const t=world==='corp'?.75:1,x1=3,rsf=x=>12+4*t*x,wf=world==='notax'?(x=>12):(x=>12*(1-.25*x/(1+x)));
+      chart(cs,{w:520,h:290,x0:0,x1,y0:0,y1:26,xt:[0,.5,1,1.5,2,2.5,3],yt:[0,4,8,12,16,20,24],fx:v=>fmt(v,1),fy:v=>v+'%',xl:'Debt-to-equity ratio D/S',
+        series:[{pts:line(rsf,0,x1,2),color:'var(--accent)',label:'r_sL'},{pts:line(wf,0,x1,40),color:'var(--ink)',label:world==='notax'?'WACC = r_sU':'WACC',dy:-8},{pts:[[0,8],[x1,8]],color:'var(--debt)',label:'r_d',lp:[0,8],anchor:'start',dx:4,dy:-6},...(world==='corp'?[{pts:[[0,6],[x1,6]],color:'var(--debt)',dash:'4 4',w:1.6,label:'r_d(1 − T)',lp:[0,6],anchor:'start',dx:4,dy:15}]:[])],
+        vlines:DS<=3?[{x:DS,color:'var(--muted)'}]:[],dots:DS<=3?[{x:DS,y:rsf(DS),color:'var(--accent)',r:4},{x:DS,y:wf(DS),color:'var(--ink)',r:4}]:[]});}
+  }
+  ds.oninput=upd;lab.querySelectorAll('#mm-w button').forEach(b=>b.onclick=()=>{world=b.dataset.w;upd();});upd();
+  main.append(secHead('Questions','Argue it like Modigliani and Miller'));
+  const qs=el('<div class="qs"></div>');['mm_wacc0','mm_rsT','mm_millerP'].forEach(i=>qs.append(renderQ(i)));main.append(qs);
+}
+
+['risk_pair1','st_roic','st_why','st_cross','mm_assume','mm_house','mm_rs0','mm_vl','mm_waccT','mm_millerC','mm_miller'].forEach(id=>{delete Q[id];delete REG[id];});
+addQ('mm','mm_millerP',{tag:'Miller model',prompt:'In 1977 Merton Miller added personal taxes to the MM model:<div class="fblock" style="margin:8px 0">V<sub>L</sub> = V<sub>U</sub> + [1 − (1 − T<sub>c</sub>)(1 − T<sub>s</sub>) / (1 − T<sub>d</sub>)] D</div>Here T<sub>s</sub> is the personal tax rate on income from stock and T<sub>d</sub> the rate on income from bonds. Which statement best describes his premise and result?',
+  opts:['Investors demand a <b>lower</b> pre-tax return on bonds than on stocks, because interest income is taxed more lightly. So corporate and personal taxes <b>both</b> favor debt.',
+        'Investors accept a <b>lower</b> pre-tax return on stocks than on bonds, because equity income is taxed more lightly. So the interest deduction favors <b>debt</b>, while the tax break on equity income favors <b>equity</b>.',
+        'Investors demand a <b>higher</b> pre-tax return on stocks, because dividends are not tax-deductible for the firm. So the tax code favors <b>equity</b> only.',
+        'Investors accept a <b>lower</b> pre-tax return on stocks, because equity income is taxed more lightly. So personal taxes <b>cancel</b> the tax shield and debt never adds value.'],ans:1,
+  explain:'Under the US tax code, T<sub>s</sub> &lt; T<sub>d</sub>: capital gains are taxed only when shares are sold, and at a lower long-term rate. That gives two competing pressures: deducting <b>interest</b> creates a tax shield that favors <b>debt</b>, and the preferential treatment of <b>equity</b> income (dividends and capital gains) favors <b>equity</b>. With the lecture’s rates (T<sub>c</sub> = 25%, T<sub>d</sub> = 30%, T<sub>s</sub> = 12%), each $1 of debt still adds about $0.06, less than the $0.25 from corporate taxes alone.'});
+/* ---------- MISSION 4: Theory Detective ---------- */
+reg('theories','th_trade',10);reg('theories','th_signal',10);reg('theories','th_peck',10);
+addQ('theories','th_wacc',{tag:'Trade-off theory',prompt:'Under the trade-off theory, how should a CFO identify the optimal leverage ratio?',opts:['Borrow as much as lenders allow','Pick the debt level that minimizes WACC, where the marginal tax benefit equals the marginal distress cost','Pick the debt level that maximizes ROE','Keep D/E = 1 so risk is shared equally'],ans:1,
+  explain:'WACC falls while tax-shield benefits outweigh bankruptcy costs and rises once distress costs dominate. The minimum-WACC point is also the value-maximizing point: V<sub>L</sub> = V<sub>U</sub> + tax benefits − distress costs.'});
+addQ('theories','th_seo',{tag:'Evidence',prompt:'What happens, on average, to a firm’s stock price when it announces a seasoned equity offering (SEO)?',opts:['It rises about 3%','No significant change','It falls about 3%','It falls about 30%'],ans:2,
+  explain:'SEO announcement returns average about −3%, and issuers’ stocks tend to have run up beforehand and to lag non-issuers for 3 to 5 years afterward, consistent with signaling and market timing.'});
+const THEORIES=['MM (no taxes)','MM (corporate taxes)','Miller (personal taxes)','Trade-off','Signaling','Pecking order','Market timing'];
+const CASES=[
+  ['A biotech announces a seasoned equity offering. Its stock drops about 3% on the news.',4,'Investors read new stock sales as a sign that managers think the shares are overvalued.'],
+  ['Over five years, a firm funds growth from retained earnings, borrows when cash runs short, and issues stock only once, as a last resort.',5,'Internal funds first (no flotation costs, no signal), then debt, then equity.'],
+  ['A CFO keeps adding debt until the next dollar’s tax savings is just offset by higher expected costs of financial distress.',3,'Balancing tax benefits against bankruptcy costs gives an interior optimum.'],
+  ['After a 70% run-up in its stock price, a firm rushes to sell new shares. Two years later it borrows heavily when interest rates hit a low.',6,'Issue equity when the market is “high,” debt when rates are “low.”'],
+  ['An analyst argues that with no taxes, no bankruptcy costs and equal information, the firm’s D/E choice cannot change its value.',0,'Capital structure irrelevance: V<sub>L</sub> = V<sub>U</sub>.'],
+  ['A consultant argues that because interest is deductible, every $1 of debt adds $T<sub>c</sub> of value, so the firm should be nearly all debt.',1,'V<sub>L</sub> = V<sub>U</sub> + T<sub>c</sub>D, which pushes toward 100% debt.'],
+  ['A professor notes that investors pay more tax on interest income than on stock income, so the gain from corporate debt is smaller than T<sub>c</sub>.',2,'Personal taxes lessen (but don’t remove) debt’s advantage.'],
+  ['A CEO who believes her shares are underpriced turns down an equity offering and sells bonds instead.',4,'Managers with good private news avoid selling stock cheaply; issuing debt is the good signal.'],
+  ['A treasurer issues short-term debt because the yield curve slopes upward, and plans to switch to long-term debt when it flattens.',6,'Timing the term structure is part of market timing theory.'],
+];
+CASES.forEach((c,i)=>addQ('theories','th_c'+(i+1),{tag:'Case file '+(i+1),pts:5,chips:true,prompt:c[0],opts:THEORIES,ans:c[1],explain:c[2]}));
+
+function tradeoffGame(){
+  const id='th_trade',w=el('<div class="q"></div>');
+  const gen=()=>({T:pick([.21,.25]),a:pick([100,150,200,250]),c:pick([.0006,.0008,.001,.0012])});
+  function paint(){
+    const r=rec(id),a=PR[id]||r;if(!a.par){a.par=gen();if(!a.practice)save();}
+    const p=a.par,VU=1000,dist=D=>D>p.a?p.c*(D-p.a)**2:0,VL=D=>VU+p.T*D-dist(D),Ds=p.a+p.T/(2*p.c);
+    if(a.cur==null)a.cur=100;
+    const vmin=Math.min(VU,VL(800));
+    w.innerHTML=`<div class="q-head"><span class="q-tag">Find the sweet spot</span>${ptsBadge({pts:10},a)}</div>
+      <div class="q-prompt">V<sub>U</sub> = $1,000M and T<sub>c</sub> = ${p.T*100}%. Distress costs kick in once debt passes some level and then grow fast. You can see the tax-shield line, but not V<sub>L</sub>. Use the marginal readout to choose the debt level that <b>maximizes firm value</b>, then lock it in.</div>
+      <div class="ctrl"><label for="to-d">Debt D <output></output></label><input id="to-d" type="range" min="0" max="800" step="5" value="${a.done?a.pick:a.cur}" ${a.done?'disabled':''}></div>
+      <dl class="readout"></dl>
+      <svg class="chart" style="max-width:640px"></svg>
+      ${a.done?'':'<div><button type="button" class="btn accent" data-lock>Lock in this debt level</button></div>'}
+      <div class="fb" hidden></div>${a.done?'<div><button type="button" class="link-btn" data-new>Play a new market (practice)</button></div>':''}`;
+    const sl=w.querySelector('#to-d');
+    function upd(){const D=+sl.value;a.cur=D;
+      w.querySelector('output').textContent=usd(D,0)+'M';
+      w.querySelector('.readout').innerHTML=`<div><dt>PV of tax shield (T·D)</dt><dd>+${usd(p.T*D)}M</dd></div><div><dt>PV of distress costs</dt><dd>−${usd(dist(D))}M</dd></div><div><dt>Next $10M of debt: tax shield</dt><dd>+${usd(p.T*10)}M</dd></div><div><dt>Next $10M of debt: distress cost</dt><dd>+${usd(dist(D+10)-dist(D))}M</dd></div>`;
+      chart(w.querySelector('svg'),{w:600,h:290,x0:0,x1:800,y0:Math.floor((vmin-40)/50)*50,y1:VU+p.T*800+20,xt:[0,200,400,600,800],fx:v=>'$'+v,fy:v=>'$'+fmt(v,0),xl:'Debt D ($M)',yl:'Firm value ($M)',
+        series:[{pts:[[0,VU],[800,VU]],color:'var(--muted)',dash:'4 4',w:1.5,label:'V_U',lp:[0,VU],anchor:'start',dx:4,dy:16},{pts:[[0,VU],[800,VU+p.T*800]],color:'var(--gov)',label:'MM: V_U + T·D',lp:[800,VU+p.T*800],dy:16},...(a.done?[{pts:line(VL,0,800,120),color:'var(--accent)',w:3,label:'Actual V_L',lp:[Math.min(760,Ds+150),VL(Math.min(760,Ds+150))],anchor:'start',dx:8,dy:4}]:[])],
+        vlines:[{x:D,color:'var(--ink)',label:a.done?'Your pick':'',dx:a.done&&D>Ds?6:-6,anchor:a.done&&D>Ds?'start':'end'}],
+        dots:a.done?[{x:Ds,y:VL(Ds),color:'var(--accent)',label:'Optimum',dy:-12,anchor:'middle',dx:0}]:[]});}
+    sl.oninput=upd;upd();
+    if(a.done){const fb=w.querySelector('.fb');fb.hidden=false;const off=Math.abs(a.pick-Ds)/Ds*100;fb.className='fb '+(off<=15?'good':'bad');
+      fb.innerHTML=`<b>Optimal debt ≈ ${usd(Ds,0)}M</b> (V<sub>L</sub> = ${usd(VL(Ds))}M). You picked ${usd(a.pick,0)}M (V<sub>L</sub> = ${usd(VL(a.pick))}M), ${fmt(off,0)}% off. At the optimum, the next dollar of debt adds exactly as much expected distress cost as tax shield. Past it, value falls even though the tax shield keeps growing.`;
+      w.querySelector('[data-new]').onclick=()=>{PR[id]={practice:true,par:gen(),cur:100};paint();};}
+    else w.querySelector('[data-lock]').onclick=()=>{const D=+sl.value;a.done=true;a.pick=D;const off=Math.abs(D-Ds)/Ds;if(!a.practice){a.pts=off<=.05?10:off<=.15?6:off<=.3?3:0;save();}paint();};
+  }
+  paint();return w;
+}
+function signalGame(){
+  const id='th_signal',w=el('<div class="q"></div>');
+  const rows=[['Managers believe the stock is <b>undervalued</b>','No'],['Managers believe the stock is <b>overvalued</b>','Yes'],['Managers believe the stock is <b>fairly valued</b>','No']];
+  function paint(){const r=rec(id);r.sel=r.sel||[null,null,null];
+    w.innerHTML=`<div class="q-head"><span class="q-tag">Signaling: sell new equity?</span>${ptsBadge({pts:10},r)}</div><div class="q-prompt">Managers know more than investors. For each case, would a manager acting for current shareholders sell <b>new stock</b>?</div>
+      <div>${rows.map((row,i)=>`<div class="sig-row"><span>${row[0]}</span><span class="yn">${['Yes','No'].map(v=>{let c='';if(r.done){if(v===row[1])c='is-right';else if(r.sel[i]===v)c='is-wrong';}return`<button type="button" data-i="${i}" data-v="${v}" aria-pressed="${r.sel[i]===v}" class="${c}" ${r.done?'disabled':''}>${v}</button>`;}).join('')}</span></div>`).join('')}</div>
+      ${r.done?'':`<div><button type="button" class="btn" data-chk ${r.sel.includes(null)?'disabled':''}>Check</button></div>`}<div class="fb" hidden></div>`;
+    w.querySelectorAll('.yn button').forEach(b=>b.onclick=()=>{r.sel[+b.dataset.i]=b.dataset.v;save();paint();});
+    const ck=w.querySelector('[data-chk]');if(ck)ck.onclick=()=>{const n=rows.filter((row,i)=>r.sel[i]===row[1]).length;r.done=true;r.pts=n===3?10:n*3;save();paint();};
+    if(r.done){const fb=w.querySelector('.fb');fb.hidden=false;const ok=rows.every((row,i)=>r.sel[i]===row[1]);fb.className='fb '+(ok?'good':'bad');fb.innerHTML=`<b>${ok?'Correct.':'Check the highlights.'}</b> Managers sell stock only when they think it is overvalued; if it’s a bargain, they won’t sell it cheap and issue debt instead. Investors know this, so a new stock issue is a <b>negative signal</b>.`;}
+  }
+  paint();return w;
+}
+function peckGame(){
+  const id='th_peck',w=el('<div class="q"></div>');
+  const ITEMS={int:'Internal funds (retained earnings)',debt:'Debt',eq:'New equity'},RIGHT=['int','debt','eq'];
+  function paint(){const r=rec(id);if(!r.order){r.order=shuffle(Object.keys(ITEMS));}r.seq=r.seq||[];
+    w.innerHTML=`<div class="q-head"><span class="q-tag">Pecking order</span>${ptsBadge({pts:10},r)}</div><div class="q-prompt">A firm needs money for a new project. Tap the financing sources in the order pecking order theory says it should use them.</div>
+      <div class="peck-seq">${r.seq.length?r.seq.map((k,i)=>`<span>${i+1}. ${ITEMS[k]}</span>`).join('<em>→</em>'):'<em>Your order appears here</em>'}</div>
+      ${r.done?'':`<div class="peck">${r.order.filter(k=>!r.seq.includes(k)).map(k=>`<button type="button" class="opt" data-k="${k}">${ITEMS[k]}</button>`).join('')}${r.seq.length?'<button type="button" class="link-btn" data-undo>Undo</button>':''}</div>`}<div class="fb" hidden></div>`;
+    w.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{r.seq.push(b.dataset.k);if(r.seq.length===3){r.done=true;r.correct=r.seq.join()===RIGHT.join();r.pts=r.correct?10:0;}save();paint();});
+    const u=w.querySelector('[data-undo]');if(u)u.onclick=()=>{r.seq.pop();save();paint();};
+    if(r.done){const fb=w.querySelector('.fb');fb.hidden=false;fb.className='fb '+(r.correct?'good':'bad');fb.innerHTML=`<b>${r.correct?'Correct.':'Not quite.'}</b> Internal funds → debt → equity. Internal cash has no flotation costs and sends no signal; debt has lower flotation costs than equity and no negative signal; equity comes last (or when it’s overvalued). Firms with many investment opportunities should keep <b>reserve borrowing capacity</b> so they never have to issue costly equity.`;}
+  }
+  paint();return w;
+}
+function renderTheories(main){
+  main.append(missionHead('theories','MM tells you what happens in a frictionless world. Real firms face bankruptcy costs and information gaps. Which theory explains each real-world move?'));
+  main.append(terms([['Trade-off theory','Optimal debt balances the tax shield against financial distress costs.'],['Signaling theory','Managers know more than investors, so issuing stock signals overvaluation.'],['Pecking order','Internal funds first, then debt, then new equity.'],['Market timing','Issue equity when the stock market is high; issue debt when it is low or rates are low.']]));
+  main.append(secHead('Round 1','The trade-off'));
+  const q1=el('<div class="qs"></div>');q1.append(tradeoffGame());q1.append(renderQ('th_wacc'));main.append(q1);
+  main.append(secHead('Round 2','Asymmetric information'));
+  const q2=el('<div class="qs"></div>');q2.append(signalGame());q2.append(renderQ('th_seo'));q2.append(peckGame());main.append(q2);
+  main.append(secHead('Round 3','Case files','5 pts each'));
+  const q3=el('<div class="qs"></div>');CASES.forEach((c,i)=>q3.append(renderQ('th_c'+(i+1))));main.append(q3);
+}
+
+/* ---------- MISSION 5: Advisor's Desk ---------- */
+const ADV=[
+  ['Southern Power & Light','A regulated electric utility: stable sales, low operating leverage, and a high effective tax rate.',0,'Stable sales and low operating leverage keep distress risk low, and a high tax rate makes the interest deduction valuable. Take advantage of the tax benefits.'],
+  ['Helix Therapeutics','Volatile revenue, a long pipeline of promising R&D projects, and specialized lab equipment that would fetch little in a sale.',1,'Volatile sales, many investment opportunities and special-purpose assets (poor collateral) all argue for keeping excess borrowing capacity.'],
+  ['Ironworks Steel','Very high fixed costs (high operating leverage) and demand that swings with the economy.',1,'High operating leverage plus volatile demand already means high business risk. Adding financial risk on top invites distress costs.'],
+  ['Main Street Grocers','Steady sales, owns general-purpose real estate that makes good collateral, and pays close to the full 21% federal rate.',0,'Stable sales, good collateral and a high effective tax rate: the classic profile for using more debt.'],
+  ['LoopHole Software','So many tax credits and loss carryforwards that its effective tax rate is close to zero.',1,'The statutory rate is 21%, but a firm with a near-zero effective rate gets little benefit from deducting interest, so the case for debt is weak.'],
+];
+ADV.forEach((a,i)=>addQ('advisor','ad_'+(i+1),{tag:'Client '+(i+1)+': '+a[0],prompt:a[1]+' What do you advise?',opts:['Use more debt and capture the tax benefits','Keep reserve borrowing capacity'],ans:a[2],explain:a[3]}));
+addQ('advisor','ad_6',{tag:'Client 6: inside information',prompt:'The CEO knows next year’s results will beat what the market expects. The firm needs $50M for a new plant and has no spare cash. What should it issue?',opts:['New common stock','Debt','Either; it makes no difference','Preferred stock to avoid any signal'],ans:1,
+  explain:'If managers believe prospects are better than the market perceives, issuing equity would sell undervalued shares and send a negative signal. Debt avoids both.'});
+addQ('advisor','ad_7',{tag:'Before you sign off',prompt:'The manager’s checklist ends with one more item to consider before any capital structure change. Which?',opts:['How lenders and rating agencies will view the change','What competitors’ CEOs are paid','Whether the stock split ratio should change','The firm’s dividend payout history'],ans:0,
+  explain:'Always consider the impact of capital structure choices on lenders’ and rating agencies’ attitudes. A downgrade raises r<sub>d</sub> and can restrict future borrowing.'});
+function renderAdvisor(main){
+  main.append(missionHead('advisor','Five clients walk in. Use the checklist from lecture to tell each one whether to lean into debt or hold back.'));
+  main.append(secHead('Clients','Give your advice'));
+  const qs=el('<div class="qs"></div>');['ad_1','ad_2','ad_3','ad_4','ad_5','ad_6','ad_7'].forEach(i=>qs.append(renderQ(i)));main.append(qs);
+}
+
+/* ---------- MISSION 6: Optimal Structure ---------- */
+const WD=[0,.2,.3,.4,.5];
+function calcRows(p){return WD.map((wd,i)=>{const ws=1-wd,b=p.bU*(1+(1-p.T/100)*wd/ws),rs=p.rRF+b*p.RPM,rd=p.rd[i],wacc=wd*(1-p.T/100)*rd+ws*rs,vop=p.FCF/(wacc/100),D=wd*vop,S=ws*vop,n=p.n*ws,P=vop/p.n;return{wd,ws,rd,b,rs,wacc,vop,D,S,n,P};});}
+const LECT={bU:1,rRF:6,RPM:6,T:25,FCF:90,n:10,rd:[0,8,8.5,10,12]};
+const LR=calcRows(LECT);
+addQ('optimal','op_beta',{type:'num',tag:'Step 1 · Hamada',tol:0.006,dp:2,prompt:()=>'Find the levered beta at <b>w<sub>d</sub> = 30%</b>.',ans:()=>LR[2].b,
+  sol:()=>`b = 1.0 × [1 + (1 − 0.25)(0.30 / 0.70)] = <b>1.32</b>. More debt, riskier equity, higher beta.`});
+addQ('optimal','op_rs',{type:'num',tag:'Step 2 · CAPM',suf:'%',kind:'pct',tol:0.05,prompt:()=>'Find the cost of equity r<sub>s</sub> at w<sub>d</sub> = 30%.',ans:()=>LR[2].rs,
+  sol:()=>`r<sub>s</sub> = 6% + 1.3214 × 6% = <b>13.93%</b>.`});
+addQ('optimal','op_wacc',{type:'num',tag:'Step 3 · WACC',suf:'%',kind:'pct',tol:0.04,prompt:()=>'Find WACC at w<sub>d</sub> = 30% (r<sub>d</sub> = 8.5%).',ans:()=>LR[2].wacc,
+  sol:()=>`WACC = 0.30 × (1 − 0.25) × 8.5% + 0.70 × 13.93% = 1.91% + 9.75% = <b>11.66%</b>.`});
+addQ('optimal','op_vop',{type:'num',tag:'Step 4 · Value',pre:'$',suf:'million',sufText:'million',tol:1.2,prompt:()=>'Find the value of operations V<sub>op</sub> at w<sub>d</sub> = 30% (FCF = $90M, g = 0).',ans:()=>LR[2].vop,
+  sol:()=>`V<sub>op</sub> = $90 × (1 + 0) / (0.1166 − 0) = <b>$771.70 million</b>. Debt = 0.30 × $771.70 = $231.51M; equity = $540.19M.`});
+addQ('optimal','op_pick',{tag:'Decision',prompt:'Look at the full table. Which debt ratio is optimal?',opts:['0%','20%','30%','40%','50%'],ans:2,chips:true,
+  explain:'w<sub>d</sub> = 30% gives the lowest WACC (11.66%), the highest value of operations ($771.70M) and the highest stock price ($77.17). All three point to the same answer.'});
+addQ('optimal','op_flat',{tag:'Judgment',prompt:'At w<sub>d</sub> = 40%, WACC is 12.00% and the price is $75.00, versus 11.66% and $77.17 at the optimum. What’s the practical takeaway?',opts:['40% would destroy most of the firm’s value','The optimal range is fairly flat, so being near 30% matters more than hitting it exactly','The firm should immediately move to 50% debt','The calculations must be wrong because the curve should be sharp'],ans:1,
+  explain:'Near the optimum, value changes slowly with leverage. Managers can stay within a range and use judgment (ratings, flexibility, signaling) without giving up much value.'});
+GROUPS.cl=()=>{for(let k=0;k<400;k++){const base=pick([4,4.5,5,5.5]);const p={bU:pick([0.8,0.9,1.1,1.2,1.3]),rRF:base,RPM:pick([5,5.5,6,6.5]),T:pick([21,25]),FCF:pick([60,75,90,120]),n:pick([5,8,10,12])};
+  const r20=+(base+pick([1.5,2,2.5])).toFixed(2);p.rd=[0,r20,+(r20+pick([0.5,0.75,1])).toFixed(2),+(r20+pick([1.75,2,2.5,3])).toFixed(2),+(r20+pick([3.5,4,5])).toFixed(2)];
+  const rows=calcRows(p);let im=0;rows.forEach((r,i)=>{if(r.wacc<rows[im].wacc)im=i;});
+  const sorted=rows.map(r=>r.wacc).sort((a,b)=>a-b);
+  if(im>=1&&im<=3&&sorted[1]-sorted[0]>0.02){p.ask=pick([1,2,3]);return p;}}
+  return Object.assign({},LECT,{ask:2});};
+const CL=()=>grp('cl').par, CLR=()=>calcRows(CL());
+addQ('optimal','cl_beta',{type:'num',group:'cl',tag:'New client · beta',tol:0.006,prompt:p=>`At <b>w<sub>d</sub> = ${WD[p.ask]*100}%</b>, what is the levered beta?`,ans:p=>calcRows(p)[p.ask].b,
+  sol:p=>{const r=calcRows(p)[p.ask];return`b = ${p.bU} × [1 + (1 − ${p.T/100})(${fmt(r.wd,2)} / ${fmt(r.ws,2)})] = <b>${fmt(r.b,4)}</b>.`;}});
+addQ('optimal','cl_rs',{type:'num',group:'cl',tag:'New client · r<sub>s</sub>',suf:'%',kind:'pct',tol:0.05,prompt:p=>`What is r<sub>s</sub> at w<sub>d</sub> = ${WD[p.ask]*100}%?`,ans:p=>calcRows(p)[p.ask].rs,
+  sol:p=>{const r=calcRows(p)[p.ask];return`r<sub>s</sub> = ${p.rRF}% + ${fmt(r.b,4)} × ${p.RPM}% = <b>${pct(r.rs)}</b>.`;}});
+addQ('optimal','cl_wacc',{type:'num',group:'cl',tag:'New client · WACC',suf:'%',kind:'pct',tol:0.04,prompt:p=>`What is WACC at w<sub>d</sub> = ${WD[p.ask]*100}%?`,ans:p=>calcRows(p)[p.ask].wacc,
+  sol:p=>{const r=calcRows(p)[p.ask];return`WACC = ${fmt(r.wd,2)} × (1 − ${p.T/100}) × ${p.rd[p.ask]}% + ${fmt(r.ws,2)} × ${pct(r.rs)} = <b>${pct(r.wacc)}</b>.`;}});
+addQ('optimal','cl_pick',{group:'cl',tag:'New client · decision',chips:true,prompt:()=>'Beta and r<sub>s</sub> are now filled in for every column. Work out WACC where you need it: which debt ratio is optimal?',optsF:()=>WD.map(w=>w*100+'%'),
+  ansF:p=>{const rows=calcRows(p);let im=0;rows.forEach((r,i)=>{if(r.wacc<rows[im].wacc)im=i;});return im;},
+  explain:p=>{const rows=calcRows(p);let im=0;rows.forEach((r,i)=>{if(r.wacc<rows[im].wacc)im=i;});return`WACC by column: ${rows.map(r=>`${r.wd*100}% → ${pct(r.wacc)}`).join(', ')}. The minimum at ${rows[im].wd*100}% also maximizes V<sub>op</sub> (${usd(rows[im].vop)}M) and the stock price (${usd(rows[im].P)}).`;}});
+
+function optTable(rows,vis,hlCol,best){
+  const R=[['r<sub>d</sub>','rd',v=>v?pct(v):'—'],['w<sub>s</sub>','ws',v=>pct(v*100,0)],['Beta b','b',v=>fmt(v,3)],['r<sub>s</sub>','rs',v=>pct(v)],['WACC','wacc',v=>pct(v)],['V<sub>op</sub>','vop',v=>usd(v)],['Debt D','D',v=>usd(v)],['Equity S','S',v=>usd(v)],['Shares n','n',v=>fmt(v,1)],['Price P','P',v=>usd(v)]];
+  return`<div class="tbl-wrap"><table class="tbl"><thead><tr><th>w<sub>d</sub></th>${rows.map((r,i)=>`<th class="${i===hlCol?'hl':''}">${r.wd*100}%</th>`).join('')}</tr></thead><tbody>${R.map(([lab,k,f])=>`<tr class="${k==='wacc'||k==='P'?'key':''}"><td>${lab}</td>${rows.map((r,i)=>{const show=vis(i,k);const cls=[i===hlCol?'hl':'',show&&best===i&&(k==='wacc'||k==='vop'||k==='P')?'best':'',show?'':'unk'].join(' ');return`<td class="${cls}">${show?f(r[k]):'?'}</td>`;}).join('')}</tr>`).join('')}</tbody></table></div>`;
+}
+function renderOptimal(main){
+  main.append(missionHead('optimal','The lecture’s worked example, with one column left blank for you. Then a new client with fresh numbers.'));
+  main.append(el(`<div class="note" style="margin-top:22px"><b>Firm data:</b> b<sub>U</sub> = 1.0 · r<sub>RF</sub> = 6% · RP<sub>M</sub> = 6% · T = 25% · FCF = $90M · g = 0 · n = 10M shares · no debt today (V<sub>op</sub> = $750M, P = $75). Formulas are in the formula sheet.</div>`));
+  main.append(secHead('Round 1','Fill in the 30% column'));
+  const t1=el('<div></div>');main.append(t1);
+  const all4=()=>['op_beta','op_rs','op_wacc','op_vop'].every(resolved);
+  const ch1=el(`<div class="charts" hidden><figure><figcaption>WACC by debt ratio</figcaption><svg class="chart" id="op-c1"></svg></figure><figure><figcaption>Stock price by debt ratio</figcaption><svg class="chart" id="op-c2"></svg></figure></div>`);
+  function upd1(){
+    t1.innerHTML=optTable(LR,(i,k)=>{if(k==='rd'||k==='ws')return true;if(i<2)return true;if(i===2){if(k==='b')return resolved('op_beta');if(k==='rs')return resolved('op_rs');if(k==='wacc')return resolved('op_wacc');return resolved('op_vop');}return all4();},2,resolved('op_pick')?2:-1);
+    ch1.hidden=!all4();
+    if(all4()){const pts=k=>LR.map(r=>[r.wd*100,r[k]]);
+      chart($('#op-c1',ch1),{w:480,h:250,x0:0,x1:50,y0:11.4,y1:13,xt:[0,10,20,30,40,50],yt:[11.5,12,12.5,13],fx:v=>v+'%',fy:v=>fmt(v,1)+'%',xl:'w_d',series:[{pts:pts('wacc'),color:'var(--accent)'}],dots:LR.map((r,i)=>({x:r.wd*100,y:r.wacc,color:i===2?'var(--good)':'var(--accent)',r:i===2?6:4,label:i===2?'Min 11.66%':'',dy:18,anchor:'middle',dx:0}))});
+      chart($('#op-c2',ch1),{w:480,h:250,x0:0,x1:50,y0:70,y1:78,xt:[0,10,20,30,40,50],yt:[70,72,74,76,78],fx:v=>v+'%',fy:v=>'$'+v,xl:'w_d',series:[{pts:pts('P'),color:'var(--debt)'}],dots:LR.map((r,i)=>({x:r.wd*100,y:r.P,color:i===2?'var(--good)':'var(--debt)',r:i===2?6:4,label:i===2?'Max $77.17':'',dy:-12,anchor:'middle',dx:0}))});}
+  }
+  ['op_beta','op_rs','op_wacc','op_vop','op_pick'].forEach(i=>Q[i].onChange=upd1);
+  const qs1=el('<div class="qs"></div>');['op_beta','op_rs','op_wacc','op_vop'].forEach(i=>qs1.append(renderQ(i)));main.append(qs1);
+  main.append(ch1);
+  const qs1b=el('<div class="qs"></div>');qs1b.append(renderQ('op_pick'));qs1b.append(renderQ('op_flat'));main.append(qs1b);
+  upd1();
+
+  main.append(secHead('Round 2','A new client walks in'));
+  const p=CL();
+  main.append(el(`<div class="note"><b>Client data:</b> b<sub>U</sub> = ${p.bU} · r<sub>RF</sub> = ${p.rRF}% · RP<sub>M</sub> = ${p.RPM}% · T = ${p.T}% · FCF = $${p.FCF}M · g = 0 · n = ${p.n}M shares, no debt today. The banks quote r<sub>d</sub> for each debt ratio in the table. <button type="button" class="link-btn" id="cl-new">New client</button></div>`));
+  const t2=el('<div></div>');main.append(t2);
+  function upd2(){const rows=CLR(),a=p.ask;let im=0;rows.forEach((r,i)=>{if(r.wacc<rows[im].wacc)im=i;});
+    t2.innerHTML=optTable(rows,(i,k)=>{if(k==='rd'||k==='ws')return true;if(i===0&&(k==='b'||k==='rs'))return true;
+      if(resolved('cl_pick'))return true;
+      if(k==='b')return i===a?resolved('cl_beta'):resolved('cl_wacc');
+      if(k==='rs')return i===a?resolved('cl_rs'):resolved('cl_wacc');
+      if(k==='wacc')return i===a&&resolved('cl_wacc')||(i===0&&resolved('cl_wacc'));
+      return false;},a,resolved('cl_pick')?im:-1);}
+  ['cl_beta','cl_rs','cl_wacc','cl_pick'].forEach(i=>Q[i].onChange=upd2);
+  const qs2=el('<div class="qs"></div>');['cl_beta','cl_rs','cl_wacc','cl_pick'].forEach(i=>qs2.append(renderQ(i)));main.append(qs2);
+  upd2();
+  $('#cl-new').onclick=()=>regroup('cl');
+}
+
+/* ---------- MISSION 7: Recap ---------- */
+GROUPS.rc=first=>{
+  if(first){const i=pick([2,3,4]);const r=LR[i];return{lecture:true,wd:r.wd,n0:10,VopOld:750,Dold:0,VopNew:r.vop,Dnew:r.D};}
+  for(let k=0;k<100;k++){const n0=pick([4,5,8,12,20]),VopOld=pick([400,600,900,1200]),Dold=VopOld*pick([0,0,.1,.15]),wd=pick([.3,.35,.4,.45]),VopNew=VopOld*(1+pick([.02,.03,.04,.05]));const Dnew=wd*VopNew;if(Dnew>Dold+20)return{lecture:false,wd,n0,VopOld,Dold,VopNew,Dnew};}
+};
+const RC=()=>grp('rc').par;
+const rcCalc=p=>{const P0=(p.VopOld-p.Dold)/p.n0,Pp=(p.VopNew-p.Dold)/p.n0,cash=p.Dnew-p.Dold,nP=p.n0-cash/Pp,S=p.VopNew-p.Dnew;return{P0,Pp,cash,nP,S,W:S+cash};};
+addQ('recap','rc_p',{type:'num',group:'rc',tag:'Stage 2 · price',pre:'$',tol:0.06,prompt:p=>`The firm issues the new debt and parks the cash in short-term investments. It hasn’t repurchased anything yet. What is the stock price now?`,ans:p=>rcCalc(p).Pp,
+  sol:p=>{const c=rcCalc(p);return`P<sub>Post</sub> = (V<sub>opNew</sub> − D<sub>Old</sub>) / n<sub>Prior</sub> = (${usd(p.VopNew)} − ${usd(p.Dold)}) / ${p.n0} = <b>${usd(c.Pp)}</b>, up from ${usd(c.P0)}. The gain comes from the lower WACC, and current shareholders capture all of it.`;}});
+addQ('recap','rc_mc',{tag:'Stage 3 · the repurchase',prompt:'Now the firm uses the cash to buy back shares. What does the repurchase itself do to the stock price?',opts:['Raises it, because fewer shares are outstanding','Lowers it, because the firm has less cash','Nothing; the price stays the same','It depends on how many shares are bought'],ans:2,
+  explain:'If investors expected the repurchase to raise the price, they would buy the day before, bidding it up in advance; if they expected a drop, they would sell short. So the repurchase itself has no effect on price. Only the capital structure change (and any signal from the announcement) moves it.'});
+addQ('recap','rc_n',{type:'num',group:'rc',tag:'Stage 3 · shares',suf:'million shares',sufText:'million shares',tol:0.02,prompt:()=>'All of the new debt proceeds go to repurchasing stock at the post-announcement price. How many shares remain?',ans:p=>rcCalc(p).nP,
+  sol:p=>{const c=rcCalc(p);return`n<sub>Post</sub> = n<sub>Prior</sub> − (D<sub>New</sub> − D<sub>Old</sub>) / P = ${p.n0} − ${usd(c.cash)} / ${usd(c.Pp)} = <b>${fmt(c.nP,2)} million</b>.`;}});
+addQ('recap','rc_s',{type:'num',group:'rc',tag:'Stage 3 · equity',pre:'$',suf:'million',sufText:'million',tol:0.6,prompt:()=>'What is the market value of equity S after the repurchase?',ans:p=>rcCalc(p).S,
+  sol:p=>{const c=rcCalc(p);return`S = V<sub>op</sub> − D<sub>New</sub> = (1 − w<sub>d</sub>) × V<sub>opNew</sub> = ${fmt(1-p.wd,2)} × ${usd(p.VopNew)} = <b>${usd(c.S)} million</b>. Check: ${fmt(c.nP,2)}M shares × ${usd(c.Pp)} = ${usd(c.nP*c.Pp)}M.`;}});
+addQ('recap','rc_w',{type:'num',group:'rc',tag:'Stage 3 · wealth',pre:'$',suf:'million',sufText:'million',tol:0.6,prompt:()=>'Equity fell, but what is total shareholder wealth after the repurchase (equity S plus the cash paid to shareholders who sold)?',ans:p=>rcCalc(p).W,
+  sol:p=>{const c=rcCalc(p);return`Wealth = S + cash = ${usd(c.S)} + ${usd(c.cash)} = <b>${usd(c.W)} million</b>, the same as right after the debt was issued. Shareholders now hold directly the cash the firm used to hold.`;}});
+addQ('recap','rc_type',{tag:'Vocabulary',prompt:'A firm with too much debt issues new stock and uses the proceeds to retire bonds. What is this called?',opts:['A leveraged recapitalization','A deleveraged recapitalization','A seasoned debt offering','A stock split'],ans:1,
+  explain:'Leveraged recap: issue debt, then buy back shares or pay a dividend. Deleveraged recap: issue stock to buy back debt.'});
+function renderRecap(main){
+  main.append(missionHead('recap','You found the optimal debt ratio. Now get there: issue debt, then buy back stock. Predict each number before the machine shows it.'));
+  const p=RC(),c=rcCalc(p);
+  main.append(el(`<div class="note"><b>${p.lecture?'Lecture firm, new target':'New firm'}:</b> today V<sub>op</sub> = ${usd(p.VopOld)}M, debt D<sub>Old</sub> = ${usd(p.Dold)}M, ${p.n0}M shares at ${usd(c.P0)}. The board targets <b>w<sub>d</sub> = ${fmt(p.wd*100,0)}%</b>. At that mix WACC falls and V<sub>op</sub> rises to <b>${usd(p.VopNew)}M</b>, so new debt D<sub>New</sub> = w<sub>d</sub> × V<sub>op</sub> = <b>${usd(p.Dnew)}M</b>. <button type="button" class="link-btn" id="rc-new">New firm</button></div>`));
+  const box=el(`<div class="lab"><div class="tbl-wrap"><table class="tbl" id="rc-t"></table></div><div class="rbars" id="rc-b"></div><ul class="legend"><li><i style="background:var(--debt)"></i>Debt</li><li><i style="background:var(--equity)"></i>Equity S</li><li><i style="background:var(--gov)"></i>Cash paid to shareholders</li></ul></div>`);
+  main.append(box);
+  function upd(){const s2=resolved('rc_p'),s3=resolved('rc_n')&&resolved('rc_s'),w3=resolved('rc_w');const q='<span class="unk">?</span>';
+    const col=[{Vop:p.VopOld,st:0,D:p.Dold,S:p.VopOld-p.Dold,n:p.n0,P:c.P0,W:p.VopOld-p.Dold},{Vop:p.VopNew,st:c.cash,D:p.Dnew,S:p.VopNew-p.Dold,n:p.n0,P:c.Pp,W:p.VopNew-p.Dold},{Vop:p.VopNew,st:0,D:p.Dnew,S:c.S,n:c.nP,P:c.Pp,W:c.W}];
+    const show=(i,k)=>i===0||(i===1&&s2)||(i===2&&(k==='W'?w3:s3));
+    const rows=[['V<sub>op</sub>','Vop',v=>usd(v)],['+ ST investments','st',v=>usd(v)],['= V<sub>Total</sub>','tot',v=>usd(v)],['− Debt','D',v=>usd(v)],['= Equity S','S',v=>usd(v)],['÷ Shares n (M)','n',v=>fmt(v,2)],['= Price P','P',v=>usd(v)],['Shareholder wealth (S + cash)','W',v=>usd(v)]];
+    col.forEach(x=>x.tot=x.Vop+x.st);
+    $('#rc-t',box).innerHTML=`<thead><tr><th></th><th>1 · Before debt</th><th>2 · After debt, before repurchase</th><th>3 · After repurchase</th></tr></thead><tbody>${rows.map(([l,k,f])=>`<tr class="${k==='P'||k==='W'?'key':''}"><td>${l}</td>${col.map((x,i)=>`<td>${show(i,k)?f(x[k]):q}</td>`).join('')}</tr>`).join('')}</tbody>`;
+    const mx=Math.max(...col.map(x=>x.tot));
+    $('#rc-b',box).innerHTML=col.map((x,i)=>{const lab=['1 · Before','2 · Debt issued','3 · Repurchased'][i];if(!show(i,'S'))return`<div class="rbar"><span>${lab}</span><div class="rbar-track"><div class="seg-q" style="width:${100*x.tot/mx}%">locked</div></div></div>`;
+      const cash=i===2?c.cash:0;return`<div class="rbar"><span>${lab}</span><div class="rbar-track">${x.D>0?`<div class="seg-d" style="width:${100*x.D/mx}%">D ${fmt(x.D,0)}</div>`:''}<div class="seg-s" style="width:${100*x.S/mx}%">S ${fmt(x.S,0)}</div>${cash?`<div class="seg-c" style="width:${100*cash/mx}%">cash ${fmt(cash,0)}</div>`:''}</div></div>`;}).join('');
+  }
+  ['rc_p','rc_n','rc_s','rc_w'].forEach(i=>Q[i].onChange=upd);upd();
+  main.append(secHead('Run the machine','Predict each stage'));
+  const qs=el('<div class="qs"></div>');['rc_p','rc_mc','rc_n','rc_s','rc_w','rc_type'].forEach(i=>qs.append(renderQ(i)));main.append(qs);
+
+  $('#rc-new').onclick=()=>regroup('rc');
+}
+
+/* ---------- shell ---------- */
+const ALL_MISSIONS=[
+  {id:'risk',n:1,part:'Part 1',title:'Risk Radar',c:'Business vs. financial risk, operating leverage, breakeven',r:renderRisk},
+  {id:'stress',n:2,part:'Part 1',title:'Stress Test',c:'Firm U vs. Firm L, ROIC vs. ROE, when debt pays',r:renderStress},
+  {id:'mm',n:3,part:'Part 1',title:'Slice the Pizza',c:'MM Propositions I & II, corporate taxes, Miller',r:renderMM},
+  {id:'theories',n:4,part:'Part 2',title:'Theory Detective',c:'Trade-off, signaling, pecking order, market timing',r:renderTheories},
+  {id:'advisor',n:5,part:'Part 2',title:'Advisor’s Desk',c:'The manager’s checklist for choosing debt',r:renderAdvisor},
+  {id:'optimal',n:6,part:'Part 2',title:'Optimal Structure Lab',c:'Hamada, CAPM, WACC and value of operations',r:renderOptimal},
+  {id:'recap',n:7,part:'Part 2',title:'Recap Machine',c:'A leveraged recapitalization, step by step',r:renderRecap},
+];
+const MISSIONS=ALL_MISSIONS.filter(m=>m.part==='Part '+PART).map((m,i)=>Object.assign({},m,{n:i+1}));
+const MB=Object.fromEntries(MISSIONS.map(m=>[m.id,m]));
+function missionHead(id,lede){const m=MB[id],s=missionScore(id);return el(`<header class="m-head"><a href="#hq" class="back">← All missions</a><div class="eyebrow">Mission ${m.n} of ${MISSIONS.length} · Lecture 10, ${m.part}</div><h1>${m.title}</h1><p class="lede">${lede}</p><div class="small mono">${s.got} / ${s.max} pts earned here</div></header>`);}
+function terms(items){return el(`<dl class="terms"><div class="terms-h eyebrow">Key terms</div>${items.map(([t,d])=>`<div class="term"><dt>${t}</dt><dd>${d}</dd></div>`).join('')}</dl>`);}
+function brief(items){return el(`<div class="brief" style="margin-top:22px">${items.map(([h,b])=>`<div><h3>${h}</h3><div>${b}</div></div>`).join('')}</div>`);}
+function secHead(eb,h,right){return el(`<div class="sec"><div class="sec-h"><span class="eyebrow" style="margin:0">${eb}</span><h2>${h}</h2>${right?`<span class="eyebrow">${right}</span>`:''}</div></div>`);}
+
+const HERO={
+ 1:{eb:'FIN 410 · Chapter 16, Part 1 · Capital Structure Decisions',h:'Your $100,000 food truck. <span>How do you pay for it?</span>',
+   lede:'That choice is the capital structure decision. Three missions take you through business versus financial risk, what debt does to ROE, and the Modigliani–Miller propositions with and without taxes.',
+   pick:'Pick your financing',start:'Equity',
+   opts:[['eq','100% equity','$100k of your savings',0,'<b>No interest bills, so no financial risk.</b> But you give up the interest tax shield, and every dollar of risk sits on your savings. Missions 1 and 3 show what that means.'],
+         ['half','50 / 50','$50k savings, $50k loan',50,'<b>Interest is tax-deductible, and your ROE rises</b> as long as the truck earns more than the after-tax cost of debt. A slow season hurts more, though. Mission 2 puts numbers on it.'],
+         ['debt','90% debt','$10k savings, $90k loan',90,'<b>A tiny equity check and a big tax shield.</b> MM with corporate taxes says more debt is always better. Part 2 asks what happens when one bad month means missed payments.']],
+   lab:f=>['Equity $'+(100-f)+'k',f?'Debt $'+f+'k':'']},
+ 2:{eb:'FIN 410 · Chapter 16, Part 2 · Capital Structure Decisions',h:'Debt saves taxes. <span>So how much is too much?</span>',
+   lede:'MM with corporate taxes says borrow as much as you can. Real firms don’t. Four missions cover the trade-off, signaling and pecking order theories, the manager’s checklist, finding the optimal debt ratio, and running the recap that gets you there.',
+   pick:'Pick a debt ratio for the lecture firm',start:'Equity 100%',
+   opts:[['eq','0% debt','WACC 12.00% · P $75.00',0,'<b>No tax shield at all.</b> WACC is just the 12% cost of equity, and the stock sits at $75.00. Value is being left on the table.'],
+         ['opt','30% debt','WACC 11.66% · P $77.17',30,'<b>The sweet spot.</b> Lowest WACC, highest value of operations ($771.70M) and highest price. Mission 3 shows how to find it; Mission 4 shows how to get there.'],
+         ['hi','50% debt','WACC 12.75% · P $70.59',50,'<b>Too far.</b> Lenders now charge 12% and equity holders demand 16.5%. The rising costs outweigh the tax shield, and the price falls to $70.59. Mission 1 explains why.']],
+   lab:f=>['Equity '+(100-f)+'%',f?'Debt '+f+'%':'']}
+};
+function renderHQ(main){
+  const t=totalScore(),H=HERO[PART];
+  const hero=el(`<section class="hero"><div class="stack"><div class="eyebrow">${H.eb}</div><h1>${H.h}</h1><p class="lede">${H.lede}</p></div>
+    <div class="fund"><div class="eyebrow">${H.pick}</div><div class="fund-opts">${H.opts.map(o=>`<button type="button" class="fund-opt" data-f="${o[0]}"><b>${o[1]}</b><span>${o[2]}</span></button>`).join('')}</div>
+      <div class="cap-bar"><div class="cap-eq" id="cb-e">${H.start}</div><div class="cap-dt" id="cb-d"></div></div>
+      <p class="fund-say" id="fund-say">Tap an option to see what this chapter says about it.</p></div></section>`);
+  main.append(hero);
+  const setF=k=>{const o=H.opts.find(x=>x[0]===k),dd=o[3],L=H.lab(dd);$('#cb-e').style.flexGrow=100-dd;$('#cb-d').style.flexGrow=dd;$('#cb-e').textContent=L[0];$('#cb-d').textContent=L[1];$('#fund-say').innerHTML=o[4];hero.querySelectorAll('.fund-opt').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.f===k)));};
+  $('#cb-e').style.flexGrow=100;$('#cb-d').style.flexGrow=0;
+  hero.querySelectorAll('.fund-opt').forEach(x=>x.onclick=()=>setF(x.dataset.f));
+  main.append(secHead('Missions','Work in order or jump around',`${t.got} / ${t.max} pts`));
+  const g=el('<div class="mgrid" style="margin-top:16px"></div>');
+  MISSIONS.forEach(m=>{const s=missionScore(m.id);g.append(el(`<a class="mcard" href="#${m.id}"><span class="mn">${m.n}</span><h3>${m.title}</h3><p>${m.c}</p><div class="meter"><i style="width:${100*s.got/s.max}%"></i></div><div class="mmeta"><span>${m.part}</span><span>${s.got} / ${s.max} pts</span></div></a>`));});
+  g.append(el(`<a class="mcard final" href="#report"><span class="mn">★</span><h3>Final report</h3><p>Your rank, mission by mission, and what to review before the exam.</p><div class="mmeta"><span>${Math.round(100*t.got/t.max)}% complete</span><span>→</span></div></a>`));
+  main.append(g);
+  if(false)main.append(el(`<p class="small" style="margin-top:20px">Your progress is saved in this browser only. Number problems can be re-run with new numbers, so you can keep practicing after you’ve earned the points.${OTHER_URL?` Looking for the ${PART===1?'second':'first'} half of the chapter? <a href="${OTHER_URL}" target="_blank" rel="noopener">Open Leverage Lab Part ${PART===1?2:1}</a>.`:''}</p>`));
+}
+const RANKS=[[90,'Modigliani–Miller Fellow','You could teach this chapter.'],[75,'Chief Financial Officer','The board trusts you with the balance sheet.'],[60,'Treasurer','Solid. Tighten the weak spots below.'],[40,'Financial Analyst','You have the ideas; drill the calculations.'],[0,'Summer Intern','Plenty of points still on the table.']];
+function renderReport(main){
+  const t=totalScore(),p=t.max?100*t.got/t.max:0,rk=RANKS.find(r=>p>=r[0]);
+  main.append(el(`<header class="m-head"><a href="#hq" class="back">← All missions</a><div class="eyebrow">Final report</div><h1>${rk[1]}</h1><p class="lede">${rk[2]}</p></header>`));
+  main.append(el(`<div class="rank" style="margin-top:22px"><div class="rank-big">${Math.round(p)}%</div><div class="stack"><div class="mono">${t.got} of ${t.max} points</div><div class="meter" style="width:100%;height:10px"><i style="width:${p}%"></i></div><div class="small">Ranks: Summer Intern · Financial Analyst (40%) · Treasurer (60%) · CFO (75%) · Modigliani–Miller Fellow (90%)</div></div></div>`));
+  main.append(secHead('Breakdown','Mission by mission'));
+  main.append(el(`<div class="tbl-wrap" style="margin-top:14px"><table class="tbl"><thead><tr><th>Mission</th><th>Points</th><th>Score</th><th>Status</th></tr></thead><tbody>${MISSIONS.map(m=>{const s=missionScore(m.id),q=s.max?100*s.got/s.max:0;const unanswered=Object.entries(REG).some(([id,r])=>r.m===m.id&&!(ST.a[id]&&ST.a[id].done));return`<tr><td><a href="#${m.id}">${m.n}. ${m.title}</a></td><td>${s.got} / ${s.max}</td><td>${pct(q,0)}</td><td style="font-family:var(--f-body)">${unanswered?'Unfinished':q>=70?'Solid':'Review this'}</td></tr>`;}).join('')}</tbody></table></div>`));
+  if(OTHER_URL&&PART!==1)main.append(el(`<p class="note" style="margin-top:20px"><b>${PART===1?'Next:':'Missed Part 1?'}</b> ${PART===1?'Part 2 covers the trade-off, signaling and pecking order theories, the optimal debt ratio, and recapitalizations.':'Part 1 covers business vs. financial risk, Firm U vs. Firm L, and the MM propositions.'} <a href="${OTHER_URL}" target="_blank" rel="noopener">Open Leverage Lab Part ${PART===1?2:1}</a></p>`));
+  const box=el(`<div class="sec"><div class="sec-h"><h2>Start over</h2></div><p class="small">Clears your points and answers in this browser.</p><div class="num-row"><button type="button" class="btn ghost" id="rs1">Reset all progress</button><span id="rs2" hidden><button type="button" class="btn accent" id="rs-yes">Yes, erase everything</button> <button type="button" class="link-btn" id="rs-no">Cancel</button></span></div></div>`);
+  main.append(box);
+  $('#rs1').onclick=()=>{$('#rs2').hidden=false;$('#rs1').hidden=true;};
+  $('#rs-no').onclick=()=>{$('#rs2').hidden=true;$('#rs1').hidden=false;};
+  $('#rs-yes').onclick=()=>{ST={a:{}};for(const k in PR)delete PR[k];save();location.hash='#hq';};
+}
+function footNav(id){const i=MISSIONS.findIndex(m=>m.id===id),pv=MISSIONS[i-1],nx=MISSIONS[i+1];return el(`<nav class="foot-nav">${pv?`<a class="btn ghost" href="#${pv.id}">← ${pv.n}. ${pv.title}</a>`:'<a class="btn ghost" href="#hq">← All missions</a>'}${nx?`<a class="btn" href="#${nx.id}">${nx.n}. ${nx.title} →</a>`:'<a class="btn accent" href="#report">See your final report →</a>'}</nav>`);}
+function rerender(){const y=window.scrollY;route();window.scrollTo(0,y);}
+function route(){
+  const k=(location.hash||'#hq').slice(1),main=$('#main');main.innerHTML='';
+  if(MB[k]){MB[k].r(main);main.append(footNav(k));document.title='Leverage Lab Part '+PART;}
+  else if(k==='report')renderReport(main);
+  else renderHQ(main);
+  updateScore();
+  requestAnimationFrame(redrawCharts);
+}
+function redrawCharts(){document.querySelectorAll('svg.chart').forEach(sv=>{if(sv._c&&!sv.hidden)chart(sv,sv._c);});}
+let RZ;window.addEventListener('resize',()=>{clearTimeout(RZ);RZ=setTimeout(redrawCharts,150);});
+window.addEventListener('hashchange',()=>{route();window.scrollTo(0,0);});
+$('#open-sheet').onclick=()=>{$('#sheet').hidden=false;$('#close-sheet').focus();};
+$('#close-sheet').onclick=()=>{$('#sheet').hidden=true;};
+$('#sheet').onclick=e=>{if(e.target.id==='sheet')$('#sheet').hidden=true;};
+document.addEventListener('keydown',e=>{if(e.key==='Escape')$('#sheet').hidden=true;});
+document.querySelectorAll('#sheet [data-part]').forEach(x=>{x.hidden=x.dataset.part!==String(PART);});
+route();
+</script>
+</body></html>
