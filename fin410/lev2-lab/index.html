@@ -782,7 +782,7 @@ function renderRecap(main){
   main.append(missionHead('recap','Follow the recap from lecture one stage at a time: before debt, after issuing debt, after the repurchase.'));
   main.append(terms([['Leveraged recap','Issue debt, then use the cash to buy back shares (or pay a dividend).'],['Deleveraged recap','Issue stock and use the cash to buy back debt.']]));
   main.append(secHead('Lab','Run the recap'));
-  const lab=el(`<div class="lab"><div class="lab-controls"><div class="seg" id="rc-w">${[1,2,3,4].map(i=>`<button type="button" data-i="${i}">w<sub>d</sub> = ${WD[i]*100}%</button>`).join('')}</div>
+  const lab=el(`<div class="lab"><div class="lab-controls"><div class="seg" id="rc-w"><button type="button" data-i="1">Slide example: w<sub>d</sub> = 20%</button><button type="button" data-i="2">Extension: optimum, w<sub>d</sub> = 30%</button></div>
     <div class="seg" id="rc-s">${['1 · Before debt','2 · Issue debt','3 · Repurchase'].map((t,i)=>`<button type="button" data-s="${i}">${t}</button>`).join('')}</div>
     <div class="num-row"><button type="button" class="btn ghost" id="rc-back">Back</button><button type="button" class="btn accent" id="rc-next">Next stage</button></div></div>
     <div class="stage-note" id="rc-note"></div><div class="tbl-wrap"><table class="tbl" id="rc-t"></table></div><div class="rbars" id="rc-b"></div>
