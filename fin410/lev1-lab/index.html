@@ -231,6 +231,17 @@ table.tbl{border-collapse:collapse;width:100%;font-size:.9rem;font-variant-numer
 .seg-c{background:var(--gov);color:var(--surface)}
 .seg-q{background:repeating-linear-gradient(45deg,var(--surface-2),var(--surface-2) 6px,var(--line) 6px,var(--line) 12px);color:var(--muted)}
 
+.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.step{display:grid;grid-template-columns:2.2em minmax(0,1fr);gap:10px;align-items:start;background:var(--bg);border-radius:8px;padding:10px 12px}
+.step .k{font-family:var(--f-mono);font-weight:600;color:var(--accent);font-size:1.05rem}
+.step h4{margin:0 0 3px;font-size:.9rem;font-family:var(--f-body)}
+.step .fx{font-family:var(--f-mono);font-size:.9rem;overflow-x:auto;white-space:nowrap;padding-bottom:2px}
+.step.locked{opacity:.55}
+.step.locked .fx{color:var(--muted)}
+.step.new{animation:deal .3s ease-out}
+.stage-note{background:var(--bg);border-radius:8px;padding:12px 14px;font-size:.95rem;display:flex;flex-direction:column;gap:8px}
+.stage-note .fblock{white-space:normal}
+.warn{color:var(--bad);font-weight:600}
 .foot-nav{display:flex;justify-content:space-between;gap:12px;margin-top:44px;flex-wrap:wrap}
 .foot-nav a{text-decoration:none}
 .small{font-size:.84rem;color:var(--muted)}
@@ -435,18 +446,19 @@ addQ('risk','risk_be',{type:'num',tag:'Operating breakeven',pre:'',suf:'meals',d
       dots:done?[{x:qb,y:p.P*qb,color:'var(--ink)',label:'Breakeven: '+fmt(qb,0),anchor:'end',dx:-10,dy:-10}]:[]});}
 });
 
-function sortGame(id,cards){
-  const w=el(`<div class="q"></div>`);
+const RISK_BINS=[{k:'B',label:'Business risk',sub:'uncertainty in EBIT, ROIC',cls:'b1',color:'var(--accent)'},{k:'F',label:'Financial risk',sub:'added by debt and preferred',cls:'b2',color:'var(--debt)'}];
+function sortGame(id,cards,bins=RISK_BINS){
+  const w=el(`<div class="q"></div>`),B=k=>bins.find(b=>b.k===k);
   function paint(){
     const r=rec(id);r.c=r.c||{};const left=cards.filter(c=>!(c.id in r.c));
     const got=Object.values(r.c).filter(Boolean).length*2,max=cards.length*2;
     let h=`<div class="q-head"><span class="q-tag">Sort the deck · ${Math.min(cards.length-left.length+(left.length?1:0),cards.length)} of ${cards.length}</span><span class="q-pts ${r.done?(got>0?'got':'miss'):''}">${r.done?'+'+got:got} / ${max} pts</span></div>`;
-    if(r.fb)h+=`<div class="fb ${r.fb.ok?'good':'bad'}"><b>${r.fb.ok?'Right.':'Not quite.'}</b> “${r.fb.t}” is <b>${r.fb.bin==='B'?'business':'financial'} risk</b>. ${r.fb.why}</div>`;
+    if(r.fb)h+=`<div class="fb ${r.fb.ok?'good':'bad'}"><b>${r.fb.ok?'Right.':'Not quite.'}</b> “${r.fb.t}” goes under <b>${B(r.fb.bin).label}</b>. ${r.fb.why}</div>`;
     if(left.length){const c=left[0];
-      h+=`<div class="deck"><div class="card">${c.t}</div><div class="bins"><button type="button" class="bin b1" data-b="B">Business risk<small>uncertainty in EBIT, ROIC</small></button><button type="button" class="bin b2" data-b="F">Financial risk<small>added by debt and preferred</small></button></div></div>`;
+      h+=`<div class="deck"><div class="card">${c.t}</div><div class="bins">${bins.map(b=>`<button type="button" class="bin ${b.cls}" data-b="${b.k}">${b.label}<small>${b.sub}</small></button>`).join('')}</div></div>`;
     }else{
-      const li=b=>cards.filter(c=>c.bin===b).map(c=>`<li class="${r.c[c.id]?'':'miss'}">${c.t}${r.c[c.id]?'':' (you missed this one)'}</li>`).join('');
-      h+=`<div class="sorted"><div><h3 style="color:var(--accent)">Business risk</h3><ul>${li('B')}</ul></div><div><h3 style="color:var(--debt)">Financial risk</h3><ul>${li('F')}</ul></div></div>`;
+      const li=k=>cards.filter(c=>c.bin===k).map(c=>`<li class="${r.c[c.id]?'':'miss'}">${c.t}${r.c[c.id]?'':' (you missed this one)'}</li>`).join('');
+      h+=`<div class="sorted">${bins.map(b=>`<div><h3 style="color:${b.color}">${b.label}</h3><ul>${li(b.k)}</ul></div>`).join('')}</div>`;
     }
     w.innerHTML=h;
     w.querySelectorAll('[data-b]').forEach(b=>b.onclick=()=>{const c=left[0],ok=b.dataset.b===c.bin;r.c[c.id]=ok;r.fb={ok,t:c.t,bin:c.bin,why:c.why};r.pts=Object.values(r.c).filter(Boolean).length*2;r.done=Object.keys(r.c).length===cards.length;save();paint();});
@@ -604,21 +616,11 @@ addQ('mm','mm_millerP',{tag:'Miller model',prompt:'In 1977 Merton Miller added p
   explain:'Under the US tax code, T<sub>s</sub> &lt; T<sub>d</sub>: capital gains are taxed only when shares are sold, and at a lower long-term rate. That gives two competing pressures: deducting <b>interest</b> creates a tax shield that favors <b>debt</b>, and the preferential treatment of <b>equity</b> income (dividends and capital gains) favors <b>equity</b>. With the lecture’s rates (T<sub>c</sub> = 25%, T<sub>d</sub> = 30%, T<sub>s</sub> = 12%), each $1 of debt still adds about $0.06, less than the $0.25 from corporate taxes alone.'});
 /* ---------- MISSION 4: Theory Detective ---------- */
 reg('theories','th_trade',10);reg('theories','th_signal',10);reg('theories','th_peck',10);
-addQ('theories','th_wacc',{tag:'Trade-off theory',prompt:'Under the trade-off theory, how should a CFO identify the optimal leverage ratio?',opts:['Borrow as much as lenders allow','Pick the debt level that minimizes WACC, where the marginal tax benefit equals the marginal distress cost','Pick the debt level that maximizes ROE','Keep D/E = 1 so risk is shared equally'],ans:1,
-  explain:'WACC falls while tax-shield benefits outweigh bankruptcy costs and rises once distress costs dominate. The minimum-WACC point is also the value-maximizing point: V<sub>L</sub> = V<sub>U</sub> + tax benefits − distress costs.'});
-addQ('theories','th_seo',{tag:'Evidence',prompt:'What happens, on average, to a firm’s stock price when it announces a seasoned equity offering (SEO)?',opts:['It rises about 3%','No significant change','It falls about 3%','It falls about 30%'],ans:2,
-  explain:'SEO announcement returns average about −3%, and issuers’ stocks tend to have run up beforehand and to lag non-issuers for 3 to 5 years afterward, consistent with signaling and market timing.'});
-const THEORIES=['MM (no taxes)','MM (corporate taxes)','Miller (personal taxes)','Trade-off','Signaling','Pecking order','Market timing'];
+const THEORIES=['Trade-off','Signaling','Pecking order','Market timing'];
 const CASES=[
-  ['A biotech announces a seasoned equity offering. Its stock drops about 3% on the news.',4,'Investors read new stock sales as a sign that managers think the shares are overvalued.'],
-  ['Over five years, a firm funds growth from retained earnings, borrows when cash runs short, and issues stock only once, as a last resort.',5,'Internal funds first (no flotation costs, no signal), then debt, then equity.'],
-  ['A CFO keeps adding debt until the next dollar’s tax savings is just offset by higher expected costs of financial distress.',3,'Balancing tax benefits against bankruptcy costs gives an interior optimum.'],
-  ['After a 70% run-up in its stock price, a firm rushes to sell new shares. Two years later it borrows heavily when interest rates hit a low.',6,'Issue equity when the market is “high,” debt when rates are “low.”'],
-  ['An analyst argues that with no taxes, no bankruptcy costs and equal information, the firm’s D/E choice cannot change its value.',0,'Capital structure irrelevance: V<sub>L</sub> = V<sub>U</sub>.'],
-  ['A consultant argues that because interest is deductible, every $1 of debt adds $T<sub>c</sub> of value, so the firm should be nearly all debt.',1,'V<sub>L</sub> = V<sub>U</sub> + T<sub>c</sub>D, which pushes toward 100% debt.'],
-  ['A professor notes that investors pay more tax on interest income than on stock income, so the gain from corporate debt is smaller than T<sub>c</sub>.',2,'Personal taxes lessen (but don’t remove) debt’s advantage.'],
-  ['A CEO who believes her shares are underpriced turns down an equity offering and sells bonds instead.',4,'Managers with good private news avoid selling stock cheaply; issuing debt is the good signal.'],
-  ['A treasurer issues short-term debt because the yield curve slopes upward, and plans to switch to long-term debt when it flattens.',6,'Timing the term structure is part of market timing theory.'],
+  ['A biotech announces a seasoned equity offering. Its stock drops about 3% on the news.',1,'Investors read a new stock sale as a sign that managers think the shares are overvalued.'],
+  ['Over five years, a firm funds growth from retained earnings, borrows when cash runs short, and issues stock only once, as a last resort.',2,'Internal funds first (no flotation costs, no signal), then debt, then equity.'],
+  ['After a 70% run-up in its stock price, a firm rushes to sell new shares. Two years later it borrows heavily when interest rates hit a low.',3,'Issue equity when the market is “high,” debt when the market or rates are “low.”'],
 ];
 CASES.forEach((c,i)=>addQ('theories','th_c'+(i+1),{tag:'Case file '+(i+1),pts:5,chips:true,prompt:c[0],opts:THEORIES,ans:c[1],explain:c[2]}));
 
@@ -662,7 +664,7 @@ function signalGame(){
       ${r.done?'':`<div><button type="button" class="btn" data-chk ${r.sel.includes(null)?'disabled':''}>Check</button></div>`}<div class="fb" hidden></div>`;
     w.querySelectorAll('.yn button').forEach(b=>b.onclick=()=>{r.sel[+b.dataset.i]=b.dataset.v;save();paint();});
     const ck=w.querySelector('[data-chk]');if(ck)ck.onclick=()=>{const n=rows.filter((row,i)=>r.sel[i]===row[1]).length;r.done=true;r.pts=n===3?10:n*3;save();paint();};
-    if(r.done){const fb=w.querySelector('.fb');fb.hidden=false;const ok=rows.every((row,i)=>r.sel[i]===row[1]);fb.className='fb '+(ok?'good':'bad');fb.innerHTML=`<b>${ok?'Correct.':'Check the highlights.'}</b> Managers sell stock only when they think it is overvalued; if it’s a bargain, they won’t sell it cheap and issue debt instead. Investors know this, so a new stock issue is a <b>negative signal</b>.`;}
+    if(r.done){const fb=w.querySelector('.fb');fb.hidden=false;const ok=rows.every((row,i)=>r.sel[i]===row[1]);fb.className='fb '+(ok?'good':'bad');fb.innerHTML=`<b>${ok?'Correct.':'Check the highlights.'}</b> Managers sell stock only when they think it is overvalued; if it’s a bargain, they won’t sell it cheap and issue debt instead. Investors know this, so a new stock issue is a <b>negative signal</b>. The evidence agrees: SEO announcement returns average about −3%.`;}
   }
   paint();return w;
 }
@@ -683,30 +685,34 @@ function renderTheories(main){
   main.append(missionHead('theories','MM tells you what happens in a frictionless world. Real firms face bankruptcy costs and information gaps. Which theory explains each real-world move?'));
   main.append(terms([['Trade-off theory','Optimal debt balances the tax shield against financial distress costs.'],['Signaling theory','Managers know more than investors, so issuing stock signals overvaluation.'],['Pecking order','Internal funds first, then debt, then new equity.'],['Market timing','Issue equity when the stock market is high; issue debt when it is low or rates are low.']]));
   main.append(secHead('Round 1','The trade-off'));
-  const q1=el('<div class="qs"></div>');q1.append(tradeoffGame());q1.append(renderQ('th_wacc'));main.append(q1);
+  const q1=el('<div class="qs"></div>');q1.append(tradeoffGame());main.append(q1);
   main.append(secHead('Round 2','Asymmetric information'));
-  const q2=el('<div class="qs"></div>');q2.append(signalGame());q2.append(renderQ('th_seo'));q2.append(peckGame());main.append(q2);
-  main.append(secHead('Round 3','Case files','5 pts each'));
+  const q2=el('<div class="qs"></div>');q2.append(signalGame());q2.append(peckGame());main.append(q2);
+  main.append(secHead('Round 3','Which theory is it?','5 pts each'));
   const q3=el('<div class="qs"></div>');CASES.forEach((c,i)=>q3.append(renderQ('th_c'+(i+1))));main.append(q3);
 }
 
 /* ---------- MISSION 5: Advisor's Desk ---------- */
-const ADV=[
-  ['Southern Power & Light','A regulated electric utility: stable sales, low operating leverage, and a high effective tax rate.',0,'Stable sales and low operating leverage keep distress risk low, and a high tax rate makes the interest deduction valuable. Take advantage of the tax benefits.'],
-  ['Helix Therapeutics','Volatile revenue, a long pipeline of promising R&D projects, and specialized lab equipment that would fetch little in a sale.',1,'Volatile sales, many investment opportunities and special-purpose assets (poor collateral) all argue for keeping excess borrowing capacity.'],
-  ['Ironworks Steel','Very high fixed costs (high operating leverage) and demand that swings with the economy.',1,'High operating leverage plus volatile demand already means high business risk. Adding financial risk on top invites distress costs.'],
-  ['Main Street Grocers','Steady sales, owns general-purpose real estate that makes good collateral, and pays close to the full 21% federal rate.',0,'Stable sales, good collateral and a high effective tax rate: the classic profile for using more debt.'],
-  ['LoopHole Software','So many tax credits and loss carryforwards that its effective tax rate is close to zero.',1,'The statutory rate is 21%, but a firm with a near-zero effective rate gets little benefit from deducting interest, so the case for debt is weak.'],
+const ADV_BINS=[{k:'D',label:'Use more debt',sub:'take the tax benefits',cls:'b1',color:'var(--accent)'},{k:'R',label:'Keep borrowing capacity',sub:'avoid financial distress costs',cls:'b2',color:'var(--debt)'}];
+const ADV_CARDS=[
+  {id:'a1',t:'High effective tax rate',bin:'D',why:'Deducting interest is worth more when the firm actually pays a high rate.'},
+  {id:'a2',t:'Volatile sales',bin:'R',why:'Unpredictable cash flow makes fixed interest payments risky.'},
+  {id:'a3',t:'Stable sales',bin:'D',why:'Predictable cash flow makes interest payments safe.'},
+  {id:'a4',t:'Many potential investment opportunities',bin:'R',why:'Spare borrowing capacity lets the firm fund good projects without issuing costly equity.'},
+  {id:'a5',t:'Low operating leverage',bin:'D',why:'Low fixed operating costs leave room for fixed financing costs.'},
+  {id:'a6',t:'Special-purpose assets',bin:'R',why:'They make poor collateral. General-purpose assets support more debt.'},
+  {id:'a7',t:'High operating leverage',bin:'R',why:'High business risk already; adding financial risk invites distress.'},
+  {id:'a8',t:'Pays far less than the 21% statutory rate, thanks to tax credits',bin:'R',why:'A low effective rate means the interest deduction saves little, so the case for debt is weak.'},
 ];
-ADV.forEach((a,i)=>addQ('advisor','ad_'+(i+1),{tag:'Client '+(i+1)+': '+a[0],prompt:a[1]+' What do you advise?',opts:['Use more debt and capture the tax benefits','Keep reserve borrowing capacity'],ans:a[2],explain:a[3]}));
-addQ('advisor','ad_6',{tag:'Client 6: inside information',prompt:'The CEO knows next year’s results will beat what the market expects. The firm needs $50M for a new plant and has no spare cash. What should it issue?',opts:['New common stock','Debt','Either; it makes no difference','Preferred stock to avoid any signal'],ans:1,
-  explain:'If managers believe prospects are better than the market perceives, issuing equity would sell undervalued shares and send a negative signal. Debt avoids both.'});
-addQ('advisor','ad_7',{tag:'Before you sign off',prompt:'The manager’s checklist ends with one more item to consider before any capital structure change. Which?',opts:['How lenders and rating agencies will view the change','What competitors’ CEOs are paid','Whether the stock split ratio should change','The firm’s dividend payout history'],ans:0,
-  explain:'Always consider the impact of capital structure choices on lenders’ and rating agencies’ attitudes. A downgrade raises r<sub>d</sub> and can restrict future borrowing.'});
+reg('advisor','ad_sort',ADV_CARDS.length*2);
+addQ('advisor','ad_6',{tag:'Inside information',prompt:'The CEO knows next year’s results will beat what the market expects. The firm needs $50M for a new plant and has no spare cash. What should it issue?',opts:['New common stock','Debt','Either; it makes no difference','It should wait for the stock to fall'],ans:1,
+  explain:'If prospects are better than the market perceives, issuing equity would sell undervalued shares and send a negative signal. Debt avoids both. And always consider how lenders and rating agencies will react to the extra debt.'});
 function renderAdvisor(main){
-  main.append(missionHead('advisor','Five clients walk in. Use the checklist from lecture to tell each one whether to lean into debt or hold back.'));
-  main.append(secHead('Clients','Give your advice'));
-  const qs=el('<div class="qs"></div>');['ad_1','ad_2','ad_3','ad_4','ad_5','ad_6','ad_7'].forEach(i=>qs.append(renderQ(i)));main.append(qs);
+  main.append(missionHead('advisor','Each card is a firm characteristic from the manager’s checklist. Does it argue for using more debt, or for keeping reserve borrowing capacity?'));
+  main.append(secHead('Round 1','Sort the checklist','2 pts per card'));
+  main.append(sortGame('ad_sort',ADV_CARDS,ADV_BINS));
+  main.append(secHead('Round 2','Inside information'));
+  const qs=el('<div class="qs"></div>');qs.append(renderQ('ad_6'));main.append(qs);
 }
 
 /* ---------- MISSION 6: Optimal Structure ---------- */
@@ -714,116 +720,99 @@ const WD=[0,.2,.3,.4,.5];
 function calcRows(p){return WD.map((wd,i)=>{const ws=1-wd,b=p.bU*(1+(1-p.T/100)*wd/ws),rs=p.rRF+b*p.RPM,rd=p.rd[i],wacc=wd*(1-p.T/100)*rd+ws*rs,vop=p.FCF/(wacc/100),D=wd*vop,S=ws*vop,n=p.n*ws,P=vop/p.n;return{wd,ws,rd,b,rs,wacc,vop,D,S,n,P};});}
 const LECT={bU:1,rRF:6,RPM:6,T:25,FCF:90,n:10,rd:[0,8,8.5,10,12]};
 const LR=calcRows(LECT);
-addQ('optimal','op_beta',{type:'num',tag:'Step 1 · Hamada',tol:0.006,dp:2,prompt:()=>'Find the levered beta at <b>w<sub>d</sub> = 30%</b>.',ans:()=>LR[2].b,
-  sol:()=>`b = 1.0 × [1 + (1 − 0.25)(0.30 / 0.70)] = <b>1.32</b>. More debt, riskier equity, higher beta.`});
-addQ('optimal','op_rs',{type:'num',tag:'Step 2 · CAPM',suf:'%',kind:'pct',tol:0.05,prompt:()=>'Find the cost of equity r<sub>s</sub> at w<sub>d</sub> = 30%.',ans:()=>LR[2].rs,
-  sol:()=>`r<sub>s</sub> = 6% + 1.3214 × 6% = <b>13.93%</b>.`});
-addQ('optimal','op_wacc',{type:'num',tag:'Step 3 · WACC',suf:'%',kind:'pct',tol:0.04,prompt:()=>'Find WACC at w<sub>d</sub> = 30% (r<sub>d</sub> = 8.5%).',ans:()=>LR[2].wacc,
-  sol:()=>`WACC = 0.30 × (1 − 0.25) × 8.5% + 0.70 × 13.93% = 1.91% + 9.75% = <b>11.66%</b>.`});
-addQ('optimal','op_vop',{type:'num',tag:'Step 4 · Value',pre:'$',suf:'million',sufText:'million',tol:1.2,prompt:()=>'Find the value of operations V<sub>op</sub> at w<sub>d</sub> = 30% (FCF = $90M, g = 0).',ans:()=>LR[2].vop,
-  sol:()=>`V<sub>op</sub> = $90 × (1 + 0) / (0.1166 − 0) = <b>$771.70 million</b>. Debt = 0.30 × $771.70 = $231.51M; equity = $540.19M.`});
-addQ('optimal','op_pick',{tag:'Decision',prompt:'Look at the full table. Which debt ratio is optimal?',opts:['0%','20%','30%','40%','50%'],ans:2,chips:true,
-  explain:'w<sub>d</sub> = 30% gives the lowest WACC (11.66%), the highest value of operations ($771.70M) and the highest stock price ($77.17). All three point to the same answer.'});
-addQ('optimal','op_flat',{tag:'Judgment',prompt:'At w<sub>d</sub> = 40%, WACC is 12.00% and the price is $75.00, versus 11.66% and $77.17 at the optimum. What’s the practical takeaway?',opts:['40% would destroy most of the firm’s value','The optimal range is fairly flat, so being near 30% matters more than hitting it exactly','The firm should immediately move to 50% debt','The calculations must be wrong because the curve should be sharp'],ans:1,
-  explain:'Near the optimum, value changes slowly with leverage. Managers can stay within a range and use judgment (ratings, flexibility, signaling) without giving up much value.'});
-GROUPS.cl=()=>{for(let k=0;k<400;k++){const base=pick([4,4.5,5,5.5]);const p={bU:pick([0.8,0.9,1.1,1.2,1.3]),rRF:base,RPM:pick([5,5.5,6,6.5]),T:pick([21,25]),FCF:pick([60,75,90,120]),n:pick([5,8,10,12])};
-  const r20=+(base+pick([1.5,2,2.5])).toFixed(2);p.rd=[0,r20,+(r20+pick([0.5,0.75,1])).toFixed(2),+(r20+pick([1.75,2,2.5,3])).toFixed(2),+(r20+pick([3.5,4,5])).toFixed(2)];
-  const rows=calcRows(p);let im=0;rows.forEach((r,i)=>{if(r.wacc<rows[im].wacc)im=i;});
-  const sorted=rows.map(r=>r.wacc).sort((a,b)=>a-b);
-  if(im>=1&&im<=3&&sorted[1]-sorted[0]>0.02){p.ask=pick([1,2,3]);return p;}}
-  return Object.assign({},LECT,{ask:2});};
-const CL=()=>grp('cl').par, CLR=()=>calcRows(CL());
-addQ('optimal','cl_beta',{type:'num',group:'cl',tag:'New client · beta',tol:0.006,prompt:p=>`At <b>w<sub>d</sub> = ${WD[p.ask]*100}%</b>, what is the levered beta?`,ans:p=>calcRows(p)[p.ask].b,
-  sol:p=>{const r=calcRows(p)[p.ask];return`b = ${p.bU} × [1 + (1 − ${p.T/100})(${fmt(r.wd,2)} / ${fmt(r.ws,2)})] = <b>${fmt(r.b,4)}</b>.`;}});
-addQ('optimal','cl_rs',{type:'num',group:'cl',tag:'New client · r<sub>s</sub>',suf:'%',kind:'pct',tol:0.05,prompt:p=>`What is r<sub>s</sub> at w<sub>d</sub> = ${WD[p.ask]*100}%?`,ans:p=>calcRows(p)[p.ask].rs,
-  sol:p=>{const r=calcRows(p)[p.ask];return`r<sub>s</sub> = ${p.rRF}% + ${fmt(r.b,4)} × ${p.RPM}% = <b>${pct(r.rs)}</b>.`;}});
-addQ('optimal','cl_wacc',{type:'num',group:'cl',tag:'New client · WACC',suf:'%',kind:'pct',tol:0.04,prompt:p=>`What is WACC at w<sub>d</sub> = ${WD[p.ask]*100}%?`,ans:p=>calcRows(p)[p.ask].wacc,
-  sol:p=>{const r=calcRows(p)[p.ask];return`WACC = ${fmt(r.wd,2)} × (1 − ${p.T/100}) × ${p.rd[p.ask]}% + ${fmt(r.ws,2)} × ${pct(r.rs)} = <b>${pct(r.wacc)}</b>.`;}});
-addQ('optimal','cl_pick',{group:'cl',tag:'New client · decision',chips:true,prompt:()=>'Beta and r<sub>s</sub> are now filled in for every column. Work out WACC where you need it: which debt ratio is optimal?',optsF:()=>WD.map(w=>w*100+'%'),
-  ansF:p=>{const rows=calcRows(p);let im=0;rows.forEach((r,i)=>{if(r.wacc<rows[im].wacc)im=i;});return im;},
-  explain:p=>{const rows=calcRows(p);let im=0;rows.forEach((r,i)=>{if(r.wacc<rows[im].wacc)im=i;});return`WACC by column: ${rows.map(r=>`${r.wd*100}% → ${pct(r.wacc)}`).join(', ')}. The minimum at ${rows[im].wd*100}% also maximizes V<sub>op</sub> (${usd(rows[im].vop)}M) and the stock price (${usd(rows[im].P)}).`;}});
-
-function optTable(rows,vis,hlCol,best){
-  const R=[['r<sub>d</sub>','rd',v=>v?pct(v):'—'],['w<sub>s</sub>','ws',v=>pct(v*100,0)],['Beta b','b',v=>fmt(v,3)],['r<sub>s</sub>','rs',v=>pct(v)],['WACC','wacc',v=>pct(v)],['V<sub>op</sub>','vop',v=>usd(v)],['Debt D','D',v=>usd(v)],['Equity S','S',v=>usd(v)],['Shares n','n',v=>fmt(v,1)],['Price P','P',v=>usd(v)]];
-  return`<div class="tbl-wrap"><table class="tbl"><thead><tr><th>w<sub>d</sub></th>${rows.map((r,i)=>`<th class="${i===hlCol?'hl':''}">${r.wd*100}%</th>`).join('')}</tr></thead><tbody>${R.map(([lab,k,f])=>`<tr class="${k==='wacc'||k==='P'?'key':''}"><td>${lab}</td>${rows.map((r,i)=>{const show=vis(i,k);const cls=[i===hlCol?'hl':'',show&&best===i&&(k==='wacc'||k==='vop'||k==='P')?'best':'',show?'':'unk'].join(' ');return`<td class="${cls}">${show?f(r[k]):'?'}</td>`;}).join('')}</tr>`).join('')}</tbody></table></div>`;
-}
+addQ('optimal','op_best',{tag:'Decision',prompt:'You’ve walked through the debt ratios. Which capital structure is optimal, and why?',
+  opts:['w<sub>d</sub> = 20%, because its debt is cheapest (8%)','w<sub>d</sub> = 30%, because it gives the lowest WACC, the highest V<sub>op</sub> and the highest stock price','w<sub>d</sub> = 40%, because it has a bigger tax shield than 30%','w<sub>d</sub> = 50%, because more debt always adds value'],ans:1,
+  explain:'At 30%: WACC 11.66% (lowest), V<sub>op</sub> $771.70M (highest), P $77.17 (highest). 40% is close (WACC 12.00%, P $75.00), so the optimal range is pretty flat.'});
+addQ('optimal','op_why',{tag:'Why WACC turns up',prompt:'After-tax debt is cheaper than equity in every column. So why does WACC <b>rise</b> once w<sub>d</sub> passes 30%?',
+  opts:['Lenders charge more (r<sub>d</sub> jumps to 10% and 12%) and the higher beta pushes r<sub>s</sub> up faster: distress risk outweighs the tax benefit','The tax rate rises as the firm borrows more','Free cash flow falls when the firm has more debt','There are fewer shares, so each share is worth less'],ans:0,
+  explain:'This is the trade-off theory in numbers. At low leverage the tax shield wins and WACC falls; at high leverage the costs of debt and equity climb steeply and WACC rises. FCF and T are the same in every column.'});
+let OPI=1,OPSTEP=1;
+function opSteps(r){const w=r.wd*100;return[
+  ['Cost of debt', r.wd?`Banks quote r<sub>d</sub> = <b>${fmt(r.rd,1)}%</b> at w<sub>d</sub> = ${w}%`:'No debt, so there is no r<sub>d</sub>'],
+  ['Levered beta (Hamada)',`b = 1.0 × [1 + (1 − 0.25)(${fmt(r.wd,2)} / ${fmt(r.ws,2)})] = <b>${fmt(r.b,3)}</b>`],
+  ['Cost of equity (CAPM)',`r<sub>s</sub> = 6% + ${fmt(r.b,3)} × 6% = <b>${pct(r.rs)}</b>`],
+  ['WACC',`WACC = ${fmt(r.wd,2)} × (1 − 0.25) × ${fmt(r.rd,1)}% + ${fmt(r.ws,2)} × ${pct(r.rs)} = <b>${pct(r.wacc)}</b>`],
+  ['Value of operations',`V<sub>op</sub> = $90 / ${fmt(r.wacc/100,4)} = <b>${usd(r.vop)}M</b> → D = ${usd(r.D)}M, S = ${usd(r.S)}M`],
+  ['Stock price',`P = V<sub>op</sub> / n<sub>Prior</sub> = ${usd(r.vop)} / 10 = <b>${usd(r.P)}</b> &nbsp;(${r.wd?fmt(r.n,1)+"M shares left after the buyback":"no buyback needed"})`]];}
 function renderOptimal(main){
-  main.append(missionHead('optimal','The lecture’s worked example, with one column left blank for you. Then a new client with fresh numbers.'));
-  main.append(el(`<div class="note" style="margin-top:22px"><b>Firm data:</b> b<sub>U</sub> = 1.0 · r<sub>RF</sub> = 6% · RP<sub>M</sub> = 6% · T = 25% · FCF = $90M · g = 0 · n = 10M shares · no debt today (V<sub>op</sub> = $750M, P = $75). Formulas are in the formula sheet.</div>`));
-  main.append(secHead('Round 1','Fill in the 30% column'));
-  const t1=el('<div></div>');main.append(t1);
-  const all4=()=>['op_beta','op_rs','op_wacc','op_vop'].every(resolved);
-  const ch1=el(`<div class="charts" hidden><figure><figcaption>WACC by debt ratio</figcaption><svg class="chart" id="op-c1"></svg></figure><figure><figcaption>Stock price by debt ratio</figcaption><svg class="chart" id="op-c2"></svg></figure></div>`);
-  function upd1(){
-    t1.innerHTML=optTable(LR,(i,k)=>{if(k==='rd'||k==='ws')return true;if(i<2)return true;if(i===2){if(k==='b')return resolved('op_beta');if(k==='rs')return resolved('op_rs');if(k==='wacc')return resolved('op_wacc');return resolved('op_vop');}return all4();},2,resolved('op_pick')?2:-1);
-    ch1.hidden=!all4();
-    if(all4()){const pts=k=>LR.map(r=>[r.wd*100,r[k]]);
-      chart($('#op-c1',ch1),{w:480,h:250,x0:0,x1:50,y0:11.4,y1:13,xt:[0,10,20,30,40,50],yt:[11.5,12,12.5,13],fx:v=>v+'%',fy:v=>fmt(v,1)+'%',xl:'w_d',series:[{pts:pts('wacc'),color:'var(--accent)'}],dots:LR.map((r,i)=>({x:r.wd*100,y:r.wacc,color:i===2?'var(--good)':'var(--accent)',r:i===2?6:4,label:i===2?'Min 11.66%':'',dy:18,anchor:'middle',dx:0}))});
-      chart($('#op-c2',ch1),{w:480,h:250,x0:0,x1:50,y0:70,y1:78,xt:[0,10,20,30,40,50],yt:[70,72,74,76,78],fx:v=>v+'%',fy:v=>'$'+v,xl:'w_d',series:[{pts:pts('P'),color:'var(--debt)'}],dots:LR.map((r,i)=>({x:r.wd*100,y:r.P,color:i===2?'var(--good)':'var(--debt)',r:i===2?6:4,label:i===2?'Max $77.17':'',dy:-12,anchor:'middle',dx:0}))});}
+  main.append(missionHead('optimal','The worked example from lecture. Pick a debt ratio, predict each number, then reveal the next step.'));
+  main.append(el(`<div class="note" style="margin-top:22px"><b>Firm data:</b> b<sub>U</sub> = 1.0 · r<sub>RF</sub> = 6% · RP<sub>M</sub> = 6% · T = 25% · FCF = $90M · g = 0 · 10M shares · no debt today. Debt proceeds repurchase stock.</div>`));
+  main.append(secHead('Explorer','One debt ratio, step by step'));
+  const lab=el(`<div class="lab"><div class="lab-controls"><div class="seg" id="op-w">${WD.map((w,i)=>`<button type="button" data-i="${i}">w<sub>d</sub> = ${w*100}%</button>`).join('')}</div>
+    <div class="num-row"><button type="button" class="btn accent" id="op-next">Reveal next step</button><button type="button" class="btn ghost" id="op-all">Show all</button></div></div><ol class="steps" id="op-steps"></ol></div>`);
+  main.append(lab);
+  main.append(secHead('Scoreboard','Every debt ratio side by side'));
+  const sb=el(`<div class="stack"><div id="op-tbl"></div><div class="charts"><figure><figcaption>WACC by debt ratio</figcaption><svg class="chart" id="op-c1"></svg></figure><figure><figcaption>Stock price by debt ratio</figcaption><svg class="chart" id="op-c2"></svg></figure></div><p class="small" id="op-hint"></p></div>`);
+  main.append(sb);
+  const seen=()=>{const r=rec('op_seen');r.s=r.s||[false,false,false,false,false];return r.s;};
+  let fresh=-1;
+  function upd(){
+    const r=LR[OPI],st=opSteps(r),sv=seen();
+    if(OPSTEP>=6&&!sv[OPI]){sv[OPI]=true;save();}
+    lab.querySelectorAll('#op-w button').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.i===OPI)));
+    $('#op-steps',lab).innerHTML=st.map(([h,f],k)=>k<OPSTEP?`<li class="step${k===fresh?' new':''}"><span class="k">${k+1}</span><div style="min-width:0"><h4>${h}</h4><div class="fx">${f}</div></div></li>`:`<li class="step locked"><span class="k">${k+1}</span><div><h4>${h}</h4><div class="fx">Predict it, then reveal.</div></div></li>`).join('');
+    $('#op-next',lab).disabled=OPSTEP>=6;$('#op-all',lab).disabled=OPSTEP>=6;
+    const all=sv.every(Boolean);let im=0;LR.forEach((x,i)=>{if(x.wacc<LR[im].wacc)im=i;});
+    const R=[['r<sub>d</sub>','rd',v=>v?pct(v,1):'—'],['Beta b','b',v=>fmt(v,3)],['r<sub>s</sub>','rs',v=>pct(v)],['WACC','wacc',v=>pct(v)],['V<sub>op</sub>','vop',v=>usd(v)],['Price P','P',v=>usd(v)]];
+    $('#op-tbl',sb).innerHTML=`<div class="tbl-wrap"><table class="tbl"><thead><tr><th>w<sub>d</sub></th>${LR.map((x,i)=>`<th class="${i===OPI?'hl':''}">${x.wd*100}%</th>`).join('')}</tr></thead><tbody>${R.map(([l,k,f])=>`<tr class="${k==='wacc'||k==='P'?'key':''}"><td>${l}</td>${LR.map((x,i)=>{const show=sv[i]||k==='rd';return`<td class="${[i===OPI?'hl':'',all&&i===im&&(k==='wacc'||k==='vop'||k==='P')?'best':'',show?'':'unk'].join(' ')}">${show?f(x[k]):'?'}</td>`;}).join('')}</tr>`).join('')}</tbody></table></div>`;
+    const pts=k=>LR.map((x,i)=>sv[i]?[x.wd*100,x[k]]:null).filter(Boolean);
+    const dots=(k,c)=>LR.map((x,i)=>sv[i]?{x:x.wd*100,y:x[k],color:all&&i===im?'var(--good)':c,r:all&&i===im?6:4,label:all&&i===im?(k==='wacc'?'Min 11.66%':'Max $77.17'):'',dy:k==='wacc'?18:-12,anchor:'middle',dx:0}:null).filter(Boolean);
+    chart($('#op-c1',sb),{w:480,h:240,x0:0,x1:50,y0:11.4,y1:13,xt:[0,10,20,30,40,50],yt:[11.5,12,12.5,13],fx:v=>v+'%',fy:v=>fmt(v,1)+'%',xl:'w_d',series:pts('wacc').length>1?[{pts:pts('wacc'),color:'var(--accent)'}]:[],dots:dots('wacc','var(--accent)')});
+    chart($('#op-c2',sb),{w:480,h:240,x0:0,x1:50,y0:70,y1:78,xt:[0,10,20,30,40,50],yt:[70,72,74,76,78],fx:v=>v+'%',fy:v=>'$'+v,xl:'w_d',series:pts('P').length>1?[{pts:pts('P'),color:'var(--debt)'}]:[],dots:dots('P','var(--debt)')});
+    const n=sv.filter(Boolean).length;
+    $('#op-hint',sb).innerHTML=all?'<b>All five explored.</b> WACC is lowest, and V<sub>op</sub> and the price are highest, at w<sub>d</sub> = 30%. But 40% is close: the optimal range is pretty flat.':`${n} of 5 debt ratios explored. Finish all six steps for a debt ratio to add it to the scoreboard.`;
+    fresh=-1;
   }
-  ['op_beta','op_rs','op_wacc','op_vop','op_pick'].forEach(i=>Q[i].onChange=upd1);
-  const qs1=el('<div class="qs"></div>');['op_beta','op_rs','op_wacc','op_vop'].forEach(i=>qs1.append(renderQ(i)));main.append(qs1);
-  main.append(ch1);
-  const qs1b=el('<div class="qs"></div>');qs1b.append(renderQ('op_pick'));qs1b.append(renderQ('op_flat'));main.append(qs1b);
-  upd1();
-
-  main.append(secHead('Round 2','A new client walks in'));
-  const p=CL();
-  main.append(el(`<div class="note"><b>Client data:</b> b<sub>U</sub> = ${p.bU} · r<sub>RF</sub> = ${p.rRF}% · RP<sub>M</sub> = ${p.RPM}% · T = ${p.T}% · FCF = $${p.FCF}M · g = 0 · n = ${p.n}M shares, no debt today. The banks quote r<sub>d</sub> for each debt ratio in the table. <button type="button" class="link-btn" id="cl-new">New client</button></div>`));
-  const t2=el('<div></div>');main.append(t2);
-  function upd2(){const rows=CLR(),a=p.ask;let im=0;rows.forEach((r,i)=>{if(r.wacc<rows[im].wacc)im=i;});
-    t2.innerHTML=optTable(rows,(i,k)=>{if(k==='rd'||k==='ws')return true;if(i===0&&(k==='b'||k==='rs'))return true;
-      if(resolved('cl_pick'))return true;
-      if(k==='b')return i===a?resolved('cl_beta'):resolved('cl_wacc');
-      if(k==='rs')return i===a?resolved('cl_rs'):resolved('cl_wacc');
-      if(k==='wacc')return i===a&&resolved('cl_wacc')||(i===0&&resolved('cl_wacc'));
-      return false;},a,resolved('cl_pick')?im:-1);}
-  ['cl_beta','cl_rs','cl_wacc','cl_pick'].forEach(i=>Q[i].onChange=upd2);
-  const qs2=el('<div class="qs"></div>');['cl_beta','cl_rs','cl_wacc','cl_pick'].forEach(i=>qs2.append(renderQ(i)));main.append(qs2);
-  upd2();
-  $('#cl-new').onclick=()=>regroup('cl');
+  lab.querySelectorAll('#op-w button').forEach(b=>b.onclick=()=>{OPI=+b.dataset.i;OPSTEP=seen()[OPI]?6:1;upd();});
+  $('#op-next',lab).onclick=()=>{fresh=OPSTEP;OPSTEP=Math.min(6,OPSTEP+1);upd();};
+  $('#op-all',lab).onclick=()=>{OPSTEP=6;upd();};
+  upd();
+  main.append(secHead('Questions','Read the scoreboard'));
+  const qs=el('<div class="qs"></div>');['op_best','op_why'].forEach(i=>qs.append(renderQ(i)));main.append(qs);
 }
 
 /* ---------- MISSION 7: Recap ---------- */
-GROUPS.rc=first=>{
-  if(first){const i=pick([2,3,4]);const r=LR[i];return{lecture:true,wd:r.wd,n0:10,VopOld:750,Dold:0,VopNew:r.vop,Dnew:r.D};}
-  for(let k=0;k<100;k++){const n0=pick([4,5,8,12,20]),VopOld=pick([400,600,900,1200]),Dold=VopOld*pick([0,0,.1,.15]),wd=pick([.3,.35,.4,.45]),VopNew=VopOld*(1+pick([.02,.03,.04,.05]));const Dnew=wd*VopNew;if(Dnew>Dold+20)return{lecture:false,wd,n0,VopOld,Dold,VopNew,Dnew};}
-};
-const RC=()=>grp('rc').par;
-const rcCalc=p=>{const P0=(p.VopOld-p.Dold)/p.n0,Pp=(p.VopNew-p.Dold)/p.n0,cash=p.Dnew-p.Dold,nP=p.n0-cash/Pp,S=p.VopNew-p.Dnew;return{P0,Pp,cash,nP,S,W:S+cash};};
-addQ('recap','rc_p',{type:'num',group:'rc',tag:'Stage 2 · price',pre:'$',tol:0.06,prompt:p=>`The firm issues the new debt and parks the cash in short-term investments. It hasn’t repurchased anything yet. What is the stock price now?`,ans:p=>rcCalc(p).Pp,
-  sol:p=>{const c=rcCalc(p);return`P<sub>Post</sub> = (V<sub>opNew</sub> − D<sub>Old</sub>) / n<sub>Prior</sub> = (${usd(p.VopNew)} − ${usd(p.Dold)}) / ${p.n0} = <b>${usd(c.Pp)}</b>, up from ${usd(c.P0)}. The gain comes from the lower WACC, and current shareholders capture all of it.`;}});
-addQ('recap','rc_mc',{tag:'Stage 3 · the repurchase',prompt:'Now the firm uses the cash to buy back shares. What does the repurchase itself do to the stock price?',opts:['Raises it, because fewer shares are outstanding','Lowers it, because the firm has less cash','Nothing; the price stays the same','It depends on how many shares are bought'],ans:2,
-  explain:'If investors expected the repurchase to raise the price, they would buy the day before, bidding it up in advance; if they expected a drop, they would sell short. So the repurchase itself has no effect on price. Only the capital structure change (and any signal from the announcement) moves it.'});
-addQ('recap','rc_n',{type:'num',group:'rc',tag:'Stage 3 · shares',suf:'million shares',sufText:'million shares',tol:0.02,prompt:()=>'All of the new debt proceeds go to repurchasing stock at the post-announcement price. How many shares remain?',ans:p=>rcCalc(p).nP,
-  sol:p=>{const c=rcCalc(p);return`n<sub>Post</sub> = n<sub>Prior</sub> − (D<sub>New</sub> − D<sub>Old</sub>) / P = ${p.n0} − ${usd(c.cash)} / ${usd(c.Pp)} = <b>${fmt(c.nP,2)} million</b>.`;}});
-addQ('recap','rc_s',{type:'num',group:'rc',tag:'Stage 3 · equity',pre:'$',suf:'million',sufText:'million',tol:0.6,prompt:()=>'What is the market value of equity S after the repurchase?',ans:p=>rcCalc(p).S,
-  sol:p=>{const c=rcCalc(p);return`S = V<sub>op</sub> − D<sub>New</sub> = (1 − w<sub>d</sub>) × V<sub>opNew</sub> = ${fmt(1-p.wd,2)} × ${usd(p.VopNew)} = <b>${usd(c.S)} million</b>. Check: ${fmt(c.nP,2)}M shares × ${usd(c.Pp)} = ${usd(c.nP*c.Pp)}M.`;}});
-addQ('recap','rc_w',{type:'num',group:'rc',tag:'Stage 3 · wealth',pre:'$',suf:'million',sufText:'million',tol:0.6,prompt:()=>'Equity fell, but what is total shareholder wealth after the repurchase (equity S plus the cash paid to shareholders who sold)?',ans:p=>rcCalc(p).W,
-  sol:p=>{const c=rcCalc(p);return`Wealth = S + cash = ${usd(c.S)} + ${usd(c.cash)} = <b>${usd(c.W)} million</b>, the same as right after the debt was issued. Shareholders now hold directly the cash the firm used to hold.`;}});
-addQ('recap','rc_type',{tag:'Vocabulary',prompt:'A firm with too much debt issues new stock and uses the proceeds to retire bonds. What is this called?',opts:['A leveraged recapitalization','A deleveraged recapitalization','A seasoned debt offering','A stock split'],ans:1,
-  explain:'Leveraged recap: issue debt, then buy back shares or pay a dividend. Deleveraged recap: issue stock to buy back debt.'});
+addQ('recap','rc_mc',{tag:'Stage 3 · the repurchase',prompt:'When the firm uses the cash to buy back shares, what does the repurchase itself do to the stock price?',opts:['Raises it, because fewer shares are outstanding','Lowers it, because the firm has less cash','Nothing; the price stays the same','It depends on how many shares are bought'],ans:2,
+  explain:'If investors expected the repurchase to raise the price, they would all buy the day before and bid it up in advance; if they expected a drop, they would sell short. So the repurchase itself has no effect. Only the capital structure change (and any signal from the announcement) moves the price.'});
+addQ('recap','rc_wealth',{tag:'Stage 3 · wealth',prompt:'At w<sub>d</sub> = 20%, the repurchase cuts the value of equity from $769.23M to $615.38M. What happens to total shareholder wealth?',
+  opts:['It falls by $153.85M, the amount spent on the buyback','It stays at $769.23M: shareholders who sold now hold the $153.85M in cash','It rises, because there are fewer shares outstanding','It falls back to $750M, the value before the recap'],ans:1,
+  explain:'S + cash = $615.38M + $153.85M = $769.23M. The firm’s short-term investments simply moved into shareholders’ hands. The gain from $750M to $769.23M happened when the debt was issued, because WACC fell.'});
+let RCI=1,RCS=0;
 function renderRecap(main){
-  main.append(missionHead('recap','You found the optimal debt ratio. Now get there: issue debt, then buy back stock. Predict each number before the machine shows it.'));
-  const p=RC(),c=rcCalc(p);
-  main.append(el(`<div class="note"><b>${p.lecture?'Lecture firm, new target':'New firm'}:</b> today V<sub>op</sub> = ${usd(p.VopOld)}M, debt D<sub>Old</sub> = ${usd(p.Dold)}M, ${p.n0}M shares at ${usd(c.P0)}. The board targets <b>w<sub>d</sub> = ${fmt(p.wd*100,0)}%</b>. At that mix WACC falls and V<sub>op</sub> rises to <b>${usd(p.VopNew)}M</b>, so new debt D<sub>New</sub> = w<sub>d</sub> × V<sub>op</sub> = <b>${usd(p.Dnew)}M</b>. <button type="button" class="link-btn" id="rc-new">New firm</button></div>`));
-  const box=el(`<div class="lab"><div class="tbl-wrap"><table class="tbl" id="rc-t"></table></div><div class="rbars" id="rc-b"></div><ul class="legend"><li><i style="background:var(--debt)"></i>Debt</li><li><i style="background:var(--equity)"></i>Equity S</li><li><i style="background:var(--gov)"></i>Cash paid to shareholders</li></ul></div>`);
-  main.append(box);
-  function upd(){const s2=resolved('rc_p'),s3=resolved('rc_n')&&resolved('rc_s'),w3=resolved('rc_w');const q='<span class="unk">?</span>';
-    const col=[{Vop:p.VopOld,st:0,D:p.Dold,S:p.VopOld-p.Dold,n:p.n0,P:c.P0,W:p.VopOld-p.Dold},{Vop:p.VopNew,st:c.cash,D:p.Dnew,S:p.VopNew-p.Dold,n:p.n0,P:c.Pp,W:p.VopNew-p.Dold},{Vop:p.VopNew,st:0,D:p.Dnew,S:c.S,n:c.nP,P:c.Pp,W:c.W}];
-    const show=(i,k)=>i===0||(i===1&&s2)||(i===2&&(k==='W'?w3:s3));
-    const rows=[['V<sub>op</sub>','Vop',v=>usd(v)],['+ ST investments','st',v=>usd(v)],['= V<sub>Total</sub>','tot',v=>usd(v)],['− Debt','D',v=>usd(v)],['= Equity S','S',v=>usd(v)],['÷ Shares n (M)','n',v=>fmt(v,2)],['= Price P','P',v=>usd(v)],['Shareholder wealth (S + cash)','W',v=>usd(v)]];
+  main.append(missionHead('recap','Follow the recap from lecture one stage at a time: before debt, after issuing debt, after the repurchase.'));
+  main.append(terms([['Leveraged recap','Issue debt, then use the cash to buy back shares (or pay a dividend).'],['Deleveraged recap','Issue stock and use the cash to buy back debt.']]));
+  main.append(secHead('Lab','Run the recap'));
+  const lab=el(`<div class="lab"><div class="lab-controls"><div class="seg" id="rc-w">${[1,2,3,4].map(i=>`<button type="button" data-i="${i}">w<sub>d</sub> = ${WD[i]*100}%</button>`).join('')}</div>
+    <div class="seg" id="rc-s">${['1 · Before debt','2 · Issue debt','3 · Repurchase'].map((t,i)=>`<button type="button" data-s="${i}">${t}</button>`).join('')}</div>
+    <div class="num-row"><button type="button" class="btn ghost" id="rc-back">Back</button><button type="button" class="btn accent" id="rc-next">Next stage</button></div></div>
+    <div class="stage-note" id="rc-note"></div><div class="tbl-wrap"><table class="tbl" id="rc-t"></table></div><div class="rbars" id="rc-b"></div>
+    <ul class="legend"><li><i style="background:var(--debt)"></i>Debt</li><li><i style="background:var(--equity)"></i>Equity S</li><li><i style="background:var(--gov)"></i>Cash paid to shareholders</li></ul></div>`);
+  main.append(lab);
+  function upd(){
+    const r=LR[RCI],Pp=r.vop/10,nP=10-r.D/Pp,S3=r.vop-r.D,wd=r.wd*100;
+    const col=[{h:'Before debt',Vop:750,st:0,D:0,S:750,n:10,P:75,W:750,cash:0},{h:'After debt, before repurchase',Vop:r.vop,st:r.D,D:r.D,S:r.vop,n:10,P:Pp,W:r.vop,cash:0},{h:'After repurchase',Vop:r.vop,st:0,D:r.D,S:S3,n:nP,P:Pp,W:r.vop,cash:r.D}].slice(0,RCS+1);
     col.forEach(x=>x.tot=x.Vop+x.st);
-    $('#rc-t',box).innerHTML=`<thead><tr><th></th><th>1 · Before debt</th><th>2 · After debt, before repurchase</th><th>3 · After repurchase</th></tr></thead><tbody>${rows.map(([l,k,f])=>`<tr class="${k==='P'||k==='W'?'key':''}"><td>${l}</td>${col.map((x,i)=>`<td>${show(i,k)?f(x[k]):q}</td>`).join('')}</tr>`).join('')}</tbody>`;
-    const mx=Math.max(...col.map(x=>x.tot));
-    $('#rc-b',box).innerHTML=col.map((x,i)=>{const lab=['1 · Before','2 · Debt issued','3 · Repurchased'][i];if(!show(i,'S'))return`<div class="rbar"><span>${lab}</span><div class="rbar-track"><div class="seg-q" style="width:${100*x.tot/mx}%">locked</div></div></div>`;
-      const cash=i===2?c.cash:0;return`<div class="rbar"><span>${lab}</span><div class="rbar-track">${x.D>0?`<div class="seg-d" style="width:${100*x.D/mx}%">D ${fmt(x.D,0)}</div>`:''}<div class="seg-s" style="width:${100*x.S/mx}%">S ${fmt(x.S,0)}</div>${cash?`<div class="seg-c" style="width:${100*cash/mx}%">cash ${fmt(cash,0)}</div>`:''}</div></div>`;}).join('');
+    lab.querySelectorAll('#rc-w button').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.i===RCI)));
+    lab.querySelectorAll('#rc-s button').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.s===RCS)));
+    $('#rc-back',lab).disabled=RCS===0;$('#rc-next',lab).disabled=RCS===2;
+    const verdict=r.vop>750.01?`Shareholders capture the whole gain: wealth rises from $750M to ${usd(r.vop)}M.`:r.vop<749.99?`<span class="warn">This much debt destroys value: wealth falls from $750M to ${usd(r.vop)}M.</span>`:'No gain: V<sub>op</sub> is back at $750M.';
+    const notes=[
+      `<div><b>Stage 1 · Before debt.</b> All equity: V<sub>op</sub> = $750M, 10M shares, P = $75.00. Shareholder wealth = $750M.</div>`,
+      `<div><b>Stage 2 · Issue debt, before the repurchase.</b> At w<sub>d</sub> = ${wd}%, WACC is ${pct(r.wacc)} (12.00% with no debt), so V<sub>op</sub> = ${usd(r.vop)}M. The firm borrows D<sub>New</sub> = w<sub>d</sub> × V<sub>op</sub> = ${usd(r.D)}M and holds it as short-term investments for now.</div><div class="fblock">P<sub>Post</sub> = (V<sub>opNew</sub> − D<sub>Old</sub>) / n<sub>Prior</sub> = (${usd(r.vop)} − $0) / 10 = ${usd(Pp)}</div><div>${verdict}</div>`,
+      `<div><b>Stage 3 · Repurchase.</b> The ${usd(r.D)}M buys back shares at ${usd(Pp)}:</div><div class="fblock">n<sub>Post</sub> = n<sub>Prior</sub> − (D<sub>New</sub> − D<sub>Old</sub>) / P = 10 − ${usd(r.D)} / ${usd(Pp)} = ${fmt(nP,2)}M shares</div><div>The price stays at ${usd(Pp)}. Equity falls to S = (1 − w<sub>d</sub>)V<sub>op</sub> = ${usd(S3)}M because the firm no longer holds the cash, but shareholder wealth = S + cash = ${usd(S3)}M + ${usd(r.D)}M = <b>${usd(r.vop)}M</b>, unchanged.</div>`];
+    $('#rc-note',lab).innerHTML=notes[RCS];
+    const rows=[['V<sub>op</sub>','Vop',v=>usd(v)],['+ ST investments','st',v=>usd(v)],['= V<sub>Total</sub>','tot',v=>usd(v)],['− Debt','D',v=>usd(v)],['= Equity S','S',v=>usd(v)],['÷ Shares n (M)','n',v=>fmt(v,2)],['= Price P','P',v=>usd(v)],['Shareholder wealth (S + cash)','W',v=>usd(v)]];
+    $('#rc-t',lab).innerHTML=`<thead><tr><th></th>${col.map((x,i)=>`<th class="${i===RCS?'hl':''}">${x.h}</th>`).join('')}</tr></thead><tbody>${rows.map(([l,k,f])=>`<tr class="${k==='P'||k==='W'?'key':''}"><td>${l}</td>${col.map((x,i)=>`<td class="${i===RCS?'hl':''}">${f(x[k])}</td>`).join('')}</tr>`).join('')}</tbody>`;
+    const mx=Math.max(923.08,...col.map(x=>x.tot));
+    $('#rc-b',lab).innerHTML=col.map((x,i)=>`<div class="rbar"><span>${['1 · Before','2 · Debt issued','3 · Repurchased'][i]}</span><div class="rbar-track">${x.D>0?`<div class="seg-d" style="width:${100*x.D/mx}%">D ${fmt(x.D,0)}</div>`:''}<div class="seg-s" style="width:${100*x.S/mx}%">S ${fmt(x.S,0)}</div>${x.cash?`<div class="seg-c" style="width:${100*x.cash/mx}%">cash ${fmt(x.cash,0)}</div>`:''}</div></div>`).join('');
   }
-  ['rc_p','rc_n','rc_s','rc_w'].forEach(i=>Q[i].onChange=upd);upd();
-  main.append(secHead('Run the machine','Predict each stage'));
-  const qs=el('<div class="qs"></div>');['rc_p','rc_mc','rc_n','rc_s','rc_w','rc_type'].forEach(i=>qs.append(renderQ(i)));main.append(qs);
-
-  $('#rc-new').onclick=()=>regroup('rc');
+  lab.querySelectorAll('#rc-w button').forEach(b=>b.onclick=()=>{RCI=+b.dataset.i;upd();});
+  lab.querySelectorAll('#rc-s button').forEach(b=>b.onclick=()=>{RCS=+b.dataset.s;upd();});
+  $('#rc-back',lab).onclick=()=>{RCS=Math.max(0,RCS-1);upd();};
+  $('#rc-next',lab).onclick=()=>{RCS=Math.min(2,RCS+1);upd();};
+  upd();
+  main.append(secHead('Questions','Check your understanding'));
+  const qs=el('<div class="qs"></div>');['rc_mc','rc_wealth'].forEach(i=>qs.append(renderQ(i)));main.append(qs);
 }
 
 /* ---------- shell ---------- */
@@ -832,9 +821,9 @@ const ALL_MISSIONS=[
   {id:'stress',n:2,part:'Part 1',title:'Stress Test',c:'Firm U vs. Firm L, ROIC vs. ROE, when debt pays',r:renderStress},
   {id:'mm',n:3,part:'Part 1',title:'Slice the Pizza',c:'MM Propositions I & II, corporate taxes, Miller',r:renderMM},
   {id:'theories',n:4,part:'Part 2',title:'Theory Detective',c:'Trade-off, signaling, pecking order, market timing',r:renderTheories},
-  {id:'advisor',n:5,part:'Part 2',title:'Advisor’s Desk',c:'The manager’s checklist for choosing debt',r:renderAdvisor},
-  {id:'optimal',n:6,part:'Part 2',title:'Optimal Structure Lab',c:'Hamada, CAPM, WACC and value of operations',r:renderOptimal},
-  {id:'recap',n:7,part:'Part 2',title:'Recap Machine',c:'A leveraged recapitalization, step by step',r:renderRecap},
+  {id:'advisor',n:5,part:'Part 2',title:'Advisor’s Desk',c:'Sort the checklist: when to use more debt',r:renderAdvisor},
+  {id:'optimal',n:6,part:'Part 2',title:'Optimal Structure Lab',c:'The worked example, one step at a time',r:renderOptimal},
+  {id:'recap',n:7,part:'Part 2',title:'Recap Machine',c:'Before debt, issue debt, repurchase',r:renderRecap},
 ];
 const MISSIONS=ALL_MISSIONS.filter(m=>m.part==='Part '+PART).map((m,i)=>Object.assign({},m,{n:i+1}));
 const MB=Object.fromEntries(MISSIONS.map(m=>[m.id,m]));
