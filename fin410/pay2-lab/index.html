@@ -1,0 +1,835 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Payout Lab Part 2</title><style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
+<title>Payout Lab Part 2</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+/* Layout: a CFO's case binder. Sticky score bar, a mission index, then one mission per view: briefing, lab, questions. */
+:root{
+  --bg:#F4F3F1; --surface:#FFFFFF; --surface-2:#ECE9E6; --ink:#1D1A1C; --muted:#5F585C; --line:#D9D3CF;
+  --accent:#9E1B32; --accent-ink:#FFFFFF; --accent-soft:#F5E4E7;
+  --debt:#2E5E80; --equity:#9E1B32; --gov:#A8761A;
+  --good:#21783A; --good-bg:#E3F1E6; --bad:#B4410D; --bad-bg:#FAE8DE;
+  --f-display:"Archivo","Arial Narrow",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#151315; --surface:#1E1B1E; --surface-2:#292528; --ink:#F0EBED; --muted:#ABA1A6; --line:#3B3539;
+  --accent:#E2586F; --accent-ink:#1A0A0E; --accent-soft:#3A1B22;
+  --debt:#74A9CE; --equity:#E2586F; --gov:#D9AB4B;
+  --good:#63C580; --good-bg:#15301E; --bad:#F2925F; --bad-bg:#3A2016; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#151315; --surface:#1E1B1E; --surface-2:#292528; --ink:#F0EBED; --muted:#ABA1A6; --line:#3B3539;
+  --accent:#E2586F; --accent-ink:#1A0A0E; --accent-soft:#3A1B22;
+  --debt:#74A9CE; --equity:#E2586F; --gov:#D9AB4B;
+  --good:#63C580; --good-bg:#15301E; --bad:#F2925F; --bad-bg:#3A2016; color-scheme:dark}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.55}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+a{color:var(--accent)}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+sub{font-size:.72em}
+.num,.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+
+/* top bar */
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--surface);border-bottom:1px solid var(--line)}
+.bar-in{max-width:1040px;margin:0 auto;display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.brand{font-family:var(--f-display);font-stretch:118%;font-weight:800;letter-spacing:-.01em;font-size:1.05rem;text-decoration:none;color:var(--ink);display:flex;align-items:baseline;gap:8px}
+.brand small{font-family:var(--f-mono);font-weight:400;font-size:.72rem;color:var(--muted);letter-spacing:.04em}
+.bar-sp{flex:1}
+.score{font-family:var(--f-mono);font-size:.85rem;display:flex;align-items:center;gap:8px}
+.score b{font-weight:600;color:var(--accent)}
+.meter{width:90px;height:6px;background:var(--surface-2);border-radius:3px;overflow:hidden}
+.meter i{display:block;height:100%;background:var(--accent);width:0;transition:width .4s}
+.btn{appearance:none;border:1px solid var(--ink);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:6px;font-weight:600;cursor:pointer;font-size:.92rem}
+.btn:hover{filter:brightness(1.15)}
+.btn:disabled{opacity:.4;cursor:default;filter:none}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn.ghost:hover{border-color:var(--ink)}
+.btn.accent{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.link-btn{appearance:none;background:none;border:0;color:var(--accent);font-weight:600;cursor:pointer;padding:4px 0;font-size:.9rem;text-decoration:underline;text-underline-offset:3px}
+
+/* page */
+.wrap{max-width:1040px;margin:0 auto;padding-block:28px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.eyebrow{font-family:var(--f-mono);font-size:.74rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.08}
+h1{font-size:clamp(2rem,5.4vw,3.3rem);font-stretch:112%;font-weight:850;letter-spacing:-.02em}
+h2{font-size:1.45rem;font-stretch:108%;font-weight:750;letter-spacing:-.01em}
+h3{font-size:1.05rem;font-weight:700}
+p{margin:0}
+.lede{font-size:1.08rem;color:var(--muted);max-width:66ch}
+.stack{display:flex;flex-direction:column;gap:14px}
+.sec{margin-top:40px;display:flex;flex-direction:column;gap:16px}
+.sec-h{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;border-bottom:2px solid var(--ink);padding-bottom:8px}
+.sec-h .eyebrow{margin-left:auto}
+
+/* hero */
+.hero{display:grid;grid-template-columns:1.15fr 1fr;gap:36px;align-items:start}
+.hero > *{min-width:0}
+.hero h1 span{color:var(--accent)}
+.fund{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px;display:flex;flex-direction:column;gap:14px}
+.fund-opts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.fund-opt{appearance:none;border:1.5px solid var(--line);background:var(--bg);border-radius:8px;padding:10px 8px;cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:2px}
+.fund-opt b{font-family:var(--f-display);font-stretch:110%;font-size:1.05rem}
+.fund-opt span{font-size:.78rem;color:var(--muted)}
+.fund-opt[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.cap-bar{display:flex;height:34px;border-radius:6px;overflow:hidden;font-family:var(--f-mono);font-size:.75rem}
+.cap-bar div{display:flex;align-items:center;justify-content:center;transition:flex-grow .5s;overflow:hidden;white-space:nowrap}
+.cap-eq{background:var(--equity);color:var(--accent-ink)}
+.cap-dt{background:var(--debt);color:var(--surface)}
+.fund-say{min-height:5.2em;font-size:.95rem}
+
+/* mission grid */
+.mgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.mcard{display:flex;flex-direction:column;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;text-decoration:none;color:var(--ink);transition:border-color .15s,transform .15s}
+.mcard:hover{border-color:var(--ink);transform:translateY(-2px)}
+.mcard .mn{font-family:var(--f-display);font-stretch:125%;font-weight:900;font-size:2.2rem;line-height:1;color:var(--accent)}
+.mcard h3{font-size:1.15rem;font-stretch:108%}
+.mcard p{font-size:.86rem;color:var(--muted);flex:1}
+.mcard .mmeta{display:flex;justify-content:space-between;align-items:center;font-family:var(--f-mono);font-size:.75rem;color:var(--muted)}
+.mcard .meter{width:100%}
+.mcard.final{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.mcard.final p,.mcard.final .mmeta{color:var(--bg);opacity:.75}
+.mcard.final .mn{color:var(--bg)}
+
+/* mission header */
+.m-head{display:flex;flex-direction:column;gap:10px}
+.back{font-family:var(--f-mono);font-size:.8rem;text-decoration:none;color:var(--muted)}
+.back:hover{color:var(--accent)}
+.terms{margin:22px 0 0;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 16px;display:flex;flex-direction:column}
+.terms-h{margin-bottom:4px}
+.term{display:grid;grid-template-columns:11em minmax(0,1fr);gap:4px 16px;padding:7px 0;border-top:1px solid var(--line);font-size:.93rem}
+.terms-h + .term{border-top:0}
+.term dt{font-weight:600}
+.term dd{margin:0;color:var(--muted)}
+@media (max-width:560px){.term{grid-template-columns:1fr;gap:0}}
+.brief{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.brief > div{background:var(--surface);border-left:3px solid var(--accent);padding:14px 16px;border-radius:0 8px 8px 0;font-size:.93rem;min-width:0}
+.brief h3{margin-bottom:6px;font-size:.98rem}
+.brief ul{margin:0;padding-left:18px}
+.brief li+li{margin-top:3px}
+.f{font-family:var(--f-mono);font-size:.86em;background:var(--surface-2);padding:1px 6px;border-radius:4px;white-space:nowrap}
+.fblock{font-family:var(--f-mono);font-size:.9rem;background:var(--surface-2);padding:8px 12px;border-radius:6px;overflow-x:auto;white-space:nowrap}
+
+/* lab */
+.lab{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:18px}
+.lab-controls{display:flex;flex-wrap:wrap;gap:16px 28px;align-items:center}
+.ctrl{display:flex;flex-direction:column;gap:4px;min-width:min(280px,100%);flex:1}
+.ctrl label{font-size:.85rem;font-weight:600;display:flex;justify-content:space-between;gap:8px}
+.ctrl output{font-family:var(--f-mono);color:var(--accent);font-weight:600}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;padding:3px;gap:3px;flex-wrap:wrap;background:var(--bg)}
+.seg button{appearance:none;border:0;background:transparent;padding:7px 12px;border-radius:6px;cursor:pointer;font-weight:600;font-size:.86rem;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.lab-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}
+.lab-grid > *{min-width:0}
+.charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr));gap:20px}
+figure{margin:0;display:flex;flex-direction:column;gap:6px;min-width:0}
+figcaption{font-size:.82rem;font-weight:600;color:var(--muted)}
+svg.chart{width:100%;height:auto;display:block;overflow:visible}
+.chart .grid{stroke:var(--line);stroke-width:1}
+.chart .axis{stroke:var(--muted);stroke-width:1}
+.chart .tick{fill:var(--muted);font-family:var(--f-mono);font-size:11px}
+.chart .alabel{fill:var(--muted);font-family:var(--f-body);font-size:12px}
+.chart .slabel{font-family:var(--f-body);font-size:12px;font-weight:600}
+.note{font-size:.9rem;color:var(--muted);background:var(--bg);border-radius:8px;padding:10px 14px}
+.note b{color:var(--ink)}
+.readout{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0}
+.readout div{background:var(--bg);border-radius:8px;padding:8px 12px}
+.readout dt{font-size:.74rem;color:var(--muted);font-family:var(--f-mono);letter-spacing:.03em}
+.readout dd{margin:0;font-family:var(--f-mono);font-size:1.12rem;font-weight:600;font-variant-numeric:tabular-nums}
+.legend{list-style:none;margin:0;padding:0;display:flex;gap:14px;flex-wrap:wrap;font-size:.84rem}
+.legend li{display:flex;align-items:center;gap:6px}
+.legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+.pie-wrap{display:flex;flex-direction:column;align-items:center;gap:10px}
+.pie-wrap svg{width:min(250px,100%);height:auto}
+
+/* tables */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+table.tbl{border-collapse:collapse;width:100%;font-size:.9rem;font-variant-numeric:tabular-nums}
+.tbl th,.tbl td{padding:7px 12px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+.tbl th:first-child,.tbl td:first-child{text-align:left;font-family:var(--f-body)}
+.tbl td{font-family:var(--f-mono)}
+.tbl thead th{font-family:var(--f-mono);font-size:.78rem;color:var(--muted);font-weight:600;background:var(--bg)}
+.tbl tr:last-child td{border-bottom:0}
+.tbl .hl{background:var(--accent-soft)}
+.tbl .key td{font-weight:600}
+.tbl .unk{color:var(--accent);font-weight:600}
+.tbl .best{background:var(--good-bg);color:var(--good);font-weight:600}
+.tbl td.up{color:var(--good)} .tbl td.dn{color:var(--bad)}
+
+/* questions */
+.qs{display:flex;flex-direction:column;gap:14px}
+.q{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px;display:flex;flex-direction:column;gap:12px}
+.q-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.q-tag{font-family:var(--f-mono);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);font-weight:600}
+.q-pts{font-family:var(--f-mono);font-size:.74rem;color:var(--muted);border:1px solid var(--line);border-radius:20px;padding:2px 9px;white-space:nowrap}
+.q-pts.got{color:var(--good);border-color:var(--good);background:var(--good-bg)}
+.q-pts.miss{color:var(--bad);border-color:var(--bad)}
+.q-prompt{font-size:1rem;max-width:72ch}
+.opts{display:flex;flex-direction:column;gap:7px}
+.opts.chips{flex-direction:row;flex-wrap:wrap}
+.opt{appearance:none;display:flex;gap:10px;align-items:flex-start;text-align:left;background:var(--bg);border:1.5px solid var(--line);border-radius:8px;padding:9px 12px;cursor:pointer;font-size:.94rem}
+.opts.chips .opt{padding:7px 12px}
+.opt:hover:not(:disabled){border-color:var(--ink)}
+.opt:disabled{cursor:default}
+.opt-key{font-family:var(--f-mono);font-size:.74rem;font-weight:600;color:var(--muted);padding-top:2px}
+.opt.is-right{border-color:var(--good);background:var(--good-bg)}
+.opt.is-right .opt-key{color:var(--good)}
+.opt.is-wrong{border-color:var(--bad);background:var(--bad-bg)}
+.opt.is-wrong .opt-key{color:var(--bad)}
+.fb{border-radius:8px;padding:10px 14px;font-size:.93rem;max-width:80ch}
+.fb.good{background:var(--good-bg);border-left:3px solid var(--good)}
+.fb.bad{background:var(--bad-bg);border-left:3px solid var(--bad)}
+.fb.info{background:var(--surface-2);border-left:3px solid var(--muted)}
+.num-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.num-field{display:flex;align-items:center;border:1.5px solid var(--line);border-radius:8px;background:var(--bg);overflow:hidden}
+.num-field:focus-within{border-color:var(--accent)}
+.num-field span{padding:0 10px;font-family:var(--f-mono);color:var(--muted);font-size:.9rem}
+.num-field input{border:0;background:transparent;color:var(--ink);font-family:var(--f-mono);font-size:1rem;padding:9px 4px;width:9.5em;outline:none}
+.num-field input:disabled{opacity:.7}
+.qfig{max-width:560px}
+
+/* sort game */
+.deck{display:grid;grid-template-columns:1fr;gap:12px;justify-items:center;text-align:center;padding:8px 0}
+.card{background:var(--bg);border:1.5px solid var(--ink);border-radius:12px;padding:22px 20px;max-width:460px;width:100%;font-size:1.05rem;font-weight:500;box-shadow:4px 4px 0 var(--line);animation:deal .35s ease-out}
+@keyframes deal{from{transform:translateY(-10px) rotate(-2deg);opacity:.3}to{transform:none;opacity:1}}
+.bin.b3{color:var(--gov)}
+.fx-wrap{white-space:normal}
+.tl-wrap{overflow-x:auto}
+.tl{display:grid;grid-template-columns:repeat(5,minmax(104px,1fr));gap:6px;min-width:540px;padding:2px}
+.tl-item{appearance:none;border:1.5px solid var(--line);background:var(--bg);border-radius:8px;padding:10px 8px;cursor:pointer;display:flex;flex-direction:column;gap:2px;text-align:left;border-top-width:5px}
+.tl-item.cum{border-top-color:var(--good)}
+.tl-item.ex{border-top-color:var(--bad)}
+.tl-item[aria-pressed="true"]{border-color:var(--ink);background:var(--surface)}
+.tl-d{font-family:var(--f-mono);font-weight:600;font-size:.95rem}
+.tl-k{font-size:.8rem;color:var(--muted)}
+.bins{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;width:100%;max-width:460px}
+.bin{appearance:none;border:2px dashed var(--line);border-radius:10px;padding:14px 10px;background:var(--surface);cursor:pointer;font-weight:700;font-family:var(--f-display);font-stretch:108%;font-size:1rem;display:flex;flex-direction:column;gap:2px}
+.bin small{font-family:var(--f-body);font-weight:400;font-size:.76rem;color:var(--muted)}
+.bin:hover{border-style:solid;border-color:var(--ink)}
+.bin.b1{color:var(--accent)} .bin.b2{color:var(--debt)}
+.sorted{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;text-align:left}
+.sorted ul{margin:6px 0 0;padding-left:18px;font-size:.9rem}
+.sorted li.miss{color:var(--bad)}
+
+.sig-row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:8px 0;border-bottom:1px solid var(--line)}
+.sig-row:last-of-type{border-bottom:0}
+.yn{display:inline-flex;gap:6px}
+.yn button{appearance:none;border:1.5px solid var(--line);background:var(--bg);border-radius:6px;padding:6px 14px;cursor:pointer;font-weight:600}
+.yn button[aria-pressed="true"]{border-color:var(--ink);background:var(--ink);color:var(--bg)}
+.yn button.is-right{border-color:var(--good);background:var(--good-bg);color:var(--good)}
+.yn button.is-wrong{border-color:var(--bad);background:var(--bad-bg);color:var(--bad)}
+.peck{display:flex;gap:8px;flex-wrap:wrap}
+.peck-seq{display:flex;gap:8px;flex-wrap:wrap;align-items:center;min-height:42px}
+.peck-seq span{font-family:var(--f-mono);font-size:.85rem;background:var(--surface-2);border-radius:6px;padding:7px 10px}
+.peck-seq em{font-style:normal;color:var(--muted)}
+
+/* recap bars */
+.rbars{display:flex;flex-direction:column;gap:10px}
+.rbar{display:grid;grid-template-columns:150px 1fr;gap:12px;align-items:center;font-size:.85rem}
+.rbar-track{display:flex;height:28px;border-radius:5px;overflow:hidden;background:var(--surface-2)}
+.rbar-track div{display:flex;align-items:center;padding:0 6px;font-family:var(--f-mono);font-size:.72rem;white-space:nowrap;overflow:hidden;transition:width .5s}
+.seg-d{background:var(--debt);color:var(--surface)}
+.seg-s{background:var(--equity);color:var(--accent-ink)}
+.seg-c{background:var(--gov);color:var(--surface)}
+.seg-q{background:repeating-linear-gradient(45deg,var(--surface-2),var(--surface-2) 6px,var(--line) 6px,var(--line) 12px);color:var(--muted)}
+
+.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.step{display:grid;grid-template-columns:2.2em minmax(0,1fr);gap:10px;align-items:start;background:var(--bg);border-radius:8px;padding:10px 12px}
+.step .k{font-family:var(--f-mono);font-weight:600;color:var(--accent);font-size:1.05rem}
+.step h4{margin:0 0 3px;font-size:.9rem;font-family:var(--f-body)}
+.step .fx{font-family:var(--f-mono);font-size:.9rem;overflow-x:auto;white-space:nowrap;padding-bottom:2px}
+.step.locked{opacity:.55}
+.step.locked .fx{color:var(--muted)}
+.step.new{animation:deal .3s ease-out}
+.stage-note{background:var(--bg);border-radius:8px;padding:12px 14px;font-size:.95rem;display:flex;flex-direction:column;gap:8px}
+.stage-note .fblock{white-space:normal}
+.warn{color:var(--bad);font-weight:600}
+.foot-nav{display:flex;justify-content:space-between;gap:12px;margin-top:44px;flex-wrap:wrap}
+.foot-nav a{text-decoration:none}
+.small{font-size:.84rem;color:var(--muted)}
+
+/* formula sheet */
+.sheet{position:fixed;inset:0;z-index:20;background:color-mix(in srgb,var(--ink) 45%,transparent);display:flex;justify-content:flex-end}
+.sheet-in{background:var(--surface);width:min(520px,100%);height:100%;overflow-y:auto;padding:20px;padding-top:calc(20px + env(safe-area-inset-top,0px));padding-bottom:calc(20px + env(safe-area-inset-bottom,0px));padding-right:max(20px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:14px;box-shadow:-8px 0 30px rgba(0,0,0,.2)}
+.sheet-in h3{margin-top:6px;font-size:.8rem;font-family:var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.sheet-in .fblock,.brief .fblock{white-space:normal}
+.fx-sec{display:flex;flex-direction:column;gap:8px}
+.fx-row{background:var(--surface-2);border-radius:8px;padding:8px 12px;display:flex;flex-direction:column;gap:2px}
+.fx-label{font-size:.76rem;color:var(--muted);font-family:var(--f-mono);letter-spacing:.02em}
+.fx-math{overflow-x:auto;overflow-y:hidden;color:var(--ink)}
+.fx-math math{font-size:1.12rem;margin:2px 0;text-align:left}
+.fx-math math[display="block"]{display:block math;math-style:normal;text-align:left;margin-left:0}
+.fx-inq{background:var(--surface-2);border-radius:8px;padding:8px 12px;margin:8px 0;max-width:max-content}
+.sheet-close{align-self:flex-end}
+
+.rank{display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:24px}
+.rank-big{font-family:var(--f-display);font-stretch:125%;font-weight:900;font-size:clamp(2.6rem,8vw,4.4rem);line-height:1;color:var(--accent)}
+.rank > *{min-width:0}
+
+@media (max-width:760px){
+  .hero,.lab-grid{grid-template-columns:1fr}
+  .rank{grid-template-columns:1fr}
+  .rbar{grid-template-columns:1fr;gap:4px}
+  .fund-opts{grid-template-columns:1fr}
+  .bar-in{gap:8px}
+  .meter.top{display:none}
+  .tbl th,.tbl td{padding:6px 8px}
+  .tbl td:first-child,.tbl th:first-child{white-space:normal;min-width:7.5em}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+</style>
+
+<div class="bar"><div class="bar-in">
+  <a class="brand" href="#hq">Payout Lab <small>FIN 410 · CH 15 · PART 2</small></a>
+  <span class="bar-sp"></span>
+  <span class="score" aria-live="polite"><span class="meter top"><i id="top-meter"></i></span><span><b id="top-pts">0</b> / <span id="top-max">0</span> pts</span></span>
+  <button class="btn ghost" id="open-sheet" type="button">Formula sheet</button>
+</div></div>
+
+<main class="wrap" id="main"></main>
+
+<div class="sheet" id="sheet" hidden>
+  <div class="sheet-in" role="dialog" aria-label="Formula sheet">
+    <button class="btn ghost sheet-close" id="close-sheet" type="button">Close</button>
+    <h2>Formula sheet</h2>
+    <div data-part="1" class="fx-sec"><h3>Measuring payouts</h3><div class="fx-row"><div class="fx-label">Dividend yield</div><div class="fx-math"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mtext>Dividend yield</mtext><mo>=</mo><mfrac><mrow><mi mathvariant="normal">D</mi><mi mathvariant="normal">P</mi><mi mathvariant="normal">S</mi></mrow><mi>P</mi></mfrac></mrow></semantics></math></span></div></div><div class="fx-row"><div class="fx-label">Payout ratio</div><div class="fx-math"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mtext>Payout ratio</mtext><mo>=</mo><mfrac><mrow><mi mathvariant="normal">D</mi><mi mathvariant="normal">P</mi><mi mathvariant="normal">S</mi></mrow><mrow><mi mathvariant="normal">E</mi><mi mathvariant="normal">P</mi><mi mathvariant="normal">S</mi></mrow></mfrac></mrow></semantics></math></span></div></div></div>
+    <div data-part="1" class="fx-sec"><h3>Residual distribution model</h3><div class="fx-row"><div class="fx-label">Distributions</div><div class="fx-math"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mtable rowspacing="0.25em" columnalign="right left" columnspacing="0em"><mtr><mtd><mstyle scriptlevel="0" displaystyle="true"><mtext>Distributions</mtext></mstyle></mtd><mtd><mstyle scriptlevel="0" displaystyle="true"><mrow><mrow></mrow><mo>=</mo><mrow><mi mathvariant="normal">N</mi><mi mathvariant="normal">I</mi></mrow></mrow></mstyle></mtd></mtr><mtr><mtd><mstyle scriptlevel="0" displaystyle="true"><mrow></mrow></mstyle></mtd><mtd><mstyle scriptlevel="0" displaystyle="true"><mrow><mrow></mrow><mspace width="1em"/><mo>−</mo><mo stretchy="false">(</mo><mtext>Target equity ratio</mtext><mo>×</mo><mtext>Capital budget</mtext><mo stretchy="false">)</mo></mrow></mstyle></mtd></mtr></mtable></semantics></math></span></div></div><div class="fx-row"><div class="fx-label">Distribution ratio</div><div class="fx-math"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mtext>Distribution ratio</mtext><mo>=</mo><mfrac><mtext>Distributions</mtext><mrow><mi mathvariant="normal">N</mi><mi mathvariant="normal">I</mi></mrow></mfrac></mrow></semantics></math></span></div></div></div>
+    <div data-part="2" class="fx-sec"><h3>Price on the ex-dividend date</h3><div class="fx-row"><div class="fx-label">Perfect world, no taxes</div><div class="fx-math"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msub><mi>P</mi><mtext>ex</mtext></msub><mo>=</mo><msub><mi>P</mi><mtext>cum</mtext></msub><mo>−</mo><mrow><mi mathvariant="normal">D</mi><mi mathvariant="normal">P</mi><mi mathvariant="normal">S</mi></mrow></mrow></semantics></math></span></div></div></div>
+    <div data-part="2" class="fx-sec"><h3>Intrinsic value per share</h3><div class="fx-row"><div class="fx-label">Equity</div><div class="fx-math"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>S</mi><mo>=</mo><msub><mi>V</mi><mrow><mi mathvariant="normal">o</mi><mi mathvariant="normal">p</mi></mrow></msub><mo>+</mo><mtext>ST Inv.</mtext><mo>−</mo><mtext>Debt</mtext></mrow></semantics></math></span></div></div><div class="fx-row"><div class="fx-label">Price</div><div class="fx-math"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>P</mi><mo>=</mo><mfrac><mi>S</mi><mi>n</mi></mfrac></mrow></semantics></math></span></div></div></div>
+    <div data-part="2" class="fx-sec"><h3>Dividend vs. repurchase</h3><div class="fx-row"><div class="fx-label">Dividend per share</div><div class="fx-math"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mrow><mi mathvariant="normal">D</mi><mi mathvariant="normal">P</mi><mi mathvariant="normal">S</mi></mrow><mo>=</mo><mfrac><mtext>Total dividend</mtext><mi>n</mi></mfrac></mrow></semantics></math></span></div></div><div class="fx-row"><div class="fx-label">Shares repurchased</div><div class="fx-math"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msub><mi>n</mi><mtext>Prior</mtext></msub><mo>−</mo><msub><mi>n</mi><mtext>Post</mtext></msub><mo>=</mo><mfrac><msub><mtext>Cash</mtext><mtext>Rep</mtext></msub><msub><mi>P</mi><mtext>Prior</mtext></msub></mfrac></mrow></semantics></math></span></div></div><div class="fx-row"><div class="fx-label">Shares after the repurchase</div><div class="fx-math"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msub><mi>n</mi><mtext>Post</mtext></msub><mo>=</mo><msub><mi>n</mi><mtext>Prior</mtext></msub><mo>−</mo><mfrac><msub><mtext>Cash</mtext><mtext>Rep</mtext></msub><msub><mi>P</mi><mtext>Prior</mtext></msub></mfrac></mrow></semantics></math></span></div></div></div>
+    <div data-part="2" class="fx-sec"><h3>Splits and stock dividends</h3><div class="fx-row"><div class="fx-label">k-for-1 split</div><div class="fx-math"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msub><mi>n</mi><mtext>new</mtext></msub><mo>=</mo><mi>k</mi><mtext> </mtext><mi>n</mi><mo separator="true">,</mo><mspace width="2em"/><msub><mi>P</mi><mtext>new</mtext></msub><mo>=</mo><mfrac><mi>P</mi><mi>k</mi></mfrac></mrow></semantics></math></span></div></div><div class="fx-row"><div class="fx-label">Stock dividend of x%</div><div class="fx-math"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msub><mi>n</mi><mtext>new</mtext></msub><mo>=</mo><mo stretchy="false">(</mo><mn>1</mn><mo>+</mo><mi>x</mi><mo stretchy="false">)</mo><mtext> </mtext><mi>n</mi><mo separator="true">,</mo><mspace width="2em"/><msub><mi>P</mi><mtext>new</mtext></msub><mo>=</mo><mfrac><mi>P</mi><mrow><mn>1</mn><mo>+</mo><mi>x</mi></mrow></mfrac></mrow></semantics></math></span></div></div></div>
+  </div>
+</div>
+
+<script>
+const PART=2, OTHER_URL='';
+/* ---------- helpers ---------- */
+const $=(s,r=document)=>r.querySelector(s);
+const fmt=(x,d=2)=>Number(x).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
+const usd=(x,d=2)=>(x<0?'−$':'$')+fmt(Math.abs(x),d);
+const pct=(x,d=2)=>fmt(x,d)+'%';
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const el=h=>{const t=document.createElement('template');t.innerHTML=h.trim();return t.content.firstElementChild;};
+const strip=h=>String(h).replace(/<[^>]+>/g,'');
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+function nice(a,b,n=5){const raw=(b-a)/n,mag=10**Math.floor(Math.log10(raw)),f=raw/mag,st=(f<1.5?1:f<3?2:f<7?5:10)*mag;const o=[];for(let v=Math.ceil(a/st-1e-9)*st;v<=b+1e-9;v+=st)o.push(+v.toFixed(8));return o;}
+const line=(f,x0,x1,n=80)=>Array.from({length:n+1},(_,i)=>{const x=x0+(x1-x0)*i/n;return[x,f(x)];});
+let CLIP=0;
+const SUB=t=>String(t).replace(/_([A-Za-z]+)/g,'<tspan baseline-shift="sub" font-size="9">$1</tspan>');
+function chart(svg,c){
+  svg._c=c;svg.classList.add('chart');const bw=svg.getBoundingClientRect().width,cw=c.w||600;
+  const W=Math.round(Math.max(330,Math.min(cw,bw||cw))),H=Math.round((c.h||300)*Math.max(.82,W/cw)),m=Object.assign({l:c.yl?74:58,r:24,t:20,b:46},c.m||{});
+  const X=v=>m.l+(v-c.x0)/(c.x1-c.x0)*(W-m.l-m.r), Y=v=>H-m.b-(v-c.y0)/(c.y1-c.y0)*(H-m.t-m.b);
+  const cid='clip'+(++CLIP);
+  let s=`<defs><clipPath id="${cid}"><rect x="${m.l}" y="${m.t-4}" width="${W-m.l-m.r+4}" height="${H-m.t-m.b+8}"/></clipPath></defs>`;
+  (c.yt||nice(c.y0,c.y1)).forEach(v=>{s+=`<line class="grid" x1="${m.l}" x2="${W-m.r}" y1="${Y(v)}" y2="${Y(v)}"/><text class="tick" x="${m.l-8}" y="${Y(v)+4}" text-anchor="end">${c.fy(v)}</text>`;});
+  (c.xt||nice(c.x0,c.x1)).forEach(v=>{s+=`<text class="tick" x="${X(v)}" y="${H-m.b+18}" text-anchor="middle">${c.fx(v)}</text>`;});
+  s+=`<line class="axis" x1="${m.l}" x2="${W-m.r}" y1="${H-m.b}" y2="${H-m.b}"/>`;
+  if(c.xl)s+=`<text class="alabel" x="${(m.l+W-m.r)/2}" y="${H-8}" text-anchor="middle">${SUB(c.xl)}</text>`;
+  if(c.yl)s+=`<text class="alabel" transform="translate(13 ${(m.t+H-m.b)/2}) rotate(-90)" text-anchor="middle">${c.yl}</text>`;
+  (c.vlines||[]).forEach(v=>{s+=`<line x1="${X(v.x)}" x2="${X(v.x)}" y1="${m.t}" y2="${H-m.b}" style="stroke:${v.color||'var(--muted)'};stroke-dasharray:4 4;stroke-width:1.5"/>`;if(v.label)s+=`<text class="slabel" x="${X(v.x)+(v.dx??6)}" y="${m.t+10}" text-anchor="${v.anchor||'start'}" style="fill:${v.color||'var(--muted)'}">${v.label}</text>`;});
+  s+=`<g clip-path="url(#${cid})">`;
+  (c.series||[]).forEach(se=>{const d=se.pts.map((p,i)=>(i?'L':'M')+X(p[0]).toFixed(1)+' '+Y(p[1]).toFixed(1)).join('');s+=`<path d="${d}" style="fill:none;stroke:${se.color};stroke-width:${se.w||2.5};${se.dash?'stroke-dasharray:'+se.dash+';':''}opacity:${se.op??1};stroke-linejoin:round"/>`;});
+  s+=`</g>`;
+  (c.series||[]).forEach(se=>{if(se.label){const p=se.lp||se.pts[se.pts.length-1];s+=`<text class="slabel" x="${X(p[0])+(se.dx||0)}" y="${Y(p[1])+(se.dy??-8)}" text-anchor="${se.anchor||'end'}" style="fill:${se.color};opacity:${se.op??1}">${SUB(se.label)}</text>`;}});
+  (c.dots||[]).forEach(d=>{s+=`<circle cx="${X(d.x)}" cy="${Y(d.y)}" r="${d.r||5}" style="fill:${d.color};stroke:var(--surface);stroke-width:2"/>`;if(d.label)s+=`<text class="slabel" x="${X(d.x)+(d.dx??8)}" y="${Y(d.y)+(d.dy??-8)}" text-anchor="${d.anchor||'start'}" style="fill:${d.color}">${SUB(d.label)}</text>`;});
+  svg.setAttribute('viewBox',`0 0 ${W} ${H}`);svg.innerHTML=s;
+}
+
+/* ---------- state ---------- */
+const LS='fin410-payout-lab-part'+PART;
+let ST={a:{}};
+try{const s=localStorage.getItem(LS);if(s){const p=JSON.parse(s);if(p&&p.a)ST=p;}}catch(e){}
+function save(){try{localStorage.setItem(LS,JSON.stringify(ST));}catch(e){}updateScore();}
+const rec=id=>(ST.a[id]||(ST.a[id]={}));
+const PR={}; // practice records (not saved, not scored)
+const REG={};
+const reg=(m,id,max)=>{REG[id]={m,max};};
+const GROUPS={};
+function grp(k){const key='g_'+k;if(!ST.a[key]){ST.a[key]={ver:0,par:GROUPS[k](true)};save();}return ST.a[key];}
+function regroup(k){const g=grp(k);g.ver++;g.par=GROUPS[k](false);Object.keys(Q).forEach(id=>{if(Q[id].group===k){const r=rec(id);if(!r.done){delete r.tries;delete r.last;}delete PR[id];}});save();rerender();}
+function activeRec(q){
+  const r=rec(q.id);
+  if(q.group){const g=grp(q.group);if(r.done&&r.ver!==g.ver){if(!PR[q.id]||PR[q.id].ver!==g.ver)PR[q.id]={ver:g.ver,practice:true};return PR[q.id];}return r;}
+  return PR[q.id]||r;
+}
+function parOf(q){if(q.group)return grp(q.group).par;const a=activeRec(q);if(a.practice)return a.par;if(!a.par){a.par=q.gen?q.gen():{};save();}return a.par;}
+const resolved=id=>{const q=Q[id];return q?!!activeRec(q).done:!!rec(id).done;};
+function missionScore(m){let got=0,max=0;for(const[id,r]of Object.entries(REG))if(r.m===m){max+=r.max;got+=(ST.a[id]&&ST.a[id].pts)||0;}return{got,max};}
+function totalScore(){let got=0,max=0;for(const[id,r]of Object.entries(REG)){if(!MB[r.m])continue;max+=r.max;got+=(ST.a[id]&&ST.a[id].pts)||0;}return{got,max};}
+function updateScore(){const t=totalScore();$('#top-pts').textContent=t.got;$('#top-max').textContent=t.max;$('#top-meter').style.width=(t.max?100*t.got/t.max:0)+'%';}
+
+/* ---------- question engine ---------- */
+const Q={};
+function ptsBadge(q,a){const full=q.pts||10;if(a.practice)return`<span class="q-pts">Practice</span>`;if(a.done)return`<span class="q-pts ${a.pts>0?'got':'miss'}">${a.pts>0?'+'+a.pts:'0'} / ${full} pts</span>`;return`<span class="q-pts">${full} pts</span>`;}
+function renderQ(id){return Q[id].type==='num'?numQ(id):mcQ(id);}
+function mcQ(id){
+  const q=Q[id];const w=el(`<div class="q" id="q-${id}"></div>`);
+  function paint(){
+    const a=activeRec(q);const par=q.group?grp(q.group).par:null;
+    const opts=q.optsF?q.optsF(par):q.opts, ans=q.ansF?q.ansF(par):q.ans;
+    const prompt=typeof q.prompt==='function'?q.prompt(par):q.prompt;
+    w.innerHTML=`<div class="q-head"><span class="q-tag">${q.tag||'Question'}</span>${ptsBadge(q,a)}</div><div class="q-prompt">${prompt}</div><div class="opts${q.chips?' chips':''}"></div><div class="fb" hidden></div>`;
+    const box=w.querySelector('.opts'),fb=w.querySelector('.fb');
+    opts.forEach((o,i)=>{const b=el(`<button type="button" class="opt"><span class="opt-key">${'ABCDEFGH'[i]}</span><span>${o}</span></button>`);
+      if(a.done){b.disabled=true;if(i===ans)b.classList.add('is-right');if(i===a.choice&&i!==ans)b.classList.add('is-wrong');}
+      else b.onclick=()=>{a.done=true;a.choice=i;a.correct=i===ans;if(!a.practice){a.pts=a.correct?(q.pts||10):0;if(q.group)a.ver=grp(q.group).ver;save();}paint();q.onChange&&q.onChange();};
+      box.append(b);});
+    if(a.done){const ex=typeof q.explain==='function'?q.explain(par):q.explain;fb.hidden=false;fb.className='fb '+(a.correct?'good':'bad');fb.innerHTML=(a.correct?'<b>Correct.</b> ':`<b>Not quite.</b> The answer is <b>${strip(opts[ans])}</b>. `)+ex;}
+  }
+  paint();return w;
+}
+function parseAns(s,q){let v=parseFloat(String(s).replace(/[−–]/g,'-').replace(/[,$\s%]/g,''));if(isNaN(v))return NaN;if(q.kind==='pct'&&Math.abs(v)<1&&Math.abs(q._ans)>=1)v*=100;return v;}
+function isClose(v,a,q){const tol=q.tol!=null?q.tol:Math.max(0.005*Math.abs(a),0.01);return Math.abs(v-a)<=tol+1e-9;}
+function showAns(q,a){const d=q.dp!=null?q.dp:2;return(q.pre||'')+fmt(a,d)+(q.kind==='pct'?'%':'')+(q.sufText?' '+q.sufText:'');}
+function numQ(id){
+  const q=Q[id];const w=el(`<div class="q" id="q-${id}"></div>`);
+  function paint(){
+    const a=activeRec(q),par=parOf(q),ans=q.ans(par);q._ans=ans;
+    const full=q.pts||10;
+    w.innerHTML=`<div class="q-head"><span class="q-tag">${q.tag||'Calculate'}</span>${ptsBadge(q,a)}</div><div class="q-prompt">${q.prompt(par)}</div>${q.fig?'<svg class="chart qfig"></svg>':''}
+      <form class="num-row" novalidate><div class="num-field">${q.pre?`<span>${q.pre}</span>`:''}<input id="in-${id}" inputmode="decimal" autocomplete="off" aria-label="Your answer" ${a.done?'disabled':''}>${q.suf?`<span>${q.suf}</span>`:''}</div><button class="btn" ${a.done?'disabled':''}>Check</button></form>
+      <div class="fb" hidden></div>${a.done&&q.gen&&!q.group?'<div><button type="button" class="link-btn" data-new>Try new numbers (practice)</button></div>':''}`;
+    const inp=w.querySelector('input'),fb=w.querySelector('.fb');inp.value=a.last||'';
+    if(q.fig){const sv=w.querySelector('svg');q.fig(sv,par,!!a.done);if(w.isConnected)chart(sv,sv._c);}
+    if(a.done){fb.hidden=false;fb.className='fb '+(a.correct?'good':'bad');fb.innerHTML=(a.correct?`<b>Correct${a.tries>1?' on the second try':''}.</b> `:`<b>The answer is ${showAns(q,ans)}.</b> `)+q.sol(par);}
+    else if(a.tries>0){fb.hidden=false;fb.className='fb bad';fb.innerHTML=`<b>Not yet.</b> ${a.msg||''} You have one more try${a.practice?'':' for half credit'}.${q.hint?' Hint: '+q.hint:''}`;}
+    w.querySelector('form').onsubmit=e=>{e.preventDefault();
+      const v=parseAns(inp.value,q);
+      if(isNaN(v)){fb.hidden=false;fb.className='fb info';fb.innerHTML='Type a number, for example 12.5.';return;}
+      a.last=inp.value;a.tries=(a.tries||0)+1;const ok=isClose(v,ans,q);a.msg=ok?'':`${showAns(q,v)} isn't it.`;
+      if(ok){a.done=true;a.correct=true;if(!a.practice)a.pts=a.tries===1?full:Math.ceil(full/2);}
+      else if(a.tries>=2){a.done=true;a.correct=false;if(!a.practice)a.pts=0;}
+      if(!a.practice){if(q.group)a.ver=grp(q.group).ver;save();}
+      paint();if(!a.done)w.querySelector('input').focus();q.onChange&&q.onChange();};
+    const nb=w.querySelector('[data-new]');if(nb)nb.onclick=()=>{PR[id]={practice:true,par:q.gen()};paint();w.querySelector('input').focus();};
+  }
+  paint();return w;
+}
+function addQ(m,id,def){def.id=id;def.m=m;Q[id]=def;reg(m,id,def.pts||10);}
+
+/* ---------- shared widgets ---------- */
+function sortGame(id,cards,bins){
+  const w=el(`<div class="q"></div>`),B=k=>bins.find(b=>b.k===k);
+  function paint(){
+    const r=rec(id);r.c=r.c||{};const left=cards.filter(c=>!(c.id in r.c));
+    const got=Object.values(r.c).filter(Boolean).length*2,max=cards.length*2;
+    let h=`<div class="q-head"><span class="q-tag">Sort the deck · ${Math.min(cards.length-left.length+(left.length?1:0),cards.length)} of ${cards.length}</span><span class="q-pts ${r.done?(got>0?'got':'miss'):''}">${r.done?'+'+got:got} / ${max} pts</span></div>`;
+    if(r.fb)h+=`<div class="fb ${r.fb.ok?'good':'bad'}"><b>${r.fb.ok?'Right.':'Not quite.'}</b> ${/^“/.test(r.fb.t)?r.fb.t:"“"+r.fb.t+"”"} goes under <b>${B(r.fb.bin).label}</b>. ${r.fb.why}</div>`;
+    if(left.length){const c=left[0];
+      h+=`<div class="deck"><div class="card">${c.t}</div><div class="bins">${bins.map(b=>`<button type="button" class="bin ${b.cls}" data-b="${b.k}">${b.label}<small>${b.sub}</small></button>`).join('')}</div></div>`;
+    }else{
+      const li=k=>cards.filter(c=>c.bin===k).map(c=>`<li class="${r.c[c.id]?'':'miss'}">${c.t}${r.c[c.id]?'':' (you missed this one)'}</li>`).join('');
+      h+=`<div class="sorted">${bins.map(b=>`<div><h3 style="color:${b.color}">${b.label}</h3><ul>${li(b.k)}</ul></div>`).join('')}</div>`;
+    }
+    w.innerHTML=h;
+    w.querySelectorAll('[data-b]').forEach(b=>b.onclick=()=>{const c=left[0],ok=b.dataset.b===c.bin;r.c[c.id]=ok;r.fb={ok,t:c.t,bin:c.bin,why:c.why};r.pts=Object.values(r.c).filter(Boolean).length*2;r.done=Object.keys(r.c).length===cards.length;save();paint();});
+  }
+  paint();return w;
+}
+function ynGrid(id,cfg){
+  const w=el('<div class="q"></div>'),full=cfg.pts||10;
+  function paint(){const r=rec(id);r.sel=r.sel||cfg.rows.map(()=>null);
+    w.innerHTML=`<div class="q-head"><span class="q-tag">${cfg.tag}</span>${ptsBadge({pts:full},r)}</div><div class="q-prompt">${cfg.prompt}</div>
+      <div>${cfg.rows.map((row,i)=>`<div class="sig-row"><span>${row[0]}</span><span class="yn">${cfg.choices.map(v=>{let c='';if(r.done){if(v===row[1])c='is-right';else if(r.sel[i]===v)c='is-wrong';}return`<button type="button" data-i="${i}" data-v="${v}" aria-pressed="${r.sel[i]===v}" class="${c}" ${r.done?'disabled':''}>${v}</button>`;}).join('')}</span></div>`).join('')}</div>
+      ${r.done?'':`<div><button type="button" class="btn" data-chk ${r.sel.includes(null)?'disabled':''}>Check</button></div>`}<div class="fb" hidden></div>`;
+    w.querySelectorAll('.yn button').forEach(b=>b.onclick=()=>{r.sel[+b.dataset.i]=b.dataset.v;save();paint();});
+    const ck=w.querySelector('[data-chk]');if(ck)ck.onclick=()=>{const n=cfg.rows.filter((row,i)=>r.sel[i]===row[1]).length;r.done=true;r.pts=n===cfg.rows.length?full:Math.round(full*n/cfg.rows.length*0.8);save();paint();};
+    if(r.done){const fb=w.querySelector('.fb');fb.hidden=false;const ok=cfg.rows.every((row,i)=>r.sel[i]===row[1]);fb.className='fb '+(ok?'good':'bad');fb.innerHTML=`<b>${ok?'All correct.':'Check the highlights.'}</b> ${cfg.explain}`;}
+  }
+  paint();return w;
+}
+const qList=ids=>{const qs=el('<div class="qs"></div>');ids.forEach(i=>qs.append(renderQ(i)));return qs;};
+
+/* ================= PART 1 ================= */
+/* ---------- Mission: Payout basics ---------- */
+const POL_BINS=[{k:'L',label:'Level',sub:'how much to pay out',cls:'b1',color:'var(--accent)'},{k:'F',label:'Form',sub:'dividends vs. repurchases',cls:'b2',color:'var(--debt)'},{k:'S',label:'Stability',sub:'how steady over time',cls:'b3',color:'var(--gov)'}];
+const POL_CARDS=[
+  {id:'p1',t:'Pay out 40% of net income each year',bin:'L',why:'How much cash goes to shareholders is the level of the distribution.'},
+  {id:'p2',t:'Buy back shares instead of paying a cash dividend',bin:'F',why:'Choosing between dividends and repurchases is the form.'},
+  {id:'p3',t:'Keep the $0.50 quarterly dividend even in a bad year',bin:'S',why:'Holding the dividend steady through ups and downs is stability.'},
+  {id:'p4',t:'Return $10 billion this year instead of $5 billion',bin:'L',why:'The total amount distributed is the level.'},
+  {id:'p5',t:'Raise the dividend only when the increase can be sustained',bin:'S',why:'Avoiding raises that might have to be reversed keeps distributions stable.'},
+  {id:'p6',t:'Switch from paying dividends to open-market repurchases',bin:'F',why:'Same cash, different form.'},
+];
+reg('basics','b_sort',POL_CARDS.length*2);
+addQ('basics','b_calc',{tag:'Yield and payout',prompt:'A stock sells for <b>$40</b>, pays an annual dividend of <b>$1.20</b> per share, and has EPS of <b>$3.00</b>. What are its dividend yield and payout ratio?',
+  opts:['Yield 3.0%, payout 40%','Yield 40%, payout 3.0%','Yield 2.5%, payout 33%','Yield 7.5%, payout 40%'],ans:0,
+  explain:'Dividend yield = DPS / P = $1.20 / $40 = 3.0%. Payout ratio = DPS / EPS = $1.20 / $3.00 = 40%.'});
+addQ('basics','b_amzn',{tag:'Amazon vs. Apple',prompt:'Amazon has never paid a dividend. What is the best explanation?',
+  opts:['It is a bad investment, so it has nothing to pay out','It has plenty of profitable investment opportunities, so it reinvests its cash instead','The law prevents technology firms from paying dividends','Its investors pay no taxes, so they don’t want dividends'],ans:1,
+  explain:'A 0% payout isn’t a bad sign. Amazon keeps its cash to fund growth. Apple did the same for years, then started paying dividends and buying back stock once growth slowed and cash piled up.'});
+function renderBasics(main){
+  main.append(missionHead('basics','What a payout is, how to measure it, and what a distribution policy decides.'));
+  main.append(terms([['Dividend yield','DPS / price per share'],['Payout ratio','DPS / EPS'],['Distribution policy','The level, form and stability of cash distributions to shareholders.']]));
+  main.append(secHead('Lab','Payout calculator'));
+  const lab=el(`<div class="lab">
+    <div class="lab-controls"><div class="seg" id="pc-pre"><button type="button" data-p="duke">Utility: Duke Energy</button><button type="button" data-p="amzn">Growth: Amazon</button><button type="button" data-p="ryn">Rayonier</button></div></div>
+    <div class="lab-controls">
+      <div class="ctrl"><label for="pc-p">Price per share <output></output></label><input id="pc-p" type="range" min="10" max="150" step="0.5" value="74.5"></div>
+      <div class="ctrl"><label for="pc-d">Dividend per share (DPS) <output></output></label><input id="pc-d" type="range" min="0" max="6" step="0.05" value="2.95"></div>
+      <div class="ctrl"><label for="pc-e">Earnings per share (EPS) <output></output></label><input id="pc-e" type="range" min="0.5" max="10" step="0.05" value="4"></div></div>
+    <dl class="readout" id="pc-r"></dl>
+    <div class="stack" style="gap:6px"><div class="small">What happens to each $1 of earnings</div><div class="rbar-track" id="pc-bar"></div></div>
+    <p class="note" id="pc-note"></p></div>`);
+  main.append(lab);
+  const P=$('#pc-p',lab),Dv=$('#pc-d',lab),E=$('#pc-e',lab);
+  const PRE={duke:[74.5,2.95,4,'Set to match the slide table: Duke Energy, 74% payout and 3.98% yield.'],amzn:[100,0,4,'Amazon: 0% payout and 0.00% yield. Every dollar of earnings is reinvested.'],ryn:[24,1.4,0.6,'Rayonier paid out 234% of net income. Net income isn’t cash flow, so a payout above 100% is possible, but not forever.']};
+  let pre='duke';
+  function upd(){const p=+P.value,d=+Dv.value,e=+E.value,y=d/p*100,po=d/e*100;
+    P.previousElementSibling.querySelector('output').textContent=usd(p);Dv.previousElementSibling.querySelector('output').textContent=usd(d);E.previousElementSibling.querySelector('output').textContent=usd(e);
+    lab.querySelectorAll('#pc-pre button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.p===pre)));
+    $('#pc-r',lab).innerHTML=[['Dividend yield = DPS / P',pct(y)],['Payout ratio = DPS / EPS',pct(po,0)],['Retained per share',usd(Math.max(0,e-d))],['Total distributed per share',usd(d)]].map(([k,v])=>`<div><dt>${k}</dt><dd>${v}</dd></div>`).join('');
+    const paid=Math.min(100,po);
+    $('#pc-bar',lab).innerHTML=(paid>0?`<div class="seg-s" style="width:${paid}%">Paid out ${fmt(po,0)}%</div>`:'')+(paid<100?`<div class="seg-d" style="width:${100-paid}%">Retained ${fmt(100-paid,0)}%</div>`:'');
+    $('#pc-note',lab).innerHTML=pre?PRE[pre][3]:(po>100?'<b>Payout above 100%.</b> The firm pays out more than it earns. That can only last if cash flow exceeds net income, or for a short time.':po===0?'<b>No dividend.</b> All earnings are retained and reinvested.':'Drag the sliders. Yield depends on price; payout depends on earnings.');
+  }
+  lab.querySelectorAll('#pc-pre button').forEach(b=>b.onclick=()=>{pre=b.dataset.p;const v=PRE[pre];P.value=v[0];Dv.value=v[1];E.value=v[2];upd();});
+  [P,Dv,E].forEach(s=>s.oninput=()=>{pre=null;upd();});
+  upd();
+  main.append(secHead('Game','Level, form or stability?','2 pts per card'));
+  main.append(sortGame('b_sort',POL_CARDS,POL_BINS));
+  main.append(secHead('Questions','Check yourself'));
+  main.append(qList(['b_calc','b_amzn']));
+}
+
+/* ---------- Mission: Three theories ---------- */
+const TH_BINS=[{k:'I',label:'Indifferent',sub:'irrelevance theory',cls:'b1',color:'var(--accent)'},{k:'N',label:'Nervous',sub:'bird-in-the-hand',cls:'b2',color:'var(--debt)'},{k:'T',label:'Tax-savvy',sub:'tax effect theory',cls:'b3',color:'var(--gov)'}];
+const TH_CARDS=[
+  {id:'t1',t:'“If I want cash, I’ll just sell a few shares.”',bin:'I',why:'Investors can make their own “homemade” dividends, so payout policy doesn’t matter.'},
+  {id:'t2',t:'“A dividend today beats a maybe-gain tomorrow.”',bin:'N',why:'Dividends feel like a sure thing; future capital gains are uncertain.'},
+  {id:'t3',t:'“I’d rather not owe tax on dividends every year.”',bin:'T',why:'Dividend taxes are due immediately; capital gains taxes wait until you sell.'},
+  {id:'t4',t:'“If I don’t need the cash, I’ll use the dividend to buy more stock.”',bin:'I',why:'Reinvesting undoes the dividend, so the investor doesn’t care either way.'},
+  {id:'t5',t:'“Paying out cash keeps managers from wasting it.”',bin:'N',why:'High payouts reduce agency costs, another reason investors may value them.'},
+  {id:'t6',t:'“Capital gains tax waits until I sell, and disappears if I never do.”',bin:'T',why:'Deferral gives capital gains a lower effective tax rate than dividends.'},
+];
+reg('theories','th_sort',TH_CARDS.length*2);
+addQ('theories','th_req',{tag:'The evidence',prompt:'Research finds that investors require <b>higher pre-tax returns</b> on stocks of high-payout companies. Which theory does this support?',
+  opts:['Dividend irrelevance','Bird-in-the-hand','Tax effect','None of them'],ans:2,
+  explain:'If dividends are taxed more heavily (in effect) than capital gains, investors need a higher pre-tax return to hold high-payout stocks. The evidence supports the tax effect, but it isn’t conclusive: taxes alone can’t explain the whole difference, and in countries with weak investor protection, high-payout firms are valued <i>more</i> (agency costs).'});
+let THW='I',THP=40;
+function renderTheories(main){
+  main.append(missionHead('theories','Do investors prefer high or low payouts? Three theories, three different answers.'));
+  main.append(terms([['Irrelevance (MM)','Payout policy has no effect on stock value or required return.'],['Bird-in-the-hand','Investors see dividends as less risky, so they prefer a high payout.'],['Tax effect','Dividends are taxed now, capital gains later, so investors prefer a low payout.']]));
+  main.append(secHead('Lab','Turn the payout dial'));
+  const lab=el(`<div class="lab"><div class="lab-controls"><div class="seg" id="th-w"><button type="button" data-w="I">Irrelevance</button><button type="button" data-w="N">Bird-in-the-hand</button><button type="button" data-w="T">Tax effect</button></div>
+      <div class="ctrl"><label for="th-p">Payout ratio <output></output></label><input id="th-p" type="range" min="0" max="100" step="5" value="${THP}"></div></div>
+    <div class="lab-grid"><figure><figcaption>Required return on equity vs. payout ratio (illustrative)</figcaption><svg class="chart" id="th-ch"></svg></figure><div class="stack"><dl class="readout" id="th-r"></dl><p class="note" id="th-note"></p></div></div></div>`);
+  main.append(lab);
+  const sl=$('#th-p',lab);
+  const F={I:p=>12,N:p=>14-4*p/100,T:p=>10+4*p/100},C={I:'var(--accent)',N:'var(--debt)',T:'var(--gov)'};
+  const NOTE={I:'<b>The indifferent investor.</b> Payout doesn’t change r<sub>s</sub> or the stock price. This rests on unrealistic assumptions: no taxes and no brokerage costs.',N:'<b>The nervous investor.</b> A higher payout feels safer, so investors accept a lower return and pay a higher price.',T:'<b>The tax-savvy investor.</b> A higher payout means more taxes now, so investors demand a higher pre-tax return and pay a lower price.'};
+  function upd(){THP=+sl.value;const p=THP,rs=F[THW](p),r0=F[THW](0);
+    sl.previousElementSibling.querySelector('output').textContent=p+'%';
+    lab.querySelectorAll('#th-w button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.w===THW)));
+    const dir=Math.abs(rs-r0)<1e-9?'Same as with no payout':rs<r0?'Higher than with no payout':'Lower than with no payout';
+    $('#th-r',lab).innerHTML=[['Required return r<sub>s</sub>',pct(rs,1)],['Stock price',dir]].map(([k,v])=>`<div><dt>${k}</dt><dd style="font-size:.98rem">${v}</dd></div>`).join('');
+    $('#th-note',lab).innerHTML=NOTE[THW];
+    const op=k=>k===THW?1:.25;
+    chart($('#th-ch',lab),{w:520,h:280,x0:0,x1:100,y0:8,y1:16,xt:[0,25,50,75,100],yt:[8,10,12,14,16],fx:v=>v+'%',fy:v=>v+'%',xl:'Payout ratio',
+      series:[{pts:line(F.I,0,100,2),color:C.I,op:op('I'),label:'Irrelevance',dy:-8},{pts:line(F.N,0,100,2),color:C.N,op:op('N'),label:'Bird-in-the-hand',dy:16},{pts:line(F.T,0,100,2),color:C.T,op:op('T'),label:'Tax effect',dy:-8}],
+      vlines:[{x:p,color:'var(--muted)'}],dots:[{x:p,y:rs,color:C[THW]}]});
+  }
+  sl.oninput=upd;lab.querySelectorAll('#th-w button').forEach(b=>b.onclick=()=>{THW=b.dataset.w;upd();});upd();
+  main.append(secHead('Game','Who said it?','2 pts per card'));
+  main.append(sortGame('th_sort',TH_CARDS,TH_BINS));
+  main.append(secHead('Question','What does the research say?'));
+  main.append(qList(['th_req']));
+}
+
+/* ---------- Mission: Clienteles & signals ---------- */
+const CL_BINS=[{k:'H',label:'Duke Energy',sub:'74% payout, 3.98% yield',cls:'b1',color:'var(--accent)'},{k:'Z',label:'Amazon',sub:'0% payout',cls:'b2',color:'var(--debt)'}];
+const CL_CARDS=[
+  {id:'k1',t:'A retiree who lives on investment income',bin:'H',why:'Investors who want current income are the clientele for dividend-paying stocks.'},
+  {id:'k2',t:'A 25-year-old saving for retirement 40 years away',bin:'Z',why:'No need for current income; capital gains can compound.'},
+  {id:'k3',t:'A pension fund that pays no taxes and must pay retirees',bin:'H',why:'Tax-exempt investors don’t mind dividends, and they need the cash flow.'},
+  {id:'k4',t:'A high-income investor in a taxable account',bin:'Z',why:'Taxable investors prefer gains they can defer over dividends taxed every year.'},
+  {id:'k5',t:'A growth investor who wants capital gains, not income',bin:'Z',why:'That’s exactly what a zero-payout growth firm offers.'},
+  {id:'k6',t:'A university endowment that needs steady cash for scholarships',bin:'H',why:'Steady income needs, and no taxes: a natural dividend clientele.'},
+];
+reg('clienteles','cl_sort',CL_CARDS.length*2);
+reg('clienteles','cl_grid',10);
+addQ('clienteles','cl_sig',{tag:'Signaling',prompt:'When a firm unexpectedly raises its dividend, its stock price usually rises. According to the signaling hypothesis, why?',
+  opts:['Investors simply prefer dividends to capital gains','The raise signals that management expects higher earnings it can sustain','Taxes on dividends fall when the dividend rises','The firm now has more shares outstanding'],ans:1,
+  explain:'Managers hate to cut dividends, so they raise them only when they believe the higher level is sustainable. The price jump reflects higher expectations for future EPS, not a preference for dividends as such. This is also called the information content hypothesis.'});
+function renderClienteles(main){
+  main.append(missionHead('clienteles','Different investors want different payouts, and every dividend change sends a message.'));
+  main.append(terms([['Clientele effect','Different groups of investors prefer different payout policies. A firm’s past policy attracts its clientele.'],['Signaling hypothesis','Investors read dividend changes as management’s view of future earnings (information content).']]));
+  main.append(secHead('Game 1','Which stock fits this investor?','2 pts per card'));
+  main.append(sortGame('cl_sort',CL_CARDS,CL_BINS));
+  main.append(secHead('Game 2','Up or down?'));
+  const qs=el('<div class="qs"></div>');
+  qs.append(ynGrid('cl_grid',{tag:'Read the signal',prompt:'For each announcement, what does the stock price most likely do on the news?',choices:['Up','Down'],
+    rows:[['A surprise 20% dividend increase','Up'],['A surprise dividend cut','Down'],['Alphabet (Google) announces its first-ever dividend and a $70 billion buyback (April 2024)','Up'],['Meta announces its first-ever dividend with strong results (February 2024)','Up']],
+    explain:'A dividend increase or initiation signals confidence that earnings can support it; a cut signals trouble ahead. Alphabet’s shares soared on its first dividend, and Meta’s stock jumped 20.3% in a day, a record $196 billion gain in market value.'}));
+  qs.append(renderQ('cl_sig'));main.append(qs);
+}
+
+/* ---------- Mission: Residual model ---------- */
+const RES=[{k:'Poor',cb:40},{k:'Average',cb:70},{k:'Good',cb:150}];
+addQ('residual','r_calc',{tag:'Your turn',prompt:'Same T&W numbers (net income $60M, target 40% debt / 60% equity), but the capital budget is <b>$80M</b>. How much can T&W distribute?',
+  opts:['$12M','$20M','$32M','$48M'],ans:0,
+  explain:'Required equity = 0.60 × $80M = $48M. Distributions = $60M − $48M = <b>$12M</b>, a distribution ratio of 20%.'});
+addQ('residual','r_rigid',{tag:'In practice',prompt:'Why don’t firms follow the residual model rigidly every year?',
+  opts:['It would make distributions jump around, sending conflicting signals and appealing to no clientele','It raises flotation costs by forcing new stock issues','It ignores the firm’s capital budget','It requires the firm to borrow more every year'],ans:0,
+  explain:'The residual model minimizes new stock issues and flotation costs, but followed year by year it makes dividends volatile. Firms use it to set a long-run target payout and keep actual dividends stable.'});
+let RESI=0,RESSTEP=1;
+function resSteps(c){const req=0.6*c.cb,d=Math.max(0,60-req),issue=Math.max(0,req-60);return[
+  ['Equity needed',`Required equity = 0.60 × ${usd(c.cb,0)}M = <b>${usd(req,0)}M</b>`],
+  ['What’s left for shareholders',issue?`Required equity ${usd(req,0)}M > net income $60M: retain all $60M and issue ${usd(issue,0)}M of new stock. Distributions = <b>$0</b>`:`Distributions = NI − required equity = $60M − ${usd(req,0)}M = <b>${usd(d,0)}M</b>`],
+  ['Distribution ratio',`Distribution ratio = ${usd(d,0)}M / $60M = <b>${pct(d/60*100,0)}</b>`]];}
+function renderResidual(main){
+  main.append(missionHead('residual','How much can T&W pay out? Fund the good projects first, then distribute what’s left.'));
+  main.append(terms([['Residual model','Distributions = net income − (target equity ratio × capital budget)'],['T&W data','Net income $60M · target 40% debt, 60% equity · capital budget depends on investment opportunities']]));
+  main.append(secHead('Explorer','One scenario, step by step'));
+  const lab=el(`<div class="lab"><div class="lab-controls"><div class="seg" id="rs-w">${RES.map((c,i)=>`<button type="button" data-i="${i}">${c.k}: ${usd(c.cb,0)}M budget</button>`).join('')}</div>
+    <div class="num-row"><button type="button" class="btn accent" id="rs-next">Reveal next step</button><button type="button" class="btn ghost" id="rs-all">Show all</button></div></div><ol class="steps" id="rs-steps"></ol></div>`);
+  main.append(lab);
+  main.append(secHead('Scoreboard','Investment opportunities vs. distributions'));
+  const sb=el(`<div class="stack"><div id="rs-tbl"></div><figure><figcaption>Distributions vs. capital budget</figcaption><svg class="chart" id="rs-ch"></svg></figure><p class="small" id="rs-hint"></p></div>`);
+  main.append(sb);
+  const seen=()=>{const r=rec('res_seen');r.s=r.s||[false,false,false];return r.s;};
+  let fresh=-1;
+  function upd(){const c=RES[RESI],st=resSteps(c),sv=seen();
+    if(RESSTEP>=3&&!sv[RESI]){sv[RESI]=true;save();}
+    lab.querySelectorAll('#rs-w button').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.i===RESI)));
+    $('#rs-steps',lab).innerHTML=st.map(([h,f],k)=>k<RESSTEP?`<li class="step${k===fresh?' new':''}"><span class="k">${k+1}</span><div style="min-width:0"><h4>${h}</h4><div class="fx fx-wrap">${f}</div></div></li>`:`<li class="step locked"><span class="k">${k+1}</span><div><h4>${h}</h4><div class="fx">Predict it, then reveal.</div></div></li>`).join('');
+    $('#rs-next',lab).disabled=RESSTEP>=3;$('#rs-all',lab).disabled=RESSTEP>=3;
+    const rows=[['Capital budget',x=>usd(x.cb,0)],['Required equity (0.60 × budget)',x=>usd(.6*x.cb,0)],['Net income',x=>'$60'],['Distributions',x=>usd(Math.max(0,60-.6*x.cb),0)],['Distribution ratio',x=>pct(Math.max(0,60-.6*x.cb)/60*100,0)]];
+    $('#rs-tbl',sb).innerHTML=`<div class="tbl-wrap"><table class="tbl"><thead><tr><th>$ millions</th>${RES.map((x,i)=>`<th class="${i===RESI?'hl':''}">${x.k}</th>`).join('')}</tr></thead><tbody>${rows.map(([l,f],ri)=>`<tr class="${ri>=3?'key':''}"><td>${l}</td>${RES.map((x,i)=>{const show=ri===0||ri===2||sv[i];return`<td class="${[i===RESI?'hl':'',show?'':'unk'].join(' ')}">${show?f(x):'?'}</td>`;}).join('')}</tr>`).join('')}</tbody></table></div>`;
+    chart($('#rs-ch',sb),{w:560,h:260,x0:0,x1:160,y0:0,y1:65,xt:[0,40,80,120,160],yt:[0,20,40,60],fx:v=>'$'+v,fy:v=>'$'+v,xl:'Capital budget ($M)',
+      series:[{pts:[[0,60],[100,0],[160,0]],color:'var(--accent)',label:'Distributions = 60 − 0.6 × budget',lp:[18,49],anchor:'start',dx:0,dy:-6}],
+      vlines:[{x:100,color:'var(--muted)',label:'Above $100M: issue new stock',dx:6}],
+      dots:RES.map((x,i)=>sv[i]?{x:x.cb,y:Math.max(0,60-.6*x.cb),color:i===RESI?'var(--ink)':'var(--accent)',label:x.k,dy:x.cb>100?-12:-10,anchor:'middle',dx:0}:null).filter(Boolean)});
+    const n=sv.filter(Boolean).length;
+    $('#rs-hint',sb).innerHTML=n===3?'<b>All three explored.</b> Better investment opportunities mean a bigger capital budget and a lower payout; poor opportunities mean a higher payout.':`${n} of 3 scenarios explored. Reveal all three steps to add a scenario to the scoreboard.`;
+    fresh=-1;}
+  lab.querySelectorAll('#rs-w button').forEach(b=>b.onclick=()=>{RESI=+b.dataset.i;RESSTEP=seen()[RESI]?3:1;upd();});
+  $('#rs-next',lab).onclick=()=>{fresh=RESSTEP;RESSTEP=Math.min(3,RESSTEP+1);upd();};
+  $('#rs-all',lab).onclick=()=>{RESSTEP=3;upd();};
+  upd();
+  main.append(secHead('Questions','Use the model'));
+  main.append(qList(['r_calc','r_rigid']));
+}
+
+/* ================= PART 2 ================= */
+/* ---------- Mission: Dividend timeline ---------- */
+const TL=[['Nov 18','Declaration date','The board declares a $0.50 quarterly dividend to holders of record on Dec 17, payable Jan 7.'],['Dec 15','Last cum-dividend day','The dividend still goes with the stock. Buy today and you get it.'],['Dec 16','Ex-dividend date','Buy on or after today and you don’t get the dividend; the seller keeps it.'],['Dec 17','Record date','The company lists its stockholders of record.'],['Jan 7','Payment date','The cash goes out.']];
+reg('timeline','tl_grid',10);
+addQ('timeline','tl_price',{tag:'Price behavior',prompt:'A stock closes at <b>$40.00</b> on Dec 15. The dividend is <b>$0.50</b>. In a perfect world with no taxes, where should it open on the ex-dividend date?',
+  opts:['$40.00','$39.50','$40.50','$20.00'],ans:1,
+  explain:'The price falls by the dividend on the ex-dividend date: $40.00 − $0.50 = $39.50. Otherwise there would be an arbitrage opportunity. With taxes, the real-world drop is a bit smaller (about 90% of the dividend) and happens in the first few minutes of trading.'});
+let TLI=1;
+function renderTimeline(main){
+  main.append(missionHead('timeline','Buy on Wednesday, the dividend is paid Friday. Do you get the cash? It depends on one date.'));
+  main.append(terms([['Ex-dividend date','Buy on or after this date and you don’t get the dividend.'],['Record date','The day the company lists who its stockholders are.']]));
+  main.append(secHead('Lab','Pick the day you buy'));
+  const lab=el(`<div class="lab"><div class="tl-wrap"><div class="tl" id="tl">${TL.map((t,i)=>`<button type="button" class="tl-item" data-i="${i}"><span class="tl-d">${t[0]}</span><span class="tl-k">${t[1]}</span></button>`).join('')}</div></div>
+    <div class="fb" id="tl-out"></div>
+    <figure><figcaption>Stock price around the ex-dividend date</figcaption><svg class="chart" id="tl-ch"></svg></figure></div>`);
+  main.append(lab);
+  function upd(){lab.querySelectorAll('.tl-item').forEach(b=>{const i=+b.dataset.i;b.setAttribute('aria-pressed',String(i===TLI));b.classList.toggle('cum',i<=1);b.classList.toggle('ex',i>=2);});
+    const t=TL[TLI],gets=TLI<=1;const o=$('#tl-out',lab);o.className='fb '+(gets?'good':'bad');
+    o.innerHTML=`<b>${t[0]} · ${t[1]}.</b> ${t[2]} ${gets?'<br><b>Buy today: you get the $0.50.</b>':'<br><b>Buy today: no dividend for you.</b>'}`;
+    chart($('#tl-ch',lab),{w:560,h:250,x0:-3,x1:3,y0:39.2,y1:40.2,xt:[-3,-2,-1,0,1,2,3],yt:[39.4,39.6,39.8,40,40.2],fx:v=>v===0?'Ex-date':(v>0?'+':'')+v,fy:v=>'$'+fmt(v,2),xl:'Trading days relative to the ex-dividend date',
+      series:[{pts:[[-3,40],[-0.02,40],[0,39.5],[3,39.5]],color:'var(--accent)',label:'Perfect world: drops by $0.50',lp:[3,39.5],dy:16},{pts:[[-3,40],[-0.02,40],[0,39.55],[3,39.55]],color:'var(--debt)',dash:'5 4',w:2,label:'Real world: ~90% of the dividend',lp:[3,39.55],dy:-8}],
+      vlines:[{x:0,color:'var(--muted)'}]});}
+  lab.querySelectorAll('.tl-item').forEach(b=>b.onclick=()=>{TLI=+b.dataset.i;upd();});upd();
+  main.append(secHead('Questions','Do you get the dividend?'));
+  const qs=el('<div class="qs"></div>');
+  qs.append(ynGrid('tl_grid',{tag:'Who gets the $0.50?',prompt:'Using the timeline above, does each investor receive the dividend?',choices:['Yes','No'],
+    rows:[['You buy on Dec 15','Yes'],['You buy on Dec 16, the ex-dividend date','No'],['You buy on Dec 17, the record date','No'],['You’ve owned it for years and sell on Dec 16','Yes']],
+    explain:'The ex-dividend date is the cutoff. Buyers before it get the dividend; buyers on or after it don’t, because the seller keeps it. The record date comes after the ex-date, so buying on the record date is too late.'}));
+  qs.append(renderQ('tl_price'));main.append(qs);
+}
+
+/* ---------- Mission: Repurchases ---------- */
+const RP_BINS=[{k:'A',label:'Advantage',sub:'why firms buy back',cls:'b1',color:'var(--accent)'},{k:'D',label:'Disadvantage',sub:'the risks',cls:'b2',color:'var(--debt)'}];
+const RP_CARDS=[
+  {id:'r1',t:'Stockholders can choose whether to sell',bin:'A',why:'Unlike a dividend, nobody is forced to take the cash (and the tax bill).'},
+  {id:'r2',t:'May signal the firm has poor investment opportunities',bin:'D',why:'Investors may wonder why the cash isn’t going into new projects.'},
+  {id:'r3',t:'Avoids setting a high dividend the firm can’t maintain',bin:'A',why:'A one-time buyback doesn’t create an expectation the way a dividend does.'},
+  {id:'r4',t:'Sellers get capital gains instead of higher-taxed dividends',bin:'A',why:'Income arrives as capital gains, which can be deferred.'},
+  {id:'r5',t:'The IRS could impose penalties if the main goal is avoiding dividend taxes',bin:'D',why:'Repurchases made mainly to dodge dividend taxes can be penalized.'},
+  {id:'r6',t:'May signal management thinks the stock is undervalued',bin:'A',why:'Buying back stock suggests managers see it as a bargain.'},
+];
+reg('repurchase','rp_sort',RP_CARDS.length*2);
+addQ('repurchase','rp_how',{tag:'Which method?',prompt:'Apex Corp. announces it will buy back up to 10 million shares at <b>$52</b> each over the next three weeks. Its stock trades at $50. What kind of repurchase is this?',
+  opts:['Open market purchase','Tender offer','Block (targeted) repurchase','Dividend reinvestment plan'],ans:1,
+  explain:'A tender offer is a formal public offer to buy a set number of shares at a set price, usually a small premium, within a short window. Open market purchases (the most common) happen gradually through a broker; a block repurchase is negotiated with one large shareholder.'});
+function renderRepurchase(main){
+  main.append(missionHead('repurchase','Buying your own stock back: why firms do it and how.'));
+  main.append(terms([['Open market purchase','A broker buys shares on the exchange over time. The most common method.'],['Tender offer','A formal offer to buy a set number of shares at a set price, usually a premium.'],['Block repurchase','Buying directly from one large shareholder.']]));
+  main.append(secHead('Game','Advantage or disadvantage?','2 pts per card'));
+  main.append(sortGame('rp_sort',RP_CARDS,RP_BINS));
+  main.append(secHead('Question','Name the method'));
+  main.append(qList(['rp_how']));
+}
+
+/* ---------- Mission: Dividend vs. repurchase (IWT) ---------- */
+addQ('compare','cp_true',{tag:'Compare',prompt:'IWT distributes $50M either way. Which statement is correct?',
+  opts:['With the dividend, the price falls by $0.50 and the share count stays at 100M; with the repurchase, the price stays at $16 and the share count falls','Both actions leave the price at $16','The repurchase raises the price because fewer shares remain','The dividend makes shareholders $50M poorer'],ans:0,
+  explain:'Dividend: P falls from $16.00 to $15.50, n stays 100M. Repurchase: P stays $16.00, n falls to 96.875M. Either way, equity falls to $1,550M and shareholder wealth stays at $1,600M.'});
+addQ('compare','cp_n',{tag:'Your turn',prompt:'Suppose IWT used <b>$32M</b> to repurchase stock instead (price before the repurchase: $16). How many shares remain?',
+  opts:['98 million','96.875 million','68 million','102 million'],ans:0,
+  explain:'Shares repurchased = $32M / $16 = 2M. n<sub>Post</sub> = 100M − 2M = <b>98M</b>. The price stays at $16.'});
+let CPM='div';
+function renderCompare(main){
+  main.append(missionHead('compare','IWT has $50 million to distribute. Pay a dividend or buy back stock? Run both and compare.'));
+  main.append(terms([['IWT before (millions)','V<sub>op</sub> $1,937.50 · ST investments $50.00 · debt $387.50 · 100M shares']]));
+  main.append(secHead('Lab','Distribute the $50M'));
+  const lab=el(`<div class="lab"><div class="lab-controls"><div class="seg" id="cp-m"><button type="button" data-m="before">Before</button><button type="button" data-m="div">Pay a $50M dividend</button><button type="button" data-m="rep">Repurchase $50M of stock</button><button type="button" data-m="both">Compare both</button></div></div>
+    <div class="stage-note" id="cp-note"></div><div class="tbl-wrap"><table class="tbl" id="cp-t"></table></div><div class="rbars" id="cp-b"></div>
+    <ul class="legend"><li><i style="background:var(--equity)"></i>Equity S (value of shares)</li><li><i style="background:var(--gov)"></i>Cash in shareholders’ hands</li></ul></div>`);
+  main.append(lab);
+  const C={before:{h:'Before',Vop:1937.5,st:50,D:387.5,S:1600,n:100,P:16,cash:0},div:{h:'After dividend',Vop:1937.5,st:0,D:387.5,S:1550,n:100,P:15.5,cash:50},rep:{h:'After repurchase',Vop:1937.5,st:0,D:387.5,S:1550,n:96.875,P:16,cash:50}};
+  Object.values(C).forEach(x=>{x.tot=x.Vop+x.st;x.W=x.S+x.cash;});
+  const NOTE={before:'<div><b>Before.</b> V<sub>Total</sub> = $1,937.50 + $50.00 = $1,987.50. S = $1,987.50 − $387.50 = $1,600. P = $1,600 / 100 = <b>$16.00</b>.</div>',
+    div:'<div><b>Dividend.</b> The $50M of ST investments goes out as cash to every shareholder.</div><div class="fblock">DPS = $50M / 100M shares = $0.50 &nbsp;→&nbsp; P = $1,550 / 100 = $15.50</div><div>The price falls by exactly the dividend; the share count doesn’t change. Wealth = $1,550 + $50 cash = <b>$1,600</b>.</div>',
+    rep:'<div><b>Repurchase.</b> The $50M buys back shares at $16.</div><div class="fblock">n<sub>Post</sub> = n<sub>Prior</sub> − Cash<sub>Rep</sub> / P<sub>Prior</sub> = 100 − $50 / $16 = 100 − 3.125 = 96.875</div><div>P = $1,550 / 96.875 = <b>$16.00</b>, unchanged. Equity falls to $1,550 because the firm no longer holds the ST investments, but wealth = $1,550 + $50 = <b>$1,600</b>.</div>',
+    both:'<div><b>Same cash, same wealth, different mechanics.</b> Dividend: price drops by DPS, shares unchanged. Repurchase: price unchanged, shares fall. Shareholder wealth is $1,600M either way.</div>'};
+  function upd(){lab.querySelectorAll('#cp-m button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.m===CPM)));
+    const cols=CPM==='before'?[C.before]:CPM==='both'?[C.before,C.div,C.rep]:[C.before,C[CPM]];
+    $('#cp-note',lab).innerHTML=NOTE[CPM];
+    const rows=[['V<sub>op</sub>','Vop',v=>usd(v)],['+ ST investments','st',v=>usd(v)],['= V<sub>Total</sub>','tot',v=>usd(v)],['− Debt','D',v=>usd(v)],['= Equity S','S',v=>usd(v)],['÷ Shares n (M)','n',v=>fmt(v,3).replace(/\.?0+$/,'')],['= Price P','P',v=>usd(v)],['Cash received by shareholders','cash',v=>usd(v)],['Shareholder wealth','W',v=>usd(v)]];
+    $('#cp-t',lab).innerHTML=`<thead><tr><th>$ millions</th>${cols.map((x,i)=>`<th class="${i>0?'hl':''}">${x.h}</th>`).join('')}</tr></thead><tbody>${rows.map(([l,k,f])=>`<tr class="${k==='P'||k==='W'?'key':''}"><td>${l}</td>${cols.map((x,i)=>`<td class="${i>0?'hl':''}">${f(x[k])}</td>`).join('')}</tr>`).join('')}</tbody>`;
+    $('#cp-b',lab).innerHTML=cols.map(x=>`<div class="rbar"><span>${x.h}</span><div class="rbar-track"><div class="seg-s" style="width:${100*x.S/1600}%">S ${fmt(x.S,0)} · P ${usd(x.P)}</div>${x.cash?`<div class="seg-c" style="width:${100*x.cash/1600}%">${fmt(x.cash,0)}</div>`:''}</div></div>`).join('');}
+  lab.querySelectorAll('#cp-m button').forEach(b=>b.onclick=()=>{CPM=b.dataset.m;upd();});upd();
+  main.append(secHead('Questions','Check your understanding'));
+  main.append(qList(['cp_true','cp_n']));
+}
+
+/* ---------- Mission: Splits, stock dividends, DRIPs ---------- */
+const DR_BINS=[{k:'O',label:'Open market plan',sub:'old stock, secondary market',cls:'b1',color:'var(--accent)'},{k:'N',label:'New stock plan',sub:'new equity, primary market',cls:'b2',color:'var(--debt)'}];
+const DR_CARDS=[
+  {id:'d1',t:'A trustee buys existing shares on the exchange',bin:'O',why:'The trustee pools participants’ dividends and buys old shares in the market.'},
+  {id:'d2',t:'The firm issues brand-new shares to participants and keeps the money',bin:'N',why:'That raises new equity capital for the firm.'},
+  {id:'d3',t:'Shares are often sold at about a 5% discount',bin:'N',why:'The discount is roughly what an underwritten stock offering would cost in flotation.'},
+  {id:'d4',t:'Brokerage costs are cut by buying in volume',bin:'O',why:'Pooling purchases keeps costs low for investors.'},
+  {id:'d5',t:'Used by firms that need new equity capital',bin:'N',why:'New stock plans are a low-cost way to raise equity.'},
+  {id:'d6',t:'Used by firms with no need for new equity',bin:'O',why:'If the firm doesn’t need the money, existing shares are bought instead.'},
+];
+reg('splits','sp_sort',DR_CARDS.length*2);
+addQ('splits','sp_split',{tag:'Stock split',prompt:'You own 100 shares of a stock trading at $90. The firm does a <b>3-for-1 split</b>, and nothing else changes. What do you end up with?',
+  opts:['300 shares at $30; your $9,000 is unchanged','300 shares at $90; you’re now worth $27,000','100 shares at $30; you lost $6,000','33 shares at $270'],ans:0,
+  explain:'A split cuts the same pizza into more slices: 3× the shares at 1/3 the price. Unless it conveys information or comes with something else (like a higher dividend), your wealth doesn’t change.'});
+const SPA=[{k:'s2',label:'2-for-1 split',m:2},{k:'sd',label:'10% stock dividend',m:1.1},{k:'s10',label:'10-for-1 split',m:10},{k:'s50',label:'50-for-1 split',m:50}];
+let SPK='s50';
+function renderSplits(main){
+  main.append(missionHead('splits','Financial cosmetics: more, smaller slices of the same pizza. Plus an easy way to reinvest dividends.'));
+  main.append(terms([['Stock split','More shares, proportionally lower price (e.g., 2-for-1).'],['Stock dividend','New shares instead of cash (e.g., 10% means 10 new shares per 100 owned).'],['DRIP','Dividend reinvestment plan: dividends automatically buy more shares.']]));
+  main.append(secHead('Lab','Slice the pizza'));
+  const lab=el(`<div class="lab"><p class="small">You own <b>10 shares</b> of Chipotle at about <b>$3,000</b> a share, as before its 2024 split.</p>
+    <div class="lab-controls"><div class="seg" id="sp-a">${SPA.map(a=>`<button type="button" data-k="${a.k}">${a.label}</button>`).join('')}</div></div>
+    <div class="lab-grid"><div class="pie-wrap"><svg id="sp-pie" viewBox="-110 -110 220 220" role="img" aria-label="Your stake cut into slices, one per share"></svg><div class="small" id="sp-cap"></div></div><dl class="readout" id="sp-r"></dl></div>
+    <p class="note" id="sp-note"></p></div>`);
+  main.append(lab);
+  function upd(){const a=SPA.find(x=>x.k===SPK),n=10*a.m,p=3000/a.m,inR=p>=20&&p<=80;
+    lab.querySelectorAll('#sp-a button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.k===SPK)));
+    let s='<circle r="100" style="fill:var(--gov);opacity:.85"/><circle r="100" style="fill:none;stroke:var(--ink);stroke-width:2"/>';
+    for(let i=0;i<n;i++){const t=2*Math.PI*i/n-Math.PI/2;s+=`<line x1="0" y1="0" x2="${(100*Math.cos(t)).toFixed(2)}" y2="${(100*Math.sin(t)).toFixed(2)}" style="stroke:var(--surface);stroke-width:${n>100?.3:n>20?1.2:2.2};opacity:${n>100?.7:1}"/>`;}
+    $('#sp-pie',lab).innerHTML=s;$('#sp-cap',lab).textContent=`${fmt(n,0)} slices, one per share`;
+    $('#sp-r',lab).innerHTML=[['Shares before → after',`10 → ${fmt(n,0)}`],['Price before → after',`$3,000 → ${usd(p)}`],['Your stake before','$30,000.00'],['Your stake after',usd(n*p)]].map(([k,v])=>`<div><dt>${k}</dt><dd>${v}</dd></div>`).join('');
+    $('#sp-note',lab).innerHTML=`<b>${inR?'Inside':'Outside'} the $20–$80 “optimal price range”.</b> ${a.k==='s50'?'Chipotle’s actual 50-for-1 split (June 2024) took a ~$3,000 stock to about $60, affordable for individual investors.':a.k==='sd'?'A 10% stock dividend works like a small split: 10% more shares, price divided by 1.10.':'More slices, same pizza: your wealth is unchanged unless the split signals good news.'}`;}
+  lab.querySelectorAll('#sp-a button').forEach(b=>b.onclick=()=>{SPK=b.dataset.k;upd();});upd();
+  main.append(secHead('Question','Split math'));
+  main.append(qList(['sp_split']));
+  main.append(secHead('Game','Which kind of DRIP?','2 pts per card'));
+  main.append(sortGame('sp_sort',DR_CARDS,DR_BINS));
+}
+
+/* ---------- shell ---------- */
+const ALL_MISSIONS=[
+  {id:'basics',part:'Part 1',title:'Payout Basics',c:'Dividend yield, payout ratio, and what a distribution policy decides',r:renderBasics},
+  {id:'theories',part:'Part 1',title:'Three Investors',c:'Irrelevance, bird-in-the-hand and tax effect theories',r:renderTheories},
+  {id:'clienteles',part:'Part 1',title:'Clienteles & Signals',c:'Who buys which stock, and what dividend news says',r:renderClienteles},
+  {id:'residual',part:'Part 1',title:'Residual Model',c:'How much T&W can pay, step by step',r:renderResidual},
+  {id:'timeline',part:'Part 2',title:'Dividend Timeline',c:'Declaration, ex-dividend, record and payment dates',r:renderTimeline},
+  {id:'repurchase',part:'Part 2',title:'Buybacks',c:'Why and how firms repurchase stock',r:renderRepurchase},
+  {id:'compare',part:'Part 2',title:'Dividend vs. Buyback',c:'IWT’s $50M, two ways',r:renderCompare},
+  {id:'splits',part:'Part 2',title:'Splits & DRIPs',c:'Stock splits, stock dividends and reinvestment plans',r:renderSplits},
+];
+const MISSIONS=ALL_MISSIONS.filter(m=>m.part==='Part '+PART).map((m,i)=>Object.assign({},m,{n:i+1}));
+const MB=Object.fromEntries(MISSIONS.map(m=>[m.id,m]));
+function missionHead(id,lede){const m=MB[id],s=missionScore(id);return el(`<header class="m-head"><a href="#hq" class="back">← All missions</a><div class="eyebrow">Mission ${m.n} of ${MISSIONS.length} · Lecture 11, ${m.part}</div><h1>${m.title}</h1><p class="lede">${lede}</p><div class="small mono">${s.got} / ${s.max} pts earned here</div></header>`);}
+function terms(items){return el(`<dl class="terms"><div class="terms-h eyebrow">Key terms</div>${items.map(([t,d])=>`<div class="term"><dt>${t}</dt><dd>${d}</dd></div>`).join('')}</dl>`);}
+function brief(items){return el(`<div class="brief" style="margin-top:22px">${items.map(([h,b])=>`<div><h3>${h}</h3><div>${b}</div></div>`).join('')}</div>`);}
+function secHead(eb,h,right){return el(`<div class="sec"><div class="sec-h"><span class="eyebrow" style="margin:0">${eb}</span><h2>${h}</h2>${right?`<span class="eyebrow">${right}</span>`:''}</div></div>`);}
+
+const HERO={
+ 1:{eb:'FIN 410 · Chapter 15, Part 1 · Distributions to Shareholders',h:'Amazon pays nothing. <span>Duke Energy pays out 74%.</span>',
+   lede:'Who has it right? Four missions cover how payouts are measured, what investors want, clienteles and signals, and the residual model for how much a firm can pay.',
+   pick:'Pick a payout policy',start:'Retained 100%',
+   opts:[['amzn','Amazon','0% payout · 0.00% yield',0,'<b>Amazon keeps every dollar.</b> It has so many good investments that paying out cash would mean passing them up, and growth investors are happy to wait for capital gains. Missions 2 and 3.'],
+         ['duke','Duke Energy','74% payout · 3.98% yield',74,'<b>Duke Energy pays out about three-quarters of its earnings.</b> A utility has steady cash flow and fewer big growth projects, and its retirees and pension funds want the income. Missions 3 and 4.'],
+         ['ryn','Rayonier','234% payout · 4.08% yield',100,'<b>Rayonier paid out 234% of its net income.</b> That’s possible because net income isn’t cash flow, but it can’t last forever. How much a firm <i>can</i> pay is Mission 4.']],
+   lab:f=>f>=100?['','Paid out 234% of net income']:['Retained '+(100-f)+'%',f?'Paid out '+f+'%':'']},
+ 2:{eb:'FIN 410 · Chapter 15, Part 2 · Distributions to Shareholders',h:'You have $10 billion of residual cash. <span>How do you give it back?</span>',
+   lede:'Four missions: the dividend timeline, how buybacks work, dividends vs. buybacks in numbers, and stock splits, stock dividends and DRIPs.',
+   pick:'Your move, CFO',start:'Cash in the firm: $10B',
+   opts:[['div','Pay a dividend','Stable, regular income',100,'<b>A dividend is a promise.</b> Every shareholder gets cash (and a tax bill), the price drops by the dividend on the ex-date, and cutting it later sends a bad signal. Missions 1 and 3.'],
+         ['rep','Buy back stock','Flexible; holders choose',100,'<b>A buyback is flexible.</b> Shareholders choose whether to sell, gains are taxed as capital gains, and the price doesn’t fall. Missions 2 and 3.'],
+         ['split','Split the stock','More, smaller slices',0,'<b>A split isn’t a cash distribution at all.</b> It cuts the same pizza into more slices, and the $10 billion stays in the firm. Mission 4.']],
+   lab:f=>f?['','Paid to shareholders: $10B']:['Cash in the firm: $10B','']}
+};
+function renderHQ(main){
+  const t=totalScore(),H=HERO[PART];
+  const hero=el(`<section class="hero"><div class="stack"><div class="eyebrow">${H.eb}</div><h1>${H.h}</h1><p class="lede">${H.lede}</p></div>
+    <div class="fund"><div class="eyebrow">${H.pick}</div><div class="fund-opts">${H.opts.map(o=>`<button type="button" class="fund-opt" data-f="${o[0]}"><b>${o[1]}</b><span>${o[2]}</span></button>`).join('')}</div>
+      <div class="cap-bar"><div class="cap-eq" id="cb-e">${H.start}</div><div class="cap-dt" id="cb-d"></div></div>
+      <p class="fund-say" id="fund-say">Tap an option to see what this chapter says about it.</p></div></section>`);
+  main.append(hero);
+  const setF=k=>{const o=H.opts.find(x=>x[0]===k),dd=o[3],L=H.lab(dd);$('#cb-e').style.flexGrow=100-dd;$('#cb-d').style.flexGrow=dd;$('#cb-e').textContent=L[0];$('#cb-d').textContent=L[1];$('#fund-say').innerHTML=o[4];hero.querySelectorAll('.fund-opt').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.f===k)));};
+  $('#cb-e').style.flexGrow=100;$('#cb-d').style.flexGrow=0;
+  hero.querySelectorAll('.fund-opt').forEach(x=>x.onclick=()=>setF(x.dataset.f));
+  main.append(secHead('Missions','Work in order or jump around',`${t.got} / ${t.max} pts`));
+  const g=el('<div class="mgrid" style="margin-top:16px"></div>');
+  MISSIONS.forEach(m=>{const s=missionScore(m.id);g.append(el(`<a class="mcard" href="#${m.id}"><span class="mn">${m.n}</span><h3>${m.title}</h3><p>${m.c}</p><div class="meter"><i style="width:${100*s.got/s.max}%"></i></div><div class="mmeta"><span>${m.part}</span><span>${s.got} / ${s.max} pts</span></div></a>`));});
+  g.append(el(`<a class="mcard final" href="#report"><span class="mn">★</span><h3>Final report</h3><p>Your rank, mission by mission, and what to review before the exam.</p><div class="mmeta"><span>${Math.round(100*t.got/t.max)}% complete</span><span>→</span></div></a>`));
+  main.append(g);
+  if(false)main.append(el(`<p class="small" style="margin-top:20px">Your progress is saved in this browser only. Number problems can be re-run with new numbers, so you can keep practicing after you’ve earned the points.${OTHER_URL?` Looking for the ${PART===1?'second':'first'} half of the chapter? <a href="${OTHER_URL}" target="_blank" rel="noopener">Open Leverage Lab Part ${PART===1?2:1}</a>.`:''}</p>`));
+}
+const RANKS=[[90,'Chair of the Board','You could teach this chapter.'],[75,'Chief Financial Officer','The board trusts you with the payout decision.'],[60,'Treasurer','Solid. Tighten the weak spots below.'],[40,'Financial Analyst','You have the ideas; drill the calculations.'],[0,'Summer Intern','Plenty of points still on the table.']];
+function renderReport(main){
+  const t=totalScore(),p=t.max?100*t.got/t.max:0,rk=RANKS.find(r=>p>=r[0]);
+  main.append(el(`<header class="m-head"><a href="#hq" class="back">← All missions</a><div class="eyebrow">Final report</div><h1>${rk[1]}</h1><p class="lede">${rk[2]}</p></header>`));
+  main.append(el(`<div class="rank" style="margin-top:22px"><div class="rank-big">${Math.round(p)}%</div><div class="stack"><div class="mono">${t.got} of ${t.max} points</div><div class="meter" style="width:100%;height:10px"><i style="width:${p}%"></i></div><div class="small">Ranks: Summer Intern · Financial Analyst (40%) · Treasurer (60%) · CFO (75%) · Chair of the Board (90%)</div></div></div>`));
+  main.append(secHead('Breakdown','Mission by mission'));
+  main.append(el(`<div class="tbl-wrap" style="margin-top:14px"><table class="tbl"><thead><tr><th>Mission</th><th>Points</th><th>Score</th><th>Status</th></tr></thead><tbody>${MISSIONS.map(m=>{const s=missionScore(m.id),q=s.max?100*s.got/s.max:0;const unanswered=Object.entries(REG).some(([id,r])=>r.m===m.id&&!(ST.a[id]&&ST.a[id].done));return`<tr><td><a href="#${m.id}">${m.n}. ${m.title}</a></td><td>${s.got} / ${s.max}</td><td>${pct(q,0)}</td><td style="font-family:var(--f-body)">${unanswered?'Unfinished':q>=70?'Solid':'Review this'}</td></tr>`;}).join('')}</tbody></table></div>`));
+  if(OTHER_URL&&PART!==1)main.append(el(`<p class="note" style="margin-top:20px"><b>${PART===1?'Next:':'Missed Part 1?'}</b> ${PART===1?'Part 2 covers the trade-off, signaling and pecking order theories, the optimal debt ratio, and recapitalizations.':'Part 1 covers business vs. financial risk, Firm U vs. Firm L, and the MM propositions.'} <a href="${OTHER_URL}" target="_blank" rel="noopener">Open Leverage Lab Part ${PART===1?2:1}</a></p>`));
+  const box=el(`<div class="sec"><div class="sec-h"><h2>Start over</h2></div><p class="small">Clears your points and answers in this browser.</p><div class="num-row"><button type="button" class="btn ghost" id="rs1">Reset all progress</button><span id="rs2" hidden><button type="button" class="btn accent" id="rs-yes">Yes, erase everything</button> <button type="button" class="link-btn" id="rs-no">Cancel</button></span></div></div>`);
+  main.append(box);
+  $('#rs1').onclick=()=>{$('#rs2').hidden=false;$('#rs1').hidden=true;};
+  $('#rs-no').onclick=()=>{$('#rs2').hidden=true;$('#rs1').hidden=false;};
+  $('#rs-yes').onclick=()=>{ST={a:{}};for(const k in PR)delete PR[k];save();location.hash='#hq';};
+}
+function footNav(id){const i=MISSIONS.findIndex(m=>m.id===id),pv=MISSIONS[i-1],nx=MISSIONS[i+1];return el(`<nav class="foot-nav">${pv?`<a class="btn ghost" href="#${pv.id}">← ${pv.n}. ${pv.title}</a>`:'<a class="btn ghost" href="#hq">← All missions</a>'}${nx?`<a class="btn" href="#${nx.id}">${nx.n}. ${nx.title} →</a>`:'<a class="btn accent" href="#report">See your final report →</a>'}</nav>`);}
+function rerender(){const y=window.scrollY;route();window.scrollTo(0,y);}
+function route(){
+  const k=(location.hash||'#hq').slice(1),main=$('#main');main.innerHTML='';
+  if(MB[k]){MB[k].r(main);main.append(footNav(k));document.title='Payout Lab Part '+PART;}
+  else if(k==='report')renderReport(main);
+  else renderHQ(main);
+  updateScore();
+  requestAnimationFrame(redrawCharts);
+}
+function redrawCharts(){document.querySelectorAll('svg.chart').forEach(sv=>{if(sv._c&&!sv.hidden)chart(sv,sv._c);});}
+let RZ;window.addEventListener('resize',()=>{clearTimeout(RZ);RZ=setTimeout(redrawCharts,150);});
+window.addEventListener('hashchange',()=>{route();window.scrollTo(0,0);});
+$('#open-sheet').onclick=()=>{$('#sheet').hidden=false;$('#close-sheet').focus();};
+$('#close-sheet').onclick=()=>{$('#sheet').hidden=true;};
+$('#sheet').onclick=e=>{if(e.target.id==='sheet')$('#sheet').hidden=true;};
+document.addEventListener('keydown',e=>{if(e.key==='Escape')$('#sheet').hidden=true;});
+document.querySelectorAll('#sheet [data-part]').forEach(x=>{x.hidden=x.dataset.part!==String(PART);});
+route();
+</script>
+</body></html>
