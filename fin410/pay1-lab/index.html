@@ -457,9 +457,6 @@ const POL_CARDS=[
   {id:'p1',t:'Pay out 40% of net income each year',bin:'L',why:'How much cash goes to shareholders is the level of the distribution.'},
   {id:'p2',t:'Buy back shares instead of paying a cash dividend',bin:'F',why:'Choosing between dividends and repurchases is the form.'},
   {id:'p3',t:'Keep the $0.50 quarterly dividend even in a bad year',bin:'S',why:'Holding the dividend steady through ups and downs is stability.'},
-  {id:'p4',t:'Return $10 billion this year instead of $5 billion',bin:'L',why:'The total amount distributed is the level.'},
-  {id:'p5',t:'Raise the dividend only when the increase can be sustained',bin:'S',why:'Avoiding raises that might have to be reversed keeps distributions stable.'},
-  {id:'p6',t:'Switch from paying dividends to open-market repurchases',bin:'F',why:'Same cash, different form.'},
 ];
 reg('basics','b_sort',POL_CARDS.length*2);
 addQ('basics','b_calc',{tag:'Yield and payout',prompt:'A stock sells for <b>$40</b>, pays an annual dividend of <b>$1.20</b> per share, and has EPS of <b>$3.00</b>. What are its dividend yield and payout ratio?',
