@@ -201,7 +201,7 @@ table.tbl{border-collapse:collapse;width:100%;font-size:.9rem;font-variant-numer
 .card{background:var(--bg);border:1.5px solid var(--ink);border-radius:12px;padding:22px 20px;max-width:460px;width:100%;font-size:1.05rem;font-weight:500;box-shadow:4px 4px 0 var(--line);animation:deal .35s ease-out}
 @keyframes deal{from{transform:translateY(-10px) rotate(-2deg);opacity:.3}to{transform:none;opacity:1}}
 .bin.b3{color:var(--gov)}
-.fx-wrap{white-space:normal}
+.step .fx.fx-wrap{white-space:normal;overflow-x:visible}
 .tl-wrap{overflow-x:auto}
 .tl{display:grid;grid-template-columns:repeat(5,minmax(104px,1fr));gap:6px;min-width:540px;padding:2px}
 .tl-item{appearance:none;border:1.5px solid var(--line);background:var(--bg);border-radius:8px;padding:10px 8px;cursor:pointer;display:flex;flex-direction:column;gap:2px;text-align:left;border-top-width:5px}
@@ -457,9 +457,6 @@ const POL_CARDS=[
   {id:'p1',t:'Pay out 40% of net income each year',bin:'L',why:'How much cash goes to shareholders is the level of the distribution.'},
   {id:'p2',t:'Buy back shares instead of paying a cash dividend',bin:'F',why:'Choosing between dividends and repurchases is the form.'},
   {id:'p3',t:'Keep the $0.50 quarterly dividend even in a bad year',bin:'S',why:'Holding the dividend steady through ups and downs is stability.'},
-  {id:'p4',t:'Return $10 billion this year instead of $5 billion',bin:'L',why:'The total amount distributed is the level.'},
-  {id:'p5',t:'Raise the dividend only when the increase can be sustained',bin:'S',why:'Avoiding raises that might have to be reversed keeps distributions stable.'},
-  {id:'p6',t:'Switch from paying dividends to open-market repurchases',bin:'F',why:'Same cash, different form.'},
 ];
 reg('basics','b_sort',POL_CARDS.length*2);
 addQ('basics','b_calc',{tag:'Yield and payout',prompt:'A stock sells for <b>$40</b>, pays an annual dividend of <b>$1.20</b> per share, and has EPS of <b>$3.00</b>. What are its dividend yield and payout ratio?',

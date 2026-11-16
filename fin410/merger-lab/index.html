@@ -1,0 +1,650 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Merger Lab</title><style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
+<title>Merger Lab</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+/* Layout: a CFO's case binder. Sticky score bar, a mission index, then one mission per view: briefing, lab, questions. */
+:root{
+  --bg:#F4F3F1; --surface:#FFFFFF; --surface-2:#ECE9E6; --ink:#1D1A1C; --muted:#5F585C; --line:#D9D3CF;
+  --accent:#9E1B32; --accent-ink:#FFFFFF; --accent-soft:#F5E4E7;
+  --debt:#2E5E80; --equity:#9E1B32; --gov:#A8761A;
+  --good:#21783A; --good-bg:#E3F1E6; --bad:#B4410D; --bad-bg:#FAE8DE;
+  --f-display:"Archivo","Arial Narrow",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#151315; --surface:#1E1B1E; --surface-2:#292528; --ink:#F0EBED; --muted:#ABA1A6; --line:#3B3539;
+  --accent:#E2586F; --accent-ink:#1A0A0E; --accent-soft:#3A1B22;
+  --debt:#74A9CE; --equity:#E2586F; --gov:#D9AB4B;
+  --good:#63C580; --good-bg:#15301E; --bad:#F2925F; --bad-bg:#3A2016; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#151315; --surface:#1E1B1E; --surface-2:#292528; --ink:#F0EBED; --muted:#ABA1A6; --line:#3B3539;
+  --accent:#E2586F; --accent-ink:#1A0A0E; --accent-soft:#3A1B22;
+  --debt:#74A9CE; --equity:#E2586F; --gov:#D9AB4B;
+  --good:#63C580; --good-bg:#15301E; --bad:#F2925F; --bad-bg:#3A2016; color-scheme:dark}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.55}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+a{color:var(--accent)}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+sub{font-size:.72em}
+.num,.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+
+/* top bar */
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--surface);border-bottom:1px solid var(--line)}
+.bar-in{max-width:1040px;margin:0 auto;display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.brand{font-family:var(--f-display);font-stretch:118%;font-weight:800;letter-spacing:-.01em;font-size:1.05rem;text-decoration:none;color:var(--ink);display:flex;align-items:baseline;gap:8px}
+.brand small{font-family:var(--f-mono);font-weight:400;font-size:.72rem;color:var(--muted);letter-spacing:.04em}
+.bar-sp{flex:1}
+.score{font-family:var(--f-mono);font-size:.85rem;display:flex;align-items:center;gap:8px}
+.score b{font-weight:600;color:var(--accent)}
+.meter{width:90px;height:6px;background:var(--surface-2);border-radius:3px;overflow:hidden}
+.meter i{display:block;height:100%;background:var(--accent);width:0;transition:width .4s}
+.btn{appearance:none;border:1px solid var(--ink);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:6px;font-weight:600;cursor:pointer;font-size:.92rem}
+.btn:hover{filter:brightness(1.15)}
+.btn:disabled{opacity:.4;cursor:default;filter:none}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn.ghost:hover{border-color:var(--ink)}
+.btn.accent{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.link-btn{appearance:none;background:none;border:0;color:var(--accent);font-weight:600;cursor:pointer;padding:4px 0;font-size:.9rem;text-decoration:underline;text-underline-offset:3px}
+
+/* page */
+.wrap{max-width:1040px;margin:0 auto;padding-block:28px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.eyebrow{font-family:var(--f-mono);font-size:.74rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.08}
+h1{font-size:clamp(2rem,5.4vw,3.3rem);font-stretch:112%;font-weight:850;letter-spacing:-.02em}
+h2{font-size:1.45rem;font-stretch:108%;font-weight:750;letter-spacing:-.01em}
+h3{font-size:1.05rem;font-weight:700}
+p{margin:0}
+.lede{font-size:1.08rem;color:var(--muted);max-width:66ch}
+.stack{display:flex;flex-direction:column;gap:14px}
+.sec{margin-top:40px;display:flex;flex-direction:column;gap:16px}
+.sec-h{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;border-bottom:2px solid var(--ink);padding-bottom:8px}
+.sec-h .eyebrow{margin-left:auto}
+
+/* hero */
+.hero{display:grid;grid-template-columns:1.15fr 1fr;gap:36px;align-items:start}
+.hero > *{min-width:0}
+.hero h1 span{color:var(--accent)}
+.fund{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px;display:flex;flex-direction:column;gap:14px}
+.fund-opts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.fund-opt{appearance:none;border:1.5px solid var(--line);background:var(--bg);border-radius:8px;padding:10px 8px;cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:2px}
+.fund-opt b{font-family:var(--f-display);font-stretch:110%;font-size:1.05rem}
+.fund-opt span{font-size:.78rem;color:var(--muted)}
+.fund-opt[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.cap-bar{display:flex;height:34px;border-radius:6px;overflow:hidden;font-family:var(--f-mono);font-size:.75rem}
+.cap-bar div{display:flex;align-items:center;justify-content:center;transition:flex-grow .5s;overflow:hidden;white-space:nowrap}
+.cap-eq{background:var(--equity);color:var(--accent-ink)}
+.cap-dt{background:var(--debt);color:var(--surface)}
+.fund-say{min-height:5.2em;font-size:.95rem}
+
+/* mission grid */
+.mgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.mcard{display:flex;flex-direction:column;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;text-decoration:none;color:var(--ink);transition:border-color .15s,transform .15s}
+.mcard:hover{border-color:var(--ink);transform:translateY(-2px)}
+.mcard .mn{font-family:var(--f-display);font-stretch:125%;font-weight:900;font-size:2.2rem;line-height:1;color:var(--accent)}
+.mcard h3{font-size:1.15rem;font-stretch:108%}
+.mcard p{font-size:.86rem;color:var(--muted);flex:1}
+.mcard .mmeta{display:flex;justify-content:space-between;align-items:center;font-family:var(--f-mono);font-size:.75rem;color:var(--muted)}
+.mcard .meter{width:100%}
+.mcard.final{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.mcard.final p,.mcard.final .mmeta{color:var(--bg);opacity:.75}
+.mcard.final .mn{color:var(--bg)}
+
+/* mission header */
+.m-head{display:flex;flex-direction:column;gap:10px}
+.back{font-family:var(--f-mono);font-size:.8rem;text-decoration:none;color:var(--muted)}
+.back:hover{color:var(--accent)}
+.terms{margin:22px 0 0;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 16px;display:flex;flex-direction:column}
+.terms-h{margin-bottom:4px}
+.term{display:grid;grid-template-columns:11em minmax(0,1fr);gap:4px 16px;padding:7px 0;border-top:1px solid var(--line);font-size:.93rem}
+.terms-h + .term{border-top:0}
+.term dt{font-weight:600}
+.term dd{margin:0;color:var(--muted)}
+@media (max-width:560px){.term{grid-template-columns:1fr;gap:0}}
+.brief{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.brief > div{background:var(--surface);border-left:3px solid var(--accent);padding:14px 16px;border-radius:0 8px 8px 0;font-size:.93rem;min-width:0}
+.brief h3{margin-bottom:6px;font-size:.98rem}
+.brief ul{margin:0;padding-left:18px}
+.brief li+li{margin-top:3px}
+.f{font-family:var(--f-mono);font-size:.86em;background:var(--surface-2);padding:1px 6px;border-radius:4px;white-space:nowrap}
+.fblock{font-family:var(--f-mono);font-size:.9rem;background:var(--surface-2);padding:8px 12px;border-radius:6px;overflow-x:auto;white-space:nowrap}
+
+/* lab */
+.lab{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:18px}
+.lab-controls{display:flex;flex-wrap:wrap;gap:16px 28px;align-items:center}
+.ctrl{display:flex;flex-direction:column;gap:4px;min-width:min(280px,100%);flex:1}
+.ctrl label{font-size:.85rem;font-weight:600;display:flex;justify-content:space-between;gap:8px}
+.ctrl output{font-family:var(--f-mono);color:var(--accent);font-weight:600}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;padding:3px;gap:3px;flex-wrap:wrap;background:var(--bg)}
+.seg button{appearance:none;border:0;background:transparent;padding:7px 12px;border-radius:6px;cursor:pointer;font-weight:600;font-size:.86rem;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.lab-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}
+.lab-grid > *{min-width:0}
+.charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr));gap:20px}
+figure{margin:0;display:flex;flex-direction:column;gap:6px;min-width:0}
+figcaption{font-size:.82rem;font-weight:600;color:var(--muted)}
+svg.chart{width:100%;height:auto;display:block;overflow:visible}
+.chart .grid{stroke:var(--line);stroke-width:1}
+.chart .axis{stroke:var(--muted);stroke-width:1}
+.chart .tick{fill:var(--muted);font-family:var(--f-mono);font-size:11px}
+.chart .alabel{fill:var(--muted);font-family:var(--f-body);font-size:12px}
+.chart .slabel{font-family:var(--f-body);font-size:12px;font-weight:600}
+.note{font-size:.9rem;color:var(--muted);background:var(--bg);border-radius:8px;padding:10px 14px}
+.note b{color:var(--ink)}
+.readout{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0}
+.readout div{background:var(--bg);border-radius:8px;padding:8px 12px}
+.readout dt{font-size:.74rem;color:var(--muted);font-family:var(--f-mono);letter-spacing:.03em}
+.readout dd{margin:0;font-family:var(--f-mono);font-size:1.12rem;font-weight:600;font-variant-numeric:tabular-nums}
+.legend{list-style:none;margin:0;padding:0;display:flex;gap:14px;flex-wrap:wrap;font-size:.84rem}
+.legend li{display:flex;align-items:center;gap:6px}
+.legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+.pie-wrap{display:flex;flex-direction:column;align-items:center;gap:10px}
+.pie-wrap svg{width:min(250px,100%);height:auto}
+
+/* tables */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+table.tbl{border-collapse:collapse;width:100%;font-size:.9rem;font-variant-numeric:tabular-nums}
+.tbl th,.tbl td{padding:7px 12px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+.tbl th:first-child,.tbl td:first-child{text-align:left;font-family:var(--f-body)}
+.tbl td{font-family:var(--f-mono)}
+.tbl thead th{font-family:var(--f-mono);font-size:.78rem;color:var(--muted);font-weight:600;background:var(--bg)}
+.tbl tr:last-child td{border-bottom:0}
+.tbl .hl{background:var(--accent-soft)}
+.tbl .key td{font-weight:600}
+.tbl .unk{color:var(--accent);font-weight:600}
+.tbl .best{background:var(--good-bg);color:var(--good);font-weight:600}
+.tbl td.up{color:var(--good)} .tbl td.dn{color:var(--bad)}
+
+/* questions */
+.qs{display:flex;flex-direction:column;gap:14px}
+.q{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px;display:flex;flex-direction:column;gap:12px}
+.q-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.q-tag{font-family:var(--f-mono);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);font-weight:600}
+.q-pts{font-family:var(--f-mono);font-size:.74rem;color:var(--muted);border:1px solid var(--line);border-radius:20px;padding:2px 9px;white-space:nowrap}
+.q-pts.got{color:var(--good);border-color:var(--good);background:var(--good-bg)}
+.q-pts.miss{color:var(--bad);border-color:var(--bad)}
+.q-prompt{font-size:1rem;max-width:72ch}
+.opts{display:flex;flex-direction:column;gap:7px}
+.opts.chips{flex-direction:row;flex-wrap:wrap}
+.opt{appearance:none;display:flex;gap:10px;align-items:flex-start;text-align:left;background:var(--bg);border:1.5px solid var(--line);border-radius:8px;padding:9px 12px;cursor:pointer;font-size:.94rem}
+.opts.chips .opt{padding:7px 12px}
+.opt:hover:not(:disabled){border-color:var(--ink)}
+.opt:disabled{cursor:default}
+.opt-key{font-family:var(--f-mono);font-size:.74rem;font-weight:600;color:var(--muted);padding-top:2px}
+.opt.is-right{border-color:var(--good);background:var(--good-bg)}
+.opt.is-right .opt-key{color:var(--good)}
+.opt.is-wrong{border-color:var(--bad);background:var(--bad-bg)}
+.opt.is-wrong .opt-key{color:var(--bad)}
+.fb{border-radius:8px;padding:10px 14px;font-size:.93rem;max-width:80ch}
+.fb.good{background:var(--good-bg);border-left:3px solid var(--good)}
+.fb.bad{background:var(--bad-bg);border-left:3px solid var(--bad)}
+.fb.info{background:var(--surface-2);border-left:3px solid var(--muted)}
+.num-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.num-field{display:flex;align-items:center;border:1.5px solid var(--line);border-radius:8px;background:var(--bg);overflow:hidden}
+.num-field:focus-within{border-color:var(--accent)}
+.num-field span{padding:0 10px;font-family:var(--f-mono);color:var(--muted);font-size:.9rem}
+.num-field input{border:0;background:transparent;color:var(--ink);font-family:var(--f-mono);font-size:1rem;padding:9px 4px;width:9.5em;outline:none}
+.num-field input:disabled{opacity:.7}
+.qfig{max-width:560px}
+
+/* sort game */
+.deck{display:grid;grid-template-columns:1fr;gap:12px;justify-items:center;text-align:center;padding:8px 0}
+.card{background:var(--bg);border:1.5px solid var(--ink);border-radius:12px;padding:22px 20px;max-width:460px;width:100%;font-size:1.05rem;font-weight:500;box-shadow:4px 4px 0 var(--line);animation:deal .35s ease-out}
+@keyframes deal{from{transform:translateY(-10px) rotate(-2deg);opacity:.3}to{transform:none;opacity:1}}
+.cap-bar{display:none}
+.bin.b3{color:var(--gov)}
+.bin.b4{color:var(--good)}
+.step .fx.fx-wrap{white-space:normal;overflow-x:visible}
+.bins{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;width:100%;max-width:460px}
+.bin{appearance:none;border:2px dashed var(--line);border-radius:10px;padding:14px 10px;background:var(--surface);cursor:pointer;font-weight:700;font-family:var(--f-display);font-stretch:108%;font-size:1rem;display:flex;flex-direction:column;gap:2px}
+.bin small{font-family:var(--f-body);font-weight:400;font-size:.76rem;color:var(--muted)}
+.bin:hover{border-style:solid;border-color:var(--ink)}
+.bin.b1{color:var(--accent)} .bin.b2{color:var(--debt)}
+.sorted{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;text-align:left}
+.sorted ul{margin:6px 0 0;padding-left:18px;font-size:.9rem}
+.sorted li.miss{color:var(--bad)}
+
+.sig-row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:8px 0;border-bottom:1px solid var(--line)}
+.sig-row:last-of-type{border-bottom:0}
+.yn{display:inline-flex;gap:6px}
+.yn button{appearance:none;border:1.5px solid var(--line);background:var(--bg);border-radius:6px;padding:6px 14px;cursor:pointer;font-weight:600}
+.yn button[aria-pressed="true"]{border-color:var(--ink);background:var(--ink);color:var(--bg)}
+.yn button.is-right{border-color:var(--good);background:var(--good-bg);color:var(--good)}
+.yn button.is-wrong{border-color:var(--bad);background:var(--bad-bg);color:var(--bad)}
+.peck{display:flex;gap:8px;flex-wrap:wrap}
+.peck-seq{display:flex;gap:8px;flex-wrap:wrap;align-items:center;min-height:42px}
+.peck-seq span{font-family:var(--f-mono);font-size:.85rem;background:var(--surface-2);border-radius:6px;padding:7px 10px}
+.peck-seq em{font-style:normal;color:var(--muted)}
+
+/* recap bars */
+.rbars{display:flex;flex-direction:column;gap:10px}
+.rbar{display:grid;grid-template-columns:150px 1fr;gap:12px;align-items:center;font-size:.85rem}
+.rbar-track{display:flex;height:28px;border-radius:5px;overflow:hidden;background:var(--surface-2)}
+.rbar-track div{display:flex;align-items:center;padding:0 6px;font-family:var(--f-mono);font-size:.72rem;white-space:nowrap;overflow:hidden;transition:width .5s}
+.seg-d{background:var(--debt);color:var(--surface)}
+.seg-s{background:var(--equity);color:var(--accent-ink)}
+.seg-c{background:var(--gov);color:var(--surface)}
+.seg-q{background:repeating-linear-gradient(45deg,var(--surface-2),var(--surface-2) 6px,var(--line) 6px,var(--line) 12px);color:var(--muted)}
+
+.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.step{display:grid;grid-template-columns:2.2em minmax(0,1fr);gap:10px;align-items:start;background:var(--bg);border-radius:8px;padding:10px 12px}
+.step .k{font-family:var(--f-mono);font-weight:600;color:var(--accent);font-size:1.05rem}
+.step h4{margin:0 0 3px;font-size:.9rem;font-family:var(--f-body)}
+.step .fx{font-family:var(--f-mono);font-size:.9rem;overflow-x:auto;white-space:nowrap;padding-bottom:2px}
+.step.locked{opacity:.55}
+.step.locked .fx{color:var(--muted)}
+.step.new{animation:deal .3s ease-out}
+.stage-note{background:var(--bg);border-radius:8px;padding:12px 14px;font-size:.95rem;display:flex;flex-direction:column;gap:8px}
+.stage-note .fblock{white-space:normal}
+.warn{color:var(--bad);font-weight:600}
+.foot-nav{display:flex;justify-content:space-between;gap:12px;margin-top:44px;flex-wrap:wrap}
+.foot-nav a{text-decoration:none}
+.small{font-size:.84rem;color:var(--muted)}
+
+/* formula sheet */
+.sheet{position:fixed;inset:0;z-index:20;background:color-mix(in srgb,var(--ink) 45%,transparent);display:flex;justify-content:flex-end}
+.sheet-in{background:var(--surface);width:min(520px,100%);height:100%;overflow-y:auto;padding:20px;padding-top:calc(20px + env(safe-area-inset-top,0px));padding-bottom:calc(20px + env(safe-area-inset-bottom,0px));padding-right:max(20px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:14px;box-shadow:-8px 0 30px rgba(0,0,0,.2)}
+.sheet-in h3{margin-top:6px;font-size:.8rem;font-family:var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.sheet-in .fblock,.brief .fblock{white-space:normal}
+.fx-sec{display:flex;flex-direction:column;gap:8px}
+.fx-row{background:var(--surface-2);border-radius:8px;padding:8px 12px;display:flex;flex-direction:column;gap:2px}
+.fx-label{font-size:.76rem;color:var(--muted);font-family:var(--f-mono);letter-spacing:.02em}
+.fx-math{overflow-x:auto;overflow-y:hidden;color:var(--ink)}
+.fx-math math{font-size:1.12rem;margin:2px 0;text-align:left}
+.fx-math math[display="block"]{display:block math;math-style:normal;text-align:left;margin-left:0}
+.fx-inq{background:var(--surface-2);border-radius:8px;padding:8px 12px;margin:8px 0;max-width:max-content}
+.sheet-close{align-self:flex-end}
+
+.rank{display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:24px}
+.rank-big{font-family:var(--f-display);font-stretch:125%;font-weight:900;font-size:clamp(2.6rem,8vw,4.4rem);line-height:1;color:var(--accent)}
+.rank > *{min-width:0}
+
+@media (max-width:760px){
+  .hero,.lab-grid{grid-template-columns:1fr}
+  .rank{grid-template-columns:1fr}
+  .rbar{grid-template-columns:1fr;gap:4px}
+  .fund-opts{grid-template-columns:1fr}
+  .bar-in{gap:8px}
+  .meter.top{display:none}
+  .tbl th,.tbl td{padding:6px 8px}
+  .tbl td:first-child,.tbl th:first-child{white-space:normal;min-width:7.5em}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+</style>
+
+<div class="bar"><div class="bar-in">
+  <a class="brand" href="#hq">Merger Lab <small>FIN 410 · LECTURE 12</small></a>
+  <span class="bar-sp"></span>
+  <span class="score" aria-live="polite"><span class="meter top"><i id="top-meter"></i></span><span><b id="top-pts">0</b> / <span id="top-max">0</span> pts</span></span>
+  <button class="btn ghost" id="open-sheet" type="button">Formula sheet</button>
+</div></div>
+
+<main class="wrap" id="main"></main>
+
+<div class="sheet" id="sheet" hidden>
+  <div class="sheet-in" role="dialog" aria-label="Formula sheet">
+    <button class="btn ghost sheet-close" id="close-sheet" type="button">Close</button>
+    <h2>Formula sheet</h2>
+    <div data-part="1" class="fx-sec"><h3>Synergy</h3><div class="fx-row"><div class="fx-label">Value created by combining</div><div class="fx-math"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi mathvariant="normal">Δ</mi><mi>V</mi><mo>=</mo><msub><mi>V</mi><mrow><mi>A</mi><mi>T</mi></mrow></msub><mo>−</mo><mo stretchy="false">(</mo><msub><mi>V</mi><mi>A</mi></msub><mo>+</mo><msub><mi>V</mi><mi>T</mi></msub><mo stretchy="false">)</mo></mrow></semantics></math></span></div></div></div>
+    <div data-part="1" class="fx-sec"><h3>Adjusted present value (APV)</h3><div class="fx-row"><div class="fx-label">Value of operations</div><div class="fx-math"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msub><mi>V</mi><mrow><mi mathvariant="normal">o</mi><mi mathvariant="normal">p</mi></mrow></msub><mo>=</mo><msub><mi>V</mi><mtext>Unlevered</mtext></msub><mo>+</mo><msub><mi>V</mi><mtext>Tax shield</mtext></msub></mrow></semantics></math></span></div></div><div class="fx-row"><div class="fx-label">Unlevered value</div><div class="fx-math"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msub><mi>V</mi><mtext>Unlevered</mtext></msub><mo>=</mo><munderover><mo>∑</mo><mrow><mi>t</mi><mo>=</mo><mn>1</mn></mrow><mi mathvariant="normal">∞</mi></munderover><mfrac><msub><mrow><mi mathvariant="normal">F</mi><mi mathvariant="normal">C</mi><mi mathvariant="normal">F</mi></mrow><mi>t</mi></msub><mrow><mo stretchy="false">(</mo><mn>1</mn><mo>+</mo><msub><mi>r</mi><mrow><mi>s</mi><mi>U</mi></mrow></msub><msup><mo stretchy="false">)</mo><mi>t</mi></msup></mrow></mfrac></mrow></semantics></math></span></div></div><div class="fx-row"><div class="fx-label">Value of the interest tax shield</div><div class="fx-math"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msub><mi>V</mi><mtext>Tax shield</mtext></msub><mo>=</mo><munderover><mo>∑</mo><mrow><mi>t</mi><mo>=</mo><mn>1</mn></mrow><mi mathvariant="normal">∞</mi></munderover><mfrac><msub><mrow><mi mathvariant="normal">T</mi><mi mathvariant="normal">S</mi></mrow><mi>t</mi></msub><mrow><mo stretchy="false">(</mo><mn>1</mn><mo>+</mo><msub><mi>r</mi><mrow><mi>s</mi><mi>U</mi></mrow></msub><msup><mo stretchy="false">)</mo><mi>t</mi></msup></mrow></mfrac></mrow></semantics></math></span></div></div><div class="fx-row"><div class="fx-label">Interest tax savings</div><div class="fx-math"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msub><mrow><mi mathvariant="normal">T</mi><mi mathvariant="normal">S</mi></mrow><mi>t</mi></msub><mo>=</mo><msub><mtext>Interest</mtext><mi>t</mi></msub><mo>×</mo><mi>T</mi></mrow></semantics></math></span></div></div></div>
+    <div data-part="1" class="fx-sec"><h3>Intrinsic price of the target</h3><div class="fx-row"><div class="fx-math"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>P</mi><mo>=</mo><mfrac><mrow><msub><mi>V</mi><mrow><mi mathvariant="normal">o</mi><mi mathvariant="normal">p</mi></mrow></msub><mo>+</mo><mtext>ST inv.</mtext><mo>−</mo><mtext>Debt</mtext></mrow><mi>n</mi></mfrac></mrow></semantics></math></span></div></div></div>
+    <div data-part="1" class="fx-sec"><h3>Bid price</h3><div class="fx-row"><div class="fx-label">Bargaining range</div><div class="fx-math"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msub><mi>P</mi><mtext>current</mtext></msub><mo>≤</mo><mtext>Bid</mtext><mo>≤</mo><msub><mi>P</mi><mtext>value to acquirer</mtext></msub></mrow></semantics></math></span></div></div></div>
+    <div data-part="1" class="fx-sec"><h3>Purchase accounting</h3><div class="fx-row"><div class="fx-label">Goodwill: price paid above the fair value of net assets</div><div class="fx-math"><span class="katex"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mtext>Goodwill</mtext><mo>=</mo><msub><mi>P</mi><mtext>paid</mtext></msub><mo>−</mo><msub><mrow><mi mathvariant="normal">F</mi><mi mathvariant="normal">V</mi></mrow><mtext>net assets</mtext></msub></mrow></semantics></math></span></div></div></div>
+  </div>
+</div>
+
+<script>
+const PART=1, OTHER_URL='';
+/* ---------- helpers ---------- */
+const $=(s,r=document)=>r.querySelector(s);
+const fmt=(x,d=2)=>Number(x).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
+const usd=(x,d=2)=>(x<0?'−$':'$')+fmt(Math.abs(x),d);
+const pct=(x,d=2)=>fmt(x,d)+'%';
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const el=h=>{const t=document.createElement('template');t.innerHTML=h.trim();return t.content.firstElementChild;};
+const strip=h=>String(h).replace(/<[^>]+>/g,'');
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+function nice(a,b,n=5){const raw=(b-a)/n,mag=10**Math.floor(Math.log10(raw)),f=raw/mag,st=(f<1.5?1:f<3?2:f<7?5:10)*mag;const o=[];for(let v=Math.ceil(a/st-1e-9)*st;v<=b+1e-9;v+=st)o.push(+v.toFixed(8));return o;}
+const line=(f,x0,x1,n=80)=>Array.from({length:n+1},(_,i)=>{const x=x0+(x1-x0)*i/n;return[x,f(x)];});
+let CLIP=0;
+const SUB=t=>String(t).replace(/_([A-Za-z]+)/g,'<tspan baseline-shift="sub" font-size="9">$1</tspan>');
+function chart(svg,c){
+  svg._c=c;svg.classList.add('chart');const bw=svg.getBoundingClientRect().width,cw=c.w||600;
+  const W=Math.round(Math.max(330,Math.min(cw,bw||cw))),H=Math.round((c.h||300)*Math.max(.82,W/cw)),m=Object.assign({l:c.yl?74:58,r:24,t:20,b:46},c.m||{});
+  const X=v=>m.l+(v-c.x0)/(c.x1-c.x0)*(W-m.l-m.r), Y=v=>H-m.b-(v-c.y0)/(c.y1-c.y0)*(H-m.t-m.b);
+  const cid='clip'+(++CLIP);
+  let s=`<defs><clipPath id="${cid}"><rect x="${m.l}" y="${m.t-4}" width="${W-m.l-m.r+4}" height="${H-m.t-m.b+8}"/></clipPath></defs>`;
+  (c.yt||nice(c.y0,c.y1)).forEach(v=>{s+=`<line class="grid" x1="${m.l}" x2="${W-m.r}" y1="${Y(v)}" y2="${Y(v)}"/><text class="tick" x="${m.l-8}" y="${Y(v)+4}" text-anchor="end">${c.fy(v)}</text>`;});
+  (c.xt||nice(c.x0,c.x1)).forEach(v=>{s+=`<text class="tick" x="${X(v)}" y="${H-m.b+18}" text-anchor="middle">${c.fx(v)}</text>`;});
+  s+=`<line class="axis" x1="${m.l}" x2="${W-m.r}" y1="${H-m.b}" y2="${H-m.b}"/>`;
+  if(c.xl)s+=`<text class="alabel" x="${(m.l+W-m.r)/2}" y="${H-8}" text-anchor="middle">${SUB(c.xl)}</text>`;
+  if(c.yl)s+=`<text class="alabel" transform="translate(13 ${(m.t+H-m.b)/2}) rotate(-90)" text-anchor="middle">${c.yl}</text>`;
+  (c.vlines||[]).forEach(v=>{s+=`<line x1="${X(v.x)}" x2="${X(v.x)}" y1="${m.t}" y2="${H-m.b}" style="stroke:${v.color||'var(--muted)'};stroke-dasharray:4 4;stroke-width:1.5"/>`;if(v.label)s+=`<text class="slabel" x="${X(v.x)+(v.dx??6)}" y="${m.t+10}" text-anchor="${v.anchor||'start'}" style="fill:${v.color||'var(--muted)'}">${v.label}</text>`;});
+  s+=`<g clip-path="url(#${cid})">`;
+  (c.series||[]).forEach(se=>{const d=se.pts.map((p,i)=>(i?'L':'M')+X(p[0]).toFixed(1)+' '+Y(p[1]).toFixed(1)).join('');s+=`<path d="${d}" style="fill:none;stroke:${se.color};stroke-width:${se.w||2.5};${se.dash?'stroke-dasharray:'+se.dash+';':''}opacity:${se.op??1};stroke-linejoin:round"/>`;});
+  s+=`</g>`;
+  (c.series||[]).forEach(se=>{if(se.label){const p=se.lp||se.pts[se.pts.length-1];s+=`<text class="slabel" x="${X(p[0])+(se.dx||0)}" y="${Y(p[1])+(se.dy??-8)}" text-anchor="${se.anchor||'end'}" style="fill:${se.color};opacity:${se.op??1}">${SUB(se.label)}</text>`;}});
+  (c.dots||[]).forEach(d=>{s+=`<circle cx="${X(d.x)}" cy="${Y(d.y)}" r="${d.r||5}" style="fill:${d.color};stroke:var(--surface);stroke-width:2"/>`;if(d.label)s+=`<text class="slabel" x="${X(d.x)+(d.dx??8)}" y="${Y(d.y)+(d.dy??-8)}" text-anchor="${d.anchor||'start'}" style="fill:${d.color}">${SUB(d.label)}</text>`;});
+  svg.setAttribute('viewBox',`0 0 ${W} ${H}`);svg.innerHTML=s;
+}
+
+/* ---------- state ---------- */
+const LS='fin410-merger-lab';
+let ST={a:{}};
+try{const s=localStorage.getItem(LS);if(s){const p=JSON.parse(s);if(p&&p.a)ST=p;}}catch(e){}
+function save(){try{localStorage.setItem(LS,JSON.stringify(ST));}catch(e){}updateScore();}
+const rec=id=>(ST.a[id]||(ST.a[id]={}));
+const PR={}; // practice records (not saved, not scored)
+const REG={};
+const reg=(m,id,max)=>{REG[id]={m,max};};
+const GROUPS={};
+function grp(k){const key='g_'+k;if(!ST.a[key]){ST.a[key]={ver:0,par:GROUPS[k](true)};save();}return ST.a[key];}
+function regroup(k){const g=grp(k);g.ver++;g.par=GROUPS[k](false);Object.keys(Q).forEach(id=>{if(Q[id].group===k){const r=rec(id);if(!r.done){delete r.tries;delete r.last;}delete PR[id];}});save();rerender();}
+function activeRec(q){
+  const r=rec(q.id);
+  if(q.group){const g=grp(q.group);if(r.done&&r.ver!==g.ver){if(!PR[q.id]||PR[q.id].ver!==g.ver)PR[q.id]={ver:g.ver,practice:true};return PR[q.id];}return r;}
+  return PR[q.id]||r;
+}
+function parOf(q){if(q.group)return grp(q.group).par;const a=activeRec(q);if(a.practice)return a.par;if(!a.par){a.par=q.gen?q.gen():{};save();}return a.par;}
+const resolved=id=>{const q=Q[id];return q?!!activeRec(q).done:!!rec(id).done;};
+function missionScore(m){let got=0,max=0;for(const[id,r]of Object.entries(REG))if(r.m===m){max+=r.max;got+=(ST.a[id]&&ST.a[id].pts)||0;}return{got,max};}
+function totalScore(){let got=0,max=0;for(const[id,r]of Object.entries(REG)){if(!MB[r.m])continue;max+=r.max;got+=(ST.a[id]&&ST.a[id].pts)||0;}return{got,max};}
+function updateScore(){const t=totalScore();$('#top-pts').textContent=t.got;$('#top-max').textContent=t.max;$('#top-meter').style.width=(t.max?100*t.got/t.max:0)+'%';}
+
+/* ---------- question engine ---------- */
+const Q={};
+function ptsBadge(q,a){const full=q.pts||10;if(a.practice)return`<span class="q-pts">Practice</span>`;if(a.done)return`<span class="q-pts ${a.pts>0?'got':'miss'}">${a.pts>0?'+'+a.pts:'0'} / ${full} pts</span>`;return`<span class="q-pts">${full} pts</span>`;}
+function renderQ(id){return Q[id].type==='num'?numQ(id):mcQ(id);}
+function mcQ(id){
+  const q=Q[id];const w=el(`<div class="q" id="q-${id}"></div>`);
+  function paint(){
+    const a=activeRec(q);const par=q.group?grp(q.group).par:null;
+    const opts=q.optsF?q.optsF(par):q.opts, ans=q.ansF?q.ansF(par):q.ans;
+    const prompt=typeof q.prompt==='function'?q.prompt(par):q.prompt;
+    w.innerHTML=`<div class="q-head"><span class="q-tag">${q.tag||'Question'}</span>${ptsBadge(q,a)}</div><div class="q-prompt">${prompt}</div><div class="opts${q.chips?' chips':''}"></div><div class="fb" hidden></div>`;
+    const box=w.querySelector('.opts'),fb=w.querySelector('.fb');
+    opts.forEach((o,i)=>{const b=el(`<button type="button" class="opt"><span class="opt-key">${'ABCDEFGH'[i]}</span><span>${o}</span></button>`);
+      if(a.done){b.disabled=true;if(i===ans)b.classList.add('is-right');if(i===a.choice&&i!==ans)b.classList.add('is-wrong');}
+      else b.onclick=()=>{a.done=true;a.choice=i;a.correct=i===ans;if(!a.practice){a.pts=a.correct?(q.pts||10):0;if(q.group)a.ver=grp(q.group).ver;save();}paint();q.onChange&&q.onChange();};
+      box.append(b);});
+    if(a.done){const ex=typeof q.explain==='function'?q.explain(par):q.explain;fb.hidden=false;fb.className='fb '+(a.correct?'good':'bad');fb.innerHTML=(a.correct?'<b>Correct.</b> ':`<b>Not quite.</b> The answer is <b>${strip(opts[ans])}</b>. `)+ex;}
+  }
+  paint();return w;
+}
+function parseAns(s,q){let v=parseFloat(String(s).replace(/[−–]/g,'-').replace(/[,$\s%]/g,''));if(isNaN(v))return NaN;if(q.kind==='pct'&&Math.abs(v)<1&&Math.abs(q._ans)>=1)v*=100;return v;}
+function isClose(v,a,q){const tol=q.tol!=null?q.tol:Math.max(0.005*Math.abs(a),0.01);return Math.abs(v-a)<=tol+1e-9;}
+function showAns(q,a){const d=q.dp!=null?q.dp:2;return(q.pre||'')+fmt(a,d)+(q.kind==='pct'?'%':'')+(q.sufText?' '+q.sufText:'');}
+function numQ(id){
+  const q=Q[id];const w=el(`<div class="q" id="q-${id}"></div>`);
+  function paint(){
+    const a=activeRec(q),par=parOf(q),ans=q.ans(par);q._ans=ans;
+    const full=q.pts||10;
+    w.innerHTML=`<div class="q-head"><span class="q-tag">${q.tag||'Calculate'}</span>${ptsBadge(q,a)}</div><div class="q-prompt">${q.prompt(par)}</div>${q.fig?'<svg class="chart qfig"></svg>':''}
+      <form class="num-row" novalidate><div class="num-field">${q.pre?`<span>${q.pre}</span>`:''}<input id="in-${id}" inputmode="decimal" autocomplete="off" aria-label="Your answer" ${a.done?'disabled':''}>${q.suf?`<span>${q.suf}</span>`:''}</div><button class="btn" ${a.done?'disabled':''}>Check</button></form>
+      <div class="fb" hidden></div>${a.done&&q.gen&&!q.group?'<div><button type="button" class="link-btn" data-new>Try new numbers (practice)</button></div>':''}`;
+    const inp=w.querySelector('input'),fb=w.querySelector('.fb');inp.value=a.last||'';
+    if(q.fig){const sv=w.querySelector('svg');q.fig(sv,par,!!a.done);if(w.isConnected)chart(sv,sv._c);}
+    if(a.done){fb.hidden=false;fb.className='fb '+(a.correct?'good':'bad');fb.innerHTML=(a.correct?`<b>Correct${a.tries>1?' on the second try':''}.</b> `:`<b>The answer is ${showAns(q,ans)}.</b> `)+q.sol(par);}
+    else if(a.tries>0){fb.hidden=false;fb.className='fb bad';fb.innerHTML=`<b>Not yet.</b> ${a.msg||''} You have one more try${a.practice?'':' for half credit'}.${q.hint?' Hint: '+q.hint:''}`;}
+    w.querySelector('form').onsubmit=e=>{e.preventDefault();
+      const v=parseAns(inp.value,q);
+      if(isNaN(v)){fb.hidden=false;fb.className='fb info';fb.innerHTML='Type a number, for example 12.5.';return;}
+      a.last=inp.value;a.tries=(a.tries||0)+1;const ok=isClose(v,ans,q);a.msg=ok?'':`${showAns(q,v)} isn't it.`;
+      if(ok){a.done=true;a.correct=true;if(!a.practice)a.pts=a.tries===1?full:Math.ceil(full/2);}
+      else if(a.tries>=2){a.done=true;a.correct=false;if(!a.practice)a.pts=0;}
+      if(!a.practice){if(q.group)a.ver=grp(q.group).ver;save();}
+      paint();if(!a.done)w.querySelector('input').focus();q.onChange&&q.onChange();};
+    const nb=w.querySelector('[data-new]');if(nb)nb.onclick=()=>{PR[id]={practice:true,par:q.gen()};paint();w.querySelector('input').focus();};
+  }
+  paint();return w;
+}
+function addQ(m,id,def){def.id=id;def.m=m;Q[id]=def;reg(m,id,def.pts||10);}
+
+/* ---------- shared widgets ---------- */
+function sortGame(id,cards,bins){
+  const w=el(`<div class="q"></div>`),B=k=>bins.find(b=>b.k===k);
+  function paint(){
+    const r=rec(id);r.c=r.c||{};const left=cards.filter(c=>!(c.id in r.c));
+    const got=Object.values(r.c).filter(Boolean).length*2,max=cards.length*2;
+    let h=`<div class="q-head"><span class="q-tag">Sort the deck · ${Math.min(cards.length-left.length+(left.length?1:0),cards.length)} of ${cards.length}</span><span class="q-pts ${r.done?(got>0?'got':'miss'):''}">${r.done?'+'+got:got} / ${max} pts</span></div>`;
+    if(r.fb)h+=`<div class="fb ${r.fb.ok?'good':'bad'}"><b>${r.fb.ok?'Right.':'Not quite.'}</b> ${/^“/.test(r.fb.t)?r.fb.t:"“"+r.fb.t+"”"} goes under <b>${B(r.fb.bin).label}</b>. ${r.fb.why}</div>`;
+    if(left.length){const c=left[0];
+      h+=`<div class="deck"><div class="card">${c.t}</div><div class="bins">${bins.map(b=>`<button type="button" class="bin ${b.cls}" data-b="${b.k}">${b.label}<small>${b.sub}</small></button>`).join('')}</div></div>`;
+    }else{
+      const li=k=>cards.filter(c=>c.bin===k).map(c=>`<li class="${r.c[c.id]?'':'miss'}">${c.t}${r.c[c.id]?'':' (you missed this one)'}</li>`).join('');
+      h+=`<div class="sorted">${bins.map(b=>`<div><h3 style="color:${b.color}">${b.label}</h3><ul>${li(b.k)}</ul></div>`).join('')}</div>`;
+    }
+    w.innerHTML=h;
+    w.querySelectorAll('[data-b]').forEach(b=>b.onclick=()=>{const c=left[0],ok=b.dataset.b===c.bin;r.c[c.id]=ok;r.fb={ok,t:c.t,bin:c.bin,why:c.why};r.pts=Object.values(r.c).filter(Boolean).length*2;r.done=Object.keys(r.c).length===cards.length;save();paint();});
+  }
+  paint();return w;
+}
+function ynGrid(id,cfg){
+  const w=el('<div class="q"></div>'),full=cfg.pts||10;
+  function paint(){const r=rec(id);r.sel=r.sel||cfg.rows.map(()=>null);
+    w.innerHTML=`<div class="q-head"><span class="q-tag">${cfg.tag}</span>${ptsBadge({pts:full},r)}</div><div class="q-prompt">${cfg.prompt}</div>
+      <div>${cfg.rows.map((row,i)=>`<div class="sig-row"><span>${row[0]}</span><span class="yn">${cfg.choices.map(v=>{let c='';if(r.done){if(v===row[1])c='is-right';else if(r.sel[i]===v)c='is-wrong';}return`<button type="button" data-i="${i}" data-v="${v}" aria-pressed="${r.sel[i]===v}" class="${c}" ${r.done?'disabled':''}>${v}</button>`;}).join('')}</span></div>`).join('')}</div>
+      ${r.done?'':`<div><button type="button" class="btn" data-chk ${r.sel.includes(null)?'disabled':''}>Check</button></div>`}<div class="fb" hidden></div>`;
+    w.querySelectorAll('.yn button').forEach(b=>b.onclick=()=>{r.sel[+b.dataset.i]=b.dataset.v;save();paint();});
+    const ck=w.querySelector('[data-chk]');if(ck)ck.onclick=()=>{const n=cfg.rows.filter((row,i)=>r.sel[i]===row[1]).length;r.done=true;r.pts=n===cfg.rows.length?full:Math.round(full*n/cfg.rows.length*0.8);save();paint();};
+    if(r.done){const fb=w.querySelector('.fb');fb.hidden=false;const ok=cfg.rows.every((row,i)=>r.sel[i]===row[1]);fb.className='fb '+(ok?'good':'bad');fb.innerHTML=`<b>${ok?'All correct.':'Check the highlights.'}</b> ${cfg.explain}`;}
+  }
+  paint();return w;
+}
+const qList=ids=>{const qs=el('<div class="qs"></div>');ids.forEach(i=>qs.append(renderQ(i)));return qs;};
+
+
+/* ---------- Mission: Merger types ---------- */
+const TY_BINS=[{k:'H',label:'Horizontal',sub:'same industry, similar products',cls:'b1',color:'var(--accent)'},{k:'V',label:'Vertical',sub:'stages of one supply chain',cls:'b2',color:'var(--debt)'},{k:'G',label:'Conglomerate',sub:'unrelated industries',cls:'b3',color:'var(--gov)'},{k:'C',label:'Concentric',sub:'shared customers, different services',cls:'b4',color:'var(--good)'}];
+const TY_CARDS=[
+  {id:'y1',t:'T-Mobile buys UScellular',bin:'H',why:'Two wireless carriers selling the same service join forces to expand their market.'},
+  {id:'y2',t:'Microsoft (maker of the Xbox) acquires Activision Blizzard (maker of Call of Duty)',bin:'V',why:'A console maker buys a supplier of the games that run on it: one supply chain.'},
+  {id:'y3',t:'Citicorp (banking) merges with Travelers Group (insurance)',bin:'C',why:'Different financial services sold to the same customers.'},
+  {id:'y4',t:'Capital One buys Discover',bin:'H',why:'Two credit-card lenders combining.'},
+  {id:'y5',t:'Home Depot buys a company in its own supply chain',bin:'V',why:'Buying a supplier or distributor is a vertical merger.'},
+  {id:'y6',t:'Berkshire Hathaway (insurance) buys BNSF Railway',bin:'G',why:'Insurance and railroads have no business link.'},
+];
+reg('types','ty_sort',TY_CARDS.length*2);
+function renderTypes(main){
+  main.append(missionHead('types','Who is buying whom, and how are their businesses related?'));
+  main.append(terms([['Bidder','The company making an offer to buy the stock or assets of another firm.'],['Target','The firm being sought.']]));
+  main.append(secHead('Game','Name the merger type','2 pts per card'));
+  main.append(sortGame('ty_sort',TY_CARDS,TY_BINS));
+}
+
+/* ---------- Mission: Motives ---------- */
+const MO_BINS=[{k:'G',label:'Good reason',sub:'can create value',cls:'b1',color:'var(--accent)'},{k:'Q',label:'Questionable reason',sub:'rarely helps shareholders',cls:'b2',color:'var(--debt)'}];
+const MO_CARDS=[
+  {id:'m1',t:'Cut costs by combining plants and staff',bin:'G',why:'Operating economies of scale are a source of synergy.'},
+  {id:'m2',t:'Diversify to stabilize earnings',bin:'Q',why:'Shareholders can diversify on their own, and it barely reduces bankruptcy risk for a large public firm.'},
+  {id:'m3',t:'Use the target’s net operating losses to cut taxes',bin:'G',why:'NOLs are a tax gain, one source of synergy.'},
+  {id:'m4',t:'Buy oil reserves for less than it would cost to replace them',bin:'Q',why:'Converting that paper value into cash usually isn’t easy or possible.'},
+  {id:'m5',t:'Buy a firm whose breakup value exceeds its market price',bin:'G',why:'Sell off the parts for more than you paid: a real profit opportunity.'},
+  {id:'m6',t:'Grow the firm, since CEO pay rises with firm size',bin:'Q',why:'That serves executives, not shareholders.'},
+];
+reg('motives','mo_sort',MO_CARDS.length*2);
+addQ('motives','mo_syn',{tag:'Synergy',prompt:'Firm A is worth <b>$100M</b> and Firm T is worth <b>$50M</b>. Combined, AT would be worth <b>$170M</b>. What is the synergy from the acquisition?',
+  opts:['$20M','$70M','$120M','$170M'],ans:0,
+  explain:'Synergy = ΔV = V<sub>AT</sub> − (V<sub>A</sub> + V<sub>T</sub>) = $170M − ($100M + $50M) = <b>$20M</b>. The whole is worth more than the sum of the parts.'});
+function renderMotives(main){
+  main.append(missionHead('motives','Why buy another company? Some reasons create value; some just make the CEO’s empire bigger.'));
+  main.append(terms([['Synergy','The whole is worth more than the sum of the parts: ΔV = V<sub>AT</sub> − (V<sub>A</sub> + V<sub>T</sub>) &gt; 0.'],['Breakup value','What a firm’s parts would be worth if sold off separately.']]));
+  main.append(secHead('Game','Good or questionable?','2 pts per card'));
+  main.append(sortGame('mo_sort',MO_CARDS,MO_BINS));
+  main.append(secHead('Question','Measure the synergy'));
+  main.append(qList(['mo_syn']));
+}
+
+/* ---------- Mission: The battle ---------- */
+const DF_BINS=[{k:'B',label:'Before in play',sub:'deter bids in advance',cls:'b1',color:'var(--accent)'},{k:'A',label:'After in play',sub:'fight a bid already made',cls:'b2',color:'var(--debt)'}];
+const DF_CARDS=[
+  {id:'f1',t:'Classified (staggered) board',bin:'B',why:'Only some directors are elected each year, so a raider can’t replace the board at once.'},
+  {id:'f2',t:'Greenmail: buy the raider’s shares back at a premium',bin:'A',why:'Paying the raider to go away, often with a standstill agreement.'},
+  {id:'f3',t:'Poison pill (share rights plan)',bin:'B',why:'Set up in advance; it makes the takeover far more expensive once triggered.'},
+  {id:'f4',t:'Find a white knight to buy the company instead',bin:'A',why:'The target picks a friendlier buyer once a hostile bid is on the table.'},
+  {id:'f5',t:'Golden parachutes for top executives',bin:'B',why:'Agreed in advance. When Elon Musk took over Twitter and fired CEO Parag Agrawal, Agrawal’s parachute was estimated at $57.4 million.'},
+  {id:'f6',t:'Appeal to regulators to block the deal',bin:'A',why:'Antitrust appeals are a response to a bid already made.'},
+];
+reg('battle','df_sort',DF_CARDS.length*2);
+addQ('battle','df_ax',{tag:'Hostile becomes friendly',prompt:'In 2016, Westlake Chemical offered Axiall <b>$20</b> a share in cash and stock, almost double Axiall’s stock price. Axiall’s board said no. Westlake ended up paying <b>$33</b> a share, all in cash. What pushed the price up?',
+  opts:['Other companies were interested in Axiall, so Westlake had to outbid potential rivals','Axiall’s earnings tripled during the negotiations','Regulators required Westlake to pay more','Westlake’s own stock price collapsed'],ans:0,
+  explain:'The target’s opposition plus competing interest gave Axiall bargaining power. A hostile bid often ends as a negotiated, friendly deal at a much higher price.'});
+function renderBattle(main){
+  main.append(missionHead('battle','Friendly deal or hostile raid? And how does a target fight back?'));
+  main.append(terms([['Friendly takeover','The two boards agree to combine, then seek shareholder approval.'],['Hostile takeover','The raider makes an unwelcome offer, often a tender offer straight to shareholders.']]));
+  main.append(secHead('Game','When does the defense happen?','2 pts per card'));
+  main.append(sortGame('df_sort',DF_CARDS,DF_BINS));
+  main.append(secHead('Question','Westlake vs. Axiall'));
+  main.append(qList(['df_ax']));
+}
+
+/* ---------- Mission: Value and bid ---------- */
+const VOP=190.254,TDEBT=30,TN=10,PNOW=12,PVAL=(VOP-TDEBT)/TN;
+addQ('value','v_apv',{tag:'Why APV?',prompt:'Why do analysts often use the compressed APV model, rather than discounting FCF at the WACC, to value a merger target?',
+  opts:['The target’s capital structure changes quickly after the merger, so the WACC would change every year','APV assumes the WACC is constant','APV ignores interest tax savings','APV gives every acquirer the same value'],ans:0,
+  explain:'APV discounts both the FCFs and the interest tax savings at r<sub>sU</sub>, so a changing debt level doesn’t require a new WACC each year. When the capital structure is constant, discounting FCF at the WACC is easier.'});
+addQ('value','v_bid',{tag:'Bargaining',prompt:'The target trades at $12 and is worth $16.03 to the acquirer. Several other firms would also be a good fit for the target. Where is the final price most likely to land?',
+  opts:['Close to $12, so the acquirer keeps most of the gain','Bid up toward $16.03, so the target’s shareholders capture most of the gain','Above $16.03, because bidders always overpay','Exactly halfway, at about $14'],ans:1,
+  explain:'Competition bids the price up. At $16.03, all the value added goes to the target’s shareholders; with no rival bidders, the price could stay close to $12.'});
+addQ('value','v_ev',{tag:'The evidence',prompt:'Do mergers create value, and for whom?',
+  opts:['Targets earn average abnormal returns of about 20% (friendly) to 30% (hostile); acquirers earn close to zero','Acquirers earn about 30%; targets earn close to zero','Both earn about 10% on average','Neither gains anything on average'],ans:0,
+  explain:'Target shareholders win big, especially in hostile deals. Acquirers’ average abnormal return is close to zero whether the deal is friendly or hostile, consistent with competition bidding prices up.'});
+let VSTEP=1,BID=14;
+function renderValue(main){
+  main.append(missionHead('value','What is the target worth to us, and how much should we bid?'));
+  main.append(terms([['APV','Value of operations = unlevered value + value of the interest tax shield, both discounted at r<sub>sU</sub>.'],['Target data','Value of operations $190.254M · ST investments $0 · debt $30M · 10M shares · current price $12']]));
+  main.append(secHead('Explorer','From value of operations to stock price'));
+  const ex=el(`<div class="lab"><div class="num-row"><button type="button" class="btn accent" id="v-next">Reveal next step</button><button type="button" class="btn ghost" id="v-all">Show all</button></div><ol class="steps" id="v-steps"></ol></div>`);
+  main.append(ex);
+  const ST=[['Total value','Est. total value = V<sub>op</sub> + ST inv. = $190.254M + $0 = <b>$190.254M</b>'],['Value of equity','Est. value of equity = $190.254M − $30.000M debt = <b>$160.254M</b>'],['Intrinsic stock price','Price = $160.254M ÷ 10M shares = <b>$16.03</b>']];
+  let fresh=-1;
+  function upd1(){$('#v-steps',ex).innerHTML=ST.map(([h,f],k)=>k<VSTEP?`<li class="step${k===fresh?' new':''}"><span class="k">${k+1}</span><div style="min-width:0"><h4>${h}</h4><div class="fx fx-wrap">${f}</div></div></li>`:`<li class="step locked"><span class="k">${k+1}</span><div><h4>${h}</h4><div class="fx">Predict it, then reveal.</div></div></li>`).join('');
+    $('#v-next',ex).disabled=VSTEP>=3;$('#v-all',ex).disabled=VSTEP>=3;fresh=-1;}
+  $('#v-next',ex).onclick=()=>{fresh=VSTEP;VSTEP=Math.min(3,VSTEP+1);upd1();};$('#v-all',ex).onclick=()=>{VSTEP=3;upd1();};upd1();
+  main.append(secHead('Lab','Set the bid price'));
+  const lab=el(`<div class="lab"><div class="ctrl"><label for="v-b">Bid price per share <output></output></label><input id="v-b" type="range" min="10" max="18" step="0.25" value="${BID}"></div>
+    <dl class="readout" id="v-r"></dl><div class="stack" style="gap:6px"><div class="small">Who gets the $40.25M of value added?</div><div class="rbar-track" id="v-bar"></div></div>
+    <figure><figcaption>Gain to each side vs. bid price ($ millions)</figcaption><svg class="chart" id="v-ch"></svg></figure><p class="note" id="v-note"></p></div>`);
+  main.append(lab);
+  const sl=$('#v-b',lab),TOT=(PVAL-PNOW)*TN;
+  function upd2(){BID=+sl.value;const b=BID,tg=(b-PNOW)*TN,ag=(PVAL-b)*TN;
+    sl.previousElementSibling.querySelector('output').textContent=usd(b);
+    $('#v-r',lab).innerHTML=[['Target shareholders gain',(tg<0?'−':'+')+usd(Math.abs(tg)).replace('−','')+'M'],['Acquirer shareholders gain',(ag<0?'−':'+')+usd(Math.abs(ag)).replace('−','')+'M'],['Premium over $12',pct((b/PNOW-1)*100,1)],['Total value added','$40.25M']].map(([k,v])=>`<div><dt>${k}</dt><dd>${v}</dd></div>`).join('');
+    const tw=Math.max(0,Math.min(100,tg/TOT*100));
+    $('#v-bar',lab).innerHTML=b<PNOW?'<div class="seg-q" style="width:100%">Below $12: the target’s shareholders won’t sell</div>':b>PVAL?'<div class="seg-d" style="width:100%">Above $16.03: the acquirer overpays and dilutes its own value</div>':`${tw>0?`<div class="seg-s" style="width:${tw}%">Target ${fmt(tw,0)}%</div>`:''}${tw<100?`<div class="seg-d" style="width:${100-tw}%">Acquirer ${fmt(100-tw,0)}%</div>`:''}`;
+    chart($('#v-ch',lab),{w:560,h:260,x0:10,x1:18,y0:-40,y1:60,xt:[10,12,14,16,18],yt:[-40,-20,0,20,40,60],fx:v=>'$'+v,fy:v=>(v<0?'−$':'$')+Math.abs(v),xl:'Bid price per share',
+      series:[{pts:[[10,(10-PNOW)*TN],[18,(18-PNOW)*TN]],color:'var(--accent)',label:'Target gain',dy:-8},{pts:[[10,(PVAL-10)*TN],[18,(PVAL-18)*TN]],color:'var(--debt)',label:'Acquirer gain',dy:16},{pts:[[10,0],[18,0]],color:'var(--muted)',w:1,dash:'3 3'}],
+      vlines:[{x:PNOW,color:'var(--accent)',label:'$12 now',dx:-6,anchor:'end'},{x:PVAL,color:'var(--debt)',label:'$16.03 value',dx:6}],dots:[{x:b,y:tg,color:'var(--accent)',r:4},{x:b,y:ag,color:'var(--debt)',r:4}]});
+    $('#v-note',lab).innerHTML=b<PNOW?'<b>No deal.</b> Shareholders can get $12 in the market.':b>PVAL?'<b>Overpaying.</b> Every dollar above $16.03 transfers value from the acquirer’s shareholders to the target’s.':Math.abs(b-PNOW)<1e-9?'<b>At $12</b>, all the merger benefits go to the acquirer’s shareholders.':Math.abs(b-PVAL)<0.13?'<b>At about $16.03</b>, all the value added goes to the target’s shareholders.':'<b>Inside the bargaining range.</b> The final price depends on bargaining power: more rival bidders push it toward $16.03.';}
+  sl.oninput=upd2;upd2();
+  main.append(secHead('Questions','Value, bargaining and evidence'));
+  main.append(qList(['v_apv','v_bid','v_ev']));
+}
+
+/* ---------- Mission: After the deal ---------- */
+const DV_BINS=[{k:'S',label:'Sale',sub:'whole subsidiary to another firm',cls:'b1',color:'var(--accent)'},{k:'O',label:'Spin-off',sub:'stock given to shareholders',cls:'b2',color:'var(--debt)'},{k:'C',label:'Carve-out',sub:'minority stake sold',cls:'b3',color:'var(--gov)'},{k:'L',label:'Liquidation',sub:'assets sold off',cls:'b4',color:'var(--good)'}];
+const DV_CARDS=[
+  {id:'v1',t:'GE gives its shareholders shares of GE Vernova, its energy business',bin:'O',why:'Existing shareholders receive the subsidiary’s stock. GE completed its three-way split in April 2024.'},
+  {id:'v2',t:'A firm sells 20% of a subsidiary in an IPO and keeps the other 80%',bin:'C',why:'Selling a minority interest is a carve-out.'},
+  {id:'v3',t:'A firm sells an entire division to a competitor',bin:'S',why:'The whole subsidiary goes to another firm.'},
+  {id:'v4',t:'A distressed firm sells a division’s equipment and buildings piece by piece',bin:'L',why:'Outright liquidation of assets.'},
+];
+reg('divest','dv_sort',DV_CARDS.length*2);
+addQ('divest','dv_gw',{tag:'Purchase accounting',prompt:'An acquirer pays <b>$500M</b> for a target whose assets, net of liabilities, are worth <b>$380M</b> at fair value. How is the difference reported to shareholders?',
+  opts:['$120M of goodwill, not amortized but tested each year for impairment','$120M expensed immediately','$120M of goodwill amortized over 40 years','No goodwill, because the price was paid in cash'],ans:0,
+  explain:'Price paid above net asset value creates goodwill: $500M − $380M = <b>$120M</b>. For shareholder reporting it is no longer amortized; it is written down only if an annual impairment test shows its value has fallen. It is still amortized for federal tax purposes.'});
+function renderDivest(main){
+  main.append(missionHead('divest','After the deal: what goes on the balance sheet, and how firms sell pieces of themselves.'));
+  main.append(terms([['Goodwill','The amount paid above the target’s written-up net asset value, recorded as an asset.'],['Divestiture','Selling or separating part of the firm.']]));
+  main.append(secHead('Game','Name the divestiture','2 pts per card'));
+  main.append(sortGame('dv_sort',DV_CARDS,DV_BINS));
+  main.append(secHead('Question','Goodwill'));
+  main.append(qList(['dv_gw']));
+}
+
+/* ---------- shell ---------- */
+const ALL_MISSIONS=[
+  {id:'types',part:'Lecture 12',title:'Merger Types',c:'Horizontal, vertical, conglomerate or concentric?',r:renderTypes},
+  {id:'motives',part:'Lecture 12',title:'Motives',c:'Synergy and the good vs. questionable reasons to merge',r:renderMotives},
+  {id:'battle',part:'Lecture 12',title:'The Battle',c:'Friendly vs. hostile deals and takeover defenses',r:renderBattle},
+  {id:'value',part:'Lecture 12',title:'Value & Bid',c:'From value of operations to the bid price',r:renderValue},
+  {id:'divest',part:'Lecture 12',title:'After the Deal',c:'Goodwill and divestitures',r:renderDivest},
+];
+const MISSIONS=ALL_MISSIONS.filter(m=>true).map((m,i)=>Object.assign({},m,{n:i+1}));
+const MB=Object.fromEntries(MISSIONS.map(m=>[m.id,m]));
+function missionHead(id,lede){const m=MB[id],s=missionScore(id);return el(`<header class="m-head"><a href="#hq" class="back">← All missions</a><div class="eyebrow">Mission ${m.n} of ${MISSIONS.length} · Lecture 12</div><h1>${m.title}</h1><p class="lede">${lede}</p><div class="small mono">${s.got} / ${s.max} pts earned here</div></header>`);}
+function terms(items){return el(`<dl class="terms"><div class="terms-h eyebrow">Key terms</div>${items.map(([t,d])=>`<div class="term"><dt>${t}</dt><dd>${d}</dd></div>`).join('')}</dl>`);}
+function brief(items){return el(`<div class="brief" style="margin-top:22px">${items.map(([h,b])=>`<div><h3>${h}</h3><div>${b}</div></div>`).join('')}</div>`);}
+function secHead(eb,h,right){return el(`<div class="sec"><div class="sec-h"><span class="eyebrow" style="margin:0">${eb}</span><h2>${h}</h2>${right?`<span class="eyebrow">${right}</span>`:''}</div></div>`);}
+
+const HERO={
+ 1:{eb:'FIN 410 · Lecture 12 · Mergers and Corporate Control',h:'Empires rise. <span>Empires fall.</span>',
+   lede:'Capital One is in a $35 billion battle to buy Discover. GE broke itself into three. Five missions cover merger types, motives, takeover battles, valuing the target and setting the bid, and what happens after the deal.',
+   pick:'Make your move',start:'',
+   opts:[['buy','Acquire','Build the empire',0,'<b>Buy a rival, a supplier or a new line of business.</b> First ask what kind of merger it is (Mission 1), whether the reason creates value (Mission 2), and how much to pay (Mission 4).'],
+         ['def','Defend','Fight off a raider',0,'<b>A raider makes an unwelcome offer.</b> Poison pills, staggered boards, greenmail or a white knight? Mission 3.'],
+         ['split','Break apart','Sell or spin off pieces',0,'<b>Sometimes the parts are worth more than the whole.</b> GE completed its three-way split in April 2024. Mission 5.']],
+   lab:f=>['','']}
+};
+function renderHQ(main){
+  const t=totalScore(),H=HERO[PART];
+  const hero=el(`<section class="hero"><div class="stack"><div class="eyebrow">${H.eb}</div><h1>${H.h}</h1><p class="lede">${H.lede}</p></div>
+    <div class="fund"><div class="eyebrow">${H.pick}</div><div class="fund-opts">${H.opts.map(o=>`<button type="button" class="fund-opt" data-f="${o[0]}"><b>${o[1]}</b><span>${o[2]}</span></button>`).join('')}</div>
+      <div class="cap-bar"><div class="cap-eq" id="cb-e">${H.start}</div><div class="cap-dt" id="cb-d"></div></div>
+      <p class="fund-say" id="fund-say">Tap an option to see what this chapter says about it.</p></div></section>`);
+  main.append(hero);
+  const setF=k=>{const o=H.opts.find(x=>x[0]===k),dd=o[3],L=H.lab(dd);$('#cb-e').style.flexGrow=100-dd;$('#cb-d').style.flexGrow=dd;$('#cb-e').textContent=L[0];$('#cb-d').textContent=L[1];$('#fund-say').innerHTML=o[4];hero.querySelectorAll('.fund-opt').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.f===k)));};
+  $('#cb-e').style.flexGrow=100;$('#cb-d').style.flexGrow=0;
+  hero.querySelectorAll('.fund-opt').forEach(x=>x.onclick=()=>setF(x.dataset.f));
+  main.append(secHead('Missions','Work in order or jump around',`${t.got} / ${t.max} pts`));
+  const g=el('<div class="mgrid" style="margin-top:16px"></div>');
+  MISSIONS.forEach(m=>{const s=missionScore(m.id);g.append(el(`<a class="mcard" href="#${m.id}"><span class="mn">${m.n}</span><h3>${m.title}</h3><p>${m.c}</p><div class="meter"><i style="width:${100*s.got/s.max}%"></i></div><div class="mmeta"><span>${m.part}</span><span>${s.got} / ${s.max} pts</span></div></a>`));});
+  g.append(el(`<a class="mcard final" href="#report"><span class="mn">★</span><h3>Final report</h3><p>Your rank, mission by mission, and what to review before the exam.</p><div class="mmeta"><span>${Math.round(100*t.got/t.max)}% complete</span><span>→</span></div></a>`));
+  main.append(g);
+  if(false)main.append(el(`<p class="small" style="margin-top:20px">Your progress is saved in this browser only. Number problems can be re-run with new numbers, so you can keep practicing after you’ve earned the points.${OTHER_URL?` Looking for the ${PART===1?'second':'first'} half of the chapter? <a href="${OTHER_URL}" target="_blank" rel="noopener">Open Leverage Lab Part ${PART===1?2:1}</a>.`:''}</p>`));
+}
+const RANKS=[[90,'Head of M&A','You could run this deal.'],[75,'Chief Financial Officer','The board trusts you with the deal.'],[60,'Treasurer','Solid. Tighten the weak spots below.'],[40,'Financial Analyst','You have the ideas; drill the calculations.'],[0,'Summer Intern','Plenty of points still on the table.']];
+function renderReport(main){
+  const t=totalScore(),p=t.max?100*t.got/t.max:0,rk=RANKS.find(r=>p>=r[0]);
+  main.append(el(`<header class="m-head"><a href="#hq" class="back">← All missions</a><div class="eyebrow">Final report</div><h1>${rk[1]}</h1><p class="lede">${rk[2]}</p></header>`));
+  main.append(el(`<div class="rank" style="margin-top:22px"><div class="rank-big">${Math.round(p)}%</div><div class="stack"><div class="mono">${t.got} of ${t.max} points</div><div class="meter" style="width:100%;height:10px"><i style="width:${p}%"></i></div><div class="small">Ranks: Summer Intern · Financial Analyst (40%) · Treasurer (60%) · CFO (75%) · Head of M&A (90%)</div></div></div>`));
+  main.append(secHead('Breakdown','Mission by mission'));
+  main.append(el(`<div class="tbl-wrap" style="margin-top:14px"><table class="tbl"><thead><tr><th>Mission</th><th>Points</th><th>Score</th><th>Status</th></tr></thead><tbody>${MISSIONS.map(m=>{const s=missionScore(m.id),q=s.max?100*s.got/s.max:0;const unanswered=Object.entries(REG).some(([id,r])=>r.m===m.id&&!(ST.a[id]&&ST.a[id].done));return`<tr><td><a href="#${m.id}">${m.n}. ${m.title}</a></td><td>${s.got} / ${s.max}</td><td>${pct(q,0)}</td><td style="font-family:var(--f-body)">${unanswered?'Unfinished':q>=70?'Solid':'Review this'}</td></tr>`;}).join('')}</tbody></table></div>`));
+  if(OTHER_URL&&PART!==1)main.append(el(`<p class="note" style="margin-top:20px"><b>${PART===1?'Next:':'Missed Part 1?'}</b> ${PART===1?'Part 2 covers the trade-off, signaling and pecking order theories, the optimal debt ratio, and recapitalizations.':'Part 1 covers business vs. financial risk, Firm U vs. Firm L, and the MM propositions.'} <a href="${OTHER_URL}" target="_blank" rel="noopener">Open Leverage Lab Part ${PART===1?2:1}</a></p>`));
+  const box=el(`<div class="sec"><div class="sec-h"><h2>Start over</h2></div><p class="small">Clears your points and answers in this browser.</p><div class="num-row"><button type="button" class="btn ghost" id="rs1">Reset all progress</button><span id="rs2" hidden><button type="button" class="btn accent" id="rs-yes">Yes, erase everything</button> <button type="button" class="link-btn" id="rs-no">Cancel</button></span></div></div>`);
+  main.append(box);
+  $('#rs1').onclick=()=>{$('#rs2').hidden=false;$('#rs1').hidden=true;};
+  $('#rs-no').onclick=()=>{$('#rs2').hidden=true;$('#rs1').hidden=false;};
+  $('#rs-yes').onclick=()=>{ST={a:{}};for(const k in PR)delete PR[k];save();location.hash='#hq';};
+}
+function footNav(id){const i=MISSIONS.findIndex(m=>m.id===id),pv=MISSIONS[i-1],nx=MISSIONS[i+1];return el(`<nav class="foot-nav">${pv?`<a class="btn ghost" href="#${pv.id}">← ${pv.n}. ${pv.title}</a>`:'<a class="btn ghost" href="#hq">← All missions</a>'}${nx?`<a class="btn" href="#${nx.id}">${nx.n}. ${nx.title} →</a>`:'<a class="btn accent" href="#report">See your final report →</a>'}</nav>`);}
+function rerender(){const y=window.scrollY;route();window.scrollTo(0,y);}
+function route(){
+  const k=(location.hash||'#hq').slice(1),main=$('#main');main.innerHTML='';
+  if(MB[k]){MB[k].r(main);main.append(footNav(k));document.title='Merger Lab';}
+  else if(k==='report')renderReport(main);
+  else renderHQ(main);
+  updateScore();
+  requestAnimationFrame(redrawCharts);
+}
+function redrawCharts(){document.querySelectorAll('svg.chart').forEach(sv=>{if(sv._c&&!sv.hidden)chart(sv,sv._c);});}
+let RZ;window.addEventListener('resize',()=>{clearTimeout(RZ);RZ=setTimeout(redrawCharts,150);});
+window.addEventListener('hashchange',()=>{route();window.scrollTo(0,0);});
+$('#open-sheet').onclick=()=>{$('#sheet').hidden=false;$('#close-sheet').focus();};
+$('#close-sheet').onclick=()=>{$('#sheet').hidden=true;};
+$('#sheet').onclick=e=>{if(e.target.id==='sheet')$('#sheet').hidden=true;};
+document.addEventListener('keydown',e=>{if(e.key==='Escape')$('#sheet').hidden=true;});
+document.querySelectorAll('#sheet [data-part]').forEach(x=>{x.hidden=x.dataset.part!==String(PART);});
+route();
+</script>
+</body></html>
