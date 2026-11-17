@@ -447,12 +447,12 @@ const qList=ids=>{const qs=el('<div class="qs"></div>');ids.forEach(i=>qs.append
 /* ---------- Mission: Merger types ---------- */
 const TY_BINS=[{k:'H',label:'Horizontal',sub:'same industry, similar products',cls:'b1',color:'var(--accent)'},{k:'V',label:'Vertical',sub:'stages of one supply chain',cls:'b2',color:'var(--debt)'},{k:'G',label:'Conglomerate',sub:'unrelated industries',cls:'b3',color:'var(--gov)'},{k:'C',label:'Concentric',sub:'shared customers, different services',cls:'b4',color:'var(--good)'}];
 const TY_CARDS=[
-  {id:'y1',t:'Hewlett Packard Enterprise buys Juniper Networks for $14 billion (2025)',bin:'H',why:'Two makers of networking equipment combine; the deal doubled the size of HPE’s networking business.'},
-  {id:'y2',t:'Boeing buys Spirit AeroSystems, the company that builds its 737 fuselages (2025)',bin:'V',why:'A planemaker buys its largest supplier: two stages of the same supply chain.'},
-  {id:'y3',t:'Synopsys (chip-design software) buys Ansys (engineering simulation software) for $35 billion (2025)',bin:'C',why:'Different products sold to the same engineering customers.'},
-  {id:'y4',t:'Mars (Snickers, M&M’S) buys Kellanova (Pringles, Cheez-It) (2025)',bin:'H',why:'Two snack companies selling to the same shoppers in the same industry.'},
-  {id:'y5',t:'Walmart buys TV maker Vizio for $2.3 billion (2024)',bin:'V',why:'A retailer buys a maker of products it sells, plus Vizio’s TV advertising platform.'},
-  {id:'y6',t:'Berkshire Hathaway (insurance, railroads, utilities) buys chemical maker OxyChem for $9.7 billion (2026)',bin:'G',why:'Insurance and railroads have no business link to PVC and chlorine production.'},
+  {id:'y1',t:'T-Mobile buys UScellular',bin:'H',why:'Two wireless carriers selling the same service join forces to expand their market.'},
+  {id:'y2',t:'Microsoft (maker of the Xbox) acquires Activision Blizzard (maker of Call of Duty)',bin:'V',why:'A console maker buys a supplier of the games that run on it: one supply chain.'},
+  {id:'y3',t:'Citicorp (banking) merges with Travelers Group (insurance)',bin:'C',why:'Different financial services sold to the same customers.'},
+  {id:'y4',t:'Capital One buys Discover',bin:'H',why:'Two credit-card lenders combining.'},
+  {id:'y5',t:'Home Depot buys a company in its own supply chain',bin:'V',why:'Buying a supplier or distributor is a vertical merger.'},
+  {id:'y6',t:'Berkshire Hathaway (insurance) buys BNSF Railway',bin:'G',why:'Insurance and railroads have no business link.'},
 ];
 reg('types','ty_sort',TY_CARDS.length*2);
 function renderTypes(main){
