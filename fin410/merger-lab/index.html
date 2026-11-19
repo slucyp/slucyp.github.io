@@ -86,7 +86,7 @@ p{margin:0}
 .fund-say{min-height:5.2em;font-size:.95rem}
 
 /* mission grid */
-.mgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.mgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:12px}
 .mcard{display:flex;flex-direction:column;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;text-decoration:none;color:var(--ink);transition:border-color .15s,transform .15s}
 .mcard:hover{border-color:var(--ink);transform:translateY(-2px)}
 .mcard .mn{font-family:var(--f-display);font-stretch:125%;font-weight:900;font-size:2.2rem;line-height:1;color:var(--accent)}
@@ -201,6 +201,14 @@ table.tbl{border-collapse:collapse;width:100%;font-size:.9rem;font-variant-numer
 .card{background:var(--bg);border:1.5px solid var(--ink);border-radius:12px;padding:22px 20px;max-width:460px;width:100%;font-size:1.05rem;font-weight:500;box-shadow:4px 4px 0 var(--line);animation:deal .35s ease-out}
 @keyframes deal{from{transform:translateY(-10px) rotate(-2deg);opacity:.3}to{transform:none;opacity:1}}
 .cap-bar{display:none}
+.tl-wrap{overflow-x:auto}
+.tl{display:grid;grid-template-columns:repeat(5,minmax(104px,1fr));gap:6px;min-width:540px;padding:2px}
+.tl-item{appearance:none;border:1.5px solid var(--line);background:var(--bg);border-radius:8px;padding:10px 8px;cursor:pointer;display:flex;flex-direction:column;gap:2px;text-align:left;border-top-width:5px}
+.tl-item.cum{border-top-color:var(--good)}
+.tl-item.ex{border-top-color:var(--bad)}
+.tl-item[aria-pressed="true"]{border-color:var(--ink);background:var(--surface)}
+.tl-d{font-family:var(--f-mono);font-weight:600;font-size:.9rem}
+.tl-k{font-size:.8rem;color:var(--muted)}
 .bin.b3{color:var(--gov)}
 .bin.b4{color:var(--good)}
 .step .fx.fx-wrap{white-space:normal;overflow-x:visible}
@@ -490,7 +498,7 @@ const DF_BINS=[{k:'B',label:'Before in play',sub:'deter bids in advance',cls:'b1
 const DF_CARDS=[
   {id:'f1',t:'Classified (staggered) board',bin:'B',why:'Only some directors are elected each year, so a raider can’t replace the board at once.'},
   {id:'f2',t:'Greenmail: buy the raider’s shares back at a premium',bin:'A',why:'Paying the raider to go away, often with a standstill agreement.'},
-  {id:'f3',t:'Poison pill (share rights plan)',bin:'B',why:'Set up in advance; it makes the takeover far more expensive once triggered.'},
+  {id:'f3',t:'Poison pill (share rights plan)',bin:'B',why:'Set up in advance; once triggered it dilutes the raider. Twitter adopted one to block Elon Musk’s bid in 2022.'},
   {id:'f4',t:'Find a white knight to buy the company instead',bin:'A',why:'The target picks a friendlier buyer once a hostile bid is on the table.'},
   {id:'f5',t:'Golden parachutes for top executives',bin:'B',why:'Agreed in advance. When Elon Musk took over Twitter and fired CEO Parag Agrawal, Agrawal’s parachute was estimated at $57.4 million.'},
   {id:'f6',t:'Appeal to regulators to block the deal',bin:'A',why:'Antitrust appeals are a response to a bid already made.'},
@@ -502,6 +510,19 @@ addQ('battle','df_wk',{tag:'Hostile takeovers',prompt:'A raider skips the board 
 function renderBattle(main){
   main.append(missionHead('battle','Friendly deal or hostile raid? And how does a target fight back?'));
   main.append(terms([['Friendly takeover','The two boards agree to combine, then seek shareholder approval.'],['Hostile takeover','The raider makes an unwelcome offer, often a tender offer straight to shareholders.']]));
+  main.append(secHead('Case','Paramount vs. Warner Bros.'));
+  const PW=[['Dec 5, 2025','Netflix deal','WBD’s board agrees to sell its studios and streaming business to Netflix for $72 billion. A friendly deal.','f'],
+    ['Dec 8, 2025','Hostile bid','Paramount goes around WBD’s board: a $30-a-share, all-cash tender offer straight to shareholders, plus a proxy fight.','h'],
+    ['Feb 2026','Sweeteners','Paramount adds a ticking fee and offers to pay Netflix’s $2.8 billion breakup fee.','h'],
+    ['Feb 27, 2026','Friendly deal','WBD’s board accepts $31 a share. Netflix walks away.','f'],
+    ['Oct 6, 2026','Closed','A roughly $110 billion deal. The combined firm is renamed Skydance.','f']];
+  const cs=el(`<div class="lab"><div class="tl-wrap"><div class="tl">${PW.map((p,i)=>`<button type="button" class="tl-item ${p[3]==='h'?'ex':'cum'}" data-i="${i}"><span class="tl-d">${p[0]}</span><span class="tl-k">${p[1]}</span></button>`).join('')}</div></div>
+    <div class="stage-note" id="pw-note"></div><div class="num-row"><button type="button" class="btn ghost" id="pw-back">Back</button><button type="button" class="btn accent" id="pw-next">Next</button></div></div>`);
+  main.append(cs);
+  function pw(){lab_i=Math.max(0,Math.min(4,lab_i));cs.querySelectorAll('.tl-item').forEach(b=>{b.setAttribute('aria-pressed',String(+b.dataset.i===lab_i));b.style.opacity=+b.dataset.i<=lab_i?1:.45;});
+    const p=PW[lab_i];$('#pw-note',cs).innerHTML=`<div><b>${p[0]} · ${p[1]}.</b> ${p[2]}</div>`+(lab_i===4?'<div><b>Lesson:</b> hostile pressure ended in a friendly deal with the same bidder.</div>':'');
+    $('#pw-back',cs).disabled=lab_i===0;$('#pw-next',cs).disabled=lab_i===4;}
+  let lab_i=0;cs.querySelectorAll('.tl-item').forEach(b=>b.onclick=()=>{lab_i=+b.dataset.i;pw();});$('#pw-back',cs).onclick=()=>{lab_i--;pw();};$('#pw-next',cs).onclick=()=>{lab_i++;pw();};pw();
   main.append(secHead('Game','When does the defense happen?','2 pts per card'));
   main.append(sortGame('df_sort',DF_CARDS,DF_BINS));
   main.append(secHead('Question','Hostile takeovers'));
@@ -552,25 +573,61 @@ function renderValue(main){
   main.append(qList(['v_apv','v_bid','v_ev']));
 }
 
-/* ---------- Mission: After the deal ---------- */
+/* ---------- Mission: Paying for the deal ---------- */
+const PAY_BINS=[{k:'C',label:'Cash',sub:'a fixed, certain price',cls:'b1',color:'var(--accent)'},{k:'S',label:'Stock',sub:'shares the risk',cls:'b2',color:'var(--debt)'}];
+const PAY_CARDS=[
+  {id:'c1',t:'Target holders get a fixed, certain price',bin:'C',why:'Paramount paid $31 in cash per WBD share: the price is locked in.'},
+  {id:'c2',t:'Target holders share the synergy upside and risk',bin:'S',why:'They become shareholders of the combined firm, so they win or lose with it.'},
+  {id:'c3',t:'Often financed with new debt, so the acquirer’s leverage rises',bin:'C',why:'The cash usually comes from a bridge loan or new bonds.'},
+  {id:'c4',t:'The acquirer’s existing shareholders are diluted',bin:'S',why:'New shares go to the target’s holders.'},
+  {id:'c5',t:'Taxable to target holders right away',bin:'C',why:'A cash sale is taxed now; a stock deal can be tax-deferred.'},
+  {id:'c6',t:'Can signal the acquirer thinks its own stock is overvalued',bin:'S',why:'Paying with expensive stock is cheap for the acquirer, and investors know it.'},
+];
+reg('pay','pay_sort',PAY_CARDS.length*2);
+addQ('pay','pay_hostile',{tag:'Hostile bids',prompt:'Paramount’s hostile bid for Warner Bros. Discovery was an all-cash tender offer. Why do hostile bidders usually offer cash?',
+  opts:['A cash offer is a fixed, certain price, so it is faster and more credible than stock whose value moves with the bidder’s share price','Cash deals are tax-free for target shareholders','Cash deals never require new debt','A cash offer signals the bidder’s stock is overvalued'],ans:0,
+  explain:'Target holders know exactly what they get, and the offer can’t shrink if the bidder’s stock falls. The trade-off: cash deals are taxable to target holders right away and are often financed with new debt, which changes leverage, one reason to value the target with APV.'});
+addQ('pay','dv_gw',{tag:'Purchase accounting',prompt:'An acquirer pays <b>$500M in cash</b> for a target whose identifiable assets, net of liabilities, are worth <b>$380M</b> at fair value. How is the deal recorded?',
+  opts:['$120M of goodwill, not amortized but tested each year for impairment; the acquirer’s cash falls or its debt rises','$120M expensed immediately; equity falls by $120M','$120M of goodwill amortized over 40 years for shareholder reporting','No goodwill, because the price was paid in cash'],ans:0,
+  explain:'The target’s assets and liabilities are written up to fair value, and the $500M − $380M = <b>$120M</b> above that becomes goodwill. To balance the entry, cash falls or debt rises in a cash deal (common equity would rise in a stock deal). Goodwill is not amortized for shareholder reporting; it is written down only if an annual impairment test shows a decline. It is still amortized for federal taxes.'});
+function renderPay(main){
+  main.append(missionHead('pay','Pay in cash or in stock? Then how the deal shows up on the balance sheet.'));
+  main.append(terms([['Cash offer','A fixed price per share, e.g., Paramount’s $31 cash per WBD share.'],['Stock offer','A fixed number of acquirer shares per target share, e.g., Marvell’s 4.5 shares per Lumentum share.'],['Goodwill','The price paid above the fair value of the target’s net assets.']]));
+  main.append(secHead('Game','Cash or stock?','2 pts per card'));
+  main.append(sortGame('pay_sort',PAY_CARDS,PAY_BINS));
+  main.append(secHead('Questions','Payment and purchase accounting'));
+  main.append(qList(['pay_hostile','dv_gw']));
+}
+
+/* ---------- Mission: Bankers & divestitures ---------- */
+const BK_BINS=[{k:'A',label:'Arrange deals',sub:'find buyers, run the sale',cls:'b1',color:'var(--accent)'},{k:'D',label:'Defend targets',sub:'pills, white knights',cls:'b2',color:'var(--debt)'},{k:'V',label:'Value targets',sub:'models, fairness opinions',cls:'b3',color:'var(--gov)'},{k:'F',label:'Finance deals',sub:'loans, bonds, new stock',cls:'b4',color:'var(--good)'}];
+const BK_CARDS=[
+  {id:'k1',t:'Run the sale contest between Netflix and Paramount for WBD',bin:'A',why:'Finding buyers and running the sale process is arranging the deal.'},
+  {id:'k2',t:'Design the poison pill Twitter’s board adopted against Elon Musk in 2022',bin:'D',why:'Bankers help targets develop and carry out defensive tactics.'},
+  {id:'k3',t:'Build the target’s APV model and give the board a fairness opinion',bin:'V',why:'Valuing the target, from DCF and APV models to the fairness opinion.'},
+  {id:'k4',t:'Arrange JPMorgan’s $13 billion bridge loan for DoorDash–Instacart',bin:'F',why:'Bridge loans, bonds and new stock finance the deal.'},
+];
+reg('divest','bk_sort',BK_CARDS.length*2);
 const DV_BINS=[{k:'S',label:'Sale',sub:'whole subsidiary to another firm',cls:'b1',color:'var(--accent)'},{k:'O',label:'Spin-off',sub:'stock given to shareholders',cls:'b2',color:'var(--debt)'},{k:'C',label:'Carve-out',sub:'minority stake sold',cls:'b3',color:'var(--gov)'},{k:'L',label:'Liquidation',sub:'assets sold off',cls:'b4',color:'var(--good)'}];
 const DV_CARDS=[
-  {id:'v1',t:'GE gives its shareholders shares of GE Vernova, its energy business',bin:'O',why:'Existing shareholders receive the subsidiary’s stock. GE completed its three-way split in April 2024.'},
-  {id:'v2',t:'A firm sells 20% of a subsidiary in an IPO and keeps the other 80%',bin:'C',why:'Selling a minority interest is a carve-out.'},
+  {id:'v1',t:'GE gives its shareholders stock in GE Vernova, its energy business',bin:'O',why:'Existing shareholders receive the subsidiary’s stock. GE completed its three-way split in April 2024.'},
+  {id:'v2',t:'J&J sells about 10% of Kenvue to the public in an IPO',bin:'C',why:'Selling a minority stake is the carve-out step. J&J then split off most of the rest through an exchange offer.'},
   {id:'v3',t:'A firm sells an entire division to a competitor',bin:'S',why:'The whole subsidiary goes to another firm.'},
-  {id:'v4',t:'A distressed firm sells a division’s equipment and buildings piece by piece',bin:'L',why:'Outright liquidation of assets.'},
+  {id:'v4',t:'A distressed firm sells a division’s equipment and buildings piece by piece',bin:'L',why:'Outright liquidation of assets, often to raise needed cash.'},
 ];
 reg('divest','dv_sort',DV_CARDS.length*2);
-addQ('divest','dv_gw',{tag:'Purchase accounting',prompt:'An acquirer pays <b>$500M</b> for a target whose assets, net of liabilities, are worth <b>$380M</b> at fair value. How is the difference reported to shareholders?',
-  opts:['$120M of goodwill, not amortized but tested each year for impairment','$120M expensed immediately','$120M of goodwill amortized over 40 years','No goodwill, because the price was paid in cash'],ans:0,
-  explain:'Price paid above net asset value creates goodwill: $500M − $380M = <b>$120M</b>. For shareholder reporting it is no longer amortized; it is written down only if an annual impairment test shows its value has fallen. It is still amortized for federal tax purposes.'});
+addQ('divest','iv_fall',{tag:'Interview question',prompt:'A classic M&A interview question: <i>why does an acquirer’s stock often fall when a deal is announced?</i> Which answer is best?',
+  opts:['Competition bids the price up, so target holders capture most of the synergies, and paying with stock can signal the acquirer’s shares are overvalued','Acquirers must pay the synergies to the IRS','Target shareholders always lose money in mergers','Announcing a merger is a negative signal about the target'],ans:0,
+  explain:'On average targets earn about +20% (friendly) to +30% (hostile), while acquirers earn close to zero. Bidding wars push the price toward the full value of the synergies, and acquirer stock falls more in stock deals because paying with shares can signal they’re overvalued.'});
 function renderDivest(main){
-  main.append(missionHead('divest','After the deal: what goes on the balance sheet, and how firms sell pieces of themselves.'));
-  main.append(terms([['Goodwill','The amount paid above the target’s written-up net asset value, recorded as an asset.'],['Divestiture','Selling or separating part of the firm.']]));
-  main.append(secHead('Game','Name the divestiture','2 pts per card'));
+  main.append(missionHead('divest','Who works on these deals, and how firms sell pieces of themselves.'));
+  main.append(terms([['Fairness opinion','An investment bank’s view on whether a deal’s price is fair to shareholders.'],['Divestiture','Selling or separating part of the firm: a sale, spin-off, carve-out or liquidation.']]));
+  main.append(secHead('Game 1','What are the bankers doing?','2 pts per card'));
+  main.append(sortGame('bk_sort',BK_CARDS,BK_BINS));
+  main.append(secHead('Game 2','Name the divestiture','2 pts per card'));
   main.append(sortGame('dv_sort',DV_CARDS,DV_BINS));
-  main.append(secHead('Question','Goodwill'));
-  main.append(qList(['dv_gw']));
+  main.append(secHead('Question','Interview prep'));
+  main.append(qList(['iv_fall']));
 }
 
 /* ---------- shell ---------- */
@@ -579,7 +636,8 @@ const ALL_MISSIONS=[
   {id:'motives',part:'Lecture 12',title:'Motives',c:'Synergy and the good vs. questionable reasons to merge',r:renderMotives},
   {id:'battle',part:'Lecture 12',title:'The Battle',c:'Friendly vs. hostile deals and takeover defenses',r:renderBattle},
   {id:'value',part:'Lecture 12',title:'Value & Bid',c:'From value of operations to the bid price',r:renderValue},
-  {id:'divest',part:'Lecture 12',title:'After the Deal',c:'Goodwill and divestitures',r:renderDivest},
+  {id:'pay',part:'Lecture 12',title:'Paying for the Deal',c:'Cash or stock, and goodwill',r:renderPay},
+  {id:'divest',part:'Lecture 12',title:'Bankers & Divestitures',c:'What bankers do, and how firms sell pieces of themselves',r:renderDivest},
 ];
 const MISSIONS=ALL_MISSIONS.filter(m=>true).map((m,i)=>Object.assign({},m,{n:i+1}));
 const MB=Object.fromEntries(MISSIONS.map(m=>[m.id,m]));
@@ -590,11 +648,11 @@ function secHead(eb,h,right){return el(`<div class="sec"><div class="sec-h"><spa
 
 const HERO={
  1:{eb:'FIN 410 · Lecture 12 · Mergers and Corporate Control',h:'Empires rise. <span>Empires fall.</span>',
-   lede:'Capital One won its $35 billion fight for Discover. GE and 3M broke themselves apart. Five missions cover merger types, motives, takeover battles, valuing the target and setting the bid, and what happens after the deal.',
+   lede:'Capital One won its $35 billion fight for Discover. GE and 3M broke themselves apart. Six missions cover merger types, motives, takeover battles, valuing the target and setting the bid, paying for the deal, and bankers and divestitures.',
    pick:'Make your move',start:'',
-   opts:[['buy','Acquire','Build the empire',0,'<b>Buy a rival, a supplier or a new line of business.</b> First ask what kind of merger it is (Mission 1), whether the reason creates value (Mission 2), and how much to pay (Mission 4).'],
-         ['def','Defend','Fight off a raider',0,'<b>A raider makes an unwelcome offer.</b> Poison pills, staggered boards, greenmail or a white knight? Mission 3.'],
-         ['split','Break apart','Sell or spin off pieces',0,'<b>Sometimes the parts are worth more than the whole.</b> GE completed its three-way split in April 2024. Mission 5.']],
+   opts:[['buy','Acquire','Build the empire',0,'<b>Buy a rival, a supplier or a new line of business.</b> First ask what kind of merger it is (Mission 1), whether the reason creates value (Mission 2), how much to pay (Mission 4) and whether to pay in cash or stock (Mission 5).'],
+         ['def','Defend','Fight off a raider',0,'<b>A raider makes an unwelcome offer.</b> Poison pills, staggered boards, greenmail or a white knight? Paramount went hostile for Warner Bros. Mission 3.'],
+         ['split','Break apart','Sell or spin off pieces',0,'<b>Sometimes the parts are worth more than the whole.</b> GE completed its three-way split in April 2024. Mission 6.']],
    lab:f=>['','']}
 };
 function renderHQ(main){
