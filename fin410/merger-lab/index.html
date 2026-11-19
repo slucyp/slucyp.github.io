@@ -599,15 +599,7 @@ function renderPay(main){
   main.append(qList(['pay_hostile','dv_gw']));
 }
 
-/* ---------- Mission: Bankers & divestitures ---------- */
-const BK_BINS=[{k:'A',label:'Arrange deals',sub:'find buyers, run the sale',cls:'b1',color:'var(--accent)'},{k:'D',label:'Defend targets',sub:'pills, white knights',cls:'b2',color:'var(--debt)'},{k:'V',label:'Value targets',sub:'models, fairness opinions',cls:'b3',color:'var(--gov)'},{k:'F',label:'Finance deals',sub:'loans, bonds, new stock',cls:'b4',color:'var(--good)'}];
-const BK_CARDS=[
-  {id:'k1',t:'Run the sale contest between Netflix and Paramount for WBD',bin:'A',why:'Finding buyers and running the sale process is arranging the deal.'},
-  {id:'k2',t:'Design the poison pill Twitter’s board adopted against Elon Musk in 2022',bin:'D',why:'Bankers help targets develop and carry out defensive tactics.'},
-  {id:'k3',t:'Build the target’s APV model and give the board a fairness opinion',bin:'V',why:'Valuing the target, from DCF and APV models to the fairness opinion.'},
-  {id:'k4',t:'Arrange JPMorgan’s $13 billion bridge loan for DoorDash–Instacart',bin:'F',why:'Bridge loans, bonds and new stock finance the deal.'},
-];
-reg('divest','bk_sort',BK_CARDS.length*2);
+/* ---------- Mission: Divestitures ---------- */
 const DV_BINS=[{k:'S',label:'Sale',sub:'whole subsidiary to another firm',cls:'b1',color:'var(--accent)'},{k:'O',label:'Spin-off',sub:'stock given to shareholders',cls:'b2',color:'var(--debt)'},{k:'C',label:'Carve-out',sub:'minority stake sold',cls:'b3',color:'var(--gov)'},{k:'L',label:'Liquidation',sub:'assets sold off',cls:'b4',color:'var(--good)'}];
 const DV_CARDS=[
   {id:'v1',t:'GE gives its shareholders stock in GE Vernova, its energy business',bin:'O',why:'Existing shareholders receive the subsidiary’s stock. GE completed its three-way split in April 2024.'},
@@ -616,17 +608,15 @@ const DV_CARDS=[
   {id:'v4',t:'A distressed firm sells a division’s equipment and buildings piece by piece',bin:'L',why:'Outright liquidation of assets, often to raise needed cash.'},
 ];
 reg('divest','dv_sort',DV_CARDS.length*2);
-addQ('divest','iv_fall',{tag:'Interview question',prompt:'A classic M&A interview question: <i>why does an acquirer’s stock often fall when a deal is announced?</i> Which answer is best?',
+addQ('divest','iv_fall',{tag:'Who gains?',prompt:'Why does an acquirer’s stock often fall when a deal is announced?',
   opts:['Competition bids the price up, so target holders capture most of the synergies, and paying with stock can signal the acquirer’s shares are overvalued','Acquirers must pay the synergies to the IRS','Target shareholders always lose money in mergers','Announcing a merger is a negative signal about the target'],ans:0,
   explain:'On average targets earn about +20% (friendly) to +30% (hostile), while acquirers earn close to zero. Bidding wars push the price toward the full value of the synergies, and acquirer stock falls more in stock deals because paying with shares can signal they’re overvalued.'});
 function renderDivest(main){
-  main.append(missionHead('divest','Who works on these deals, and how firms sell pieces of themselves.'));
-  main.append(terms([['Fairness opinion','An investment bank’s view on whether a deal’s price is fair to shareholders.'],['Divestiture','Selling or separating part of the firm: a sale, spin-off, carve-out or liquidation.']]));
-  main.append(secHead('Game 1','What are the bankers doing?','2 pts per card'));
-  main.append(sortGame('bk_sort',BK_CARDS,BK_BINS));
-  main.append(secHead('Game 2','Name the divestiture','2 pts per card'));
+  main.append(missionHead('divest','Why and how firms sell pieces of themselves.'));
+  main.append(terms([['Divestiture','Selling or separating part of the firm: a sale, spin-off, carve-out or liquidation.']]));
+  main.append(secHead('Game','Name the divestiture','2 pts per card'));
   main.append(sortGame('dv_sort',DV_CARDS,DV_BINS));
-  main.append(secHead('Question','Interview prep'));
+  main.append(secHead('Question','Back to the acquirer'));
   main.append(qList(['iv_fall']));
 }
 
@@ -637,7 +627,7 @@ const ALL_MISSIONS=[
   {id:'battle',part:'Lecture 12',title:'The Battle',c:'Friendly vs. hostile deals and takeover defenses',r:renderBattle},
   {id:'value',part:'Lecture 12',title:'Value & Bid',c:'From value of operations to the bid price',r:renderValue},
   {id:'pay',part:'Lecture 12',title:'Paying for the Deal',c:'Cash or stock, and goodwill',r:renderPay},
-  {id:'divest',part:'Lecture 12',title:'Bankers & Divestitures',c:'What bankers do, and how firms sell pieces of themselves',r:renderDivest},
+  {id:'divest',part:'Lecture 12',title:'Divestitures',c:'Sale, spin-off, carve-out or liquidation',r:renderDivest},
 ];
 const MISSIONS=ALL_MISSIONS.filter(m=>true).map((m,i)=>Object.assign({},m,{n:i+1}));
 const MB=Object.fromEntries(MISSIONS.map(m=>[m.id,m]));
@@ -648,7 +638,7 @@ function secHead(eb,h,right){return el(`<div class="sec"><div class="sec-h"><spa
 
 const HERO={
  1:{eb:'FIN 410 · Lecture 12 · Mergers and Corporate Control',h:'Empires rise. <span>Empires fall.</span>',
-   lede:'Capital One won its $35 billion fight for Discover. GE and 3M broke themselves apart. Six missions cover merger types, motives, takeover battles, valuing the target and setting the bid, paying for the deal, and bankers and divestitures.',
+   lede:'Capital One won its $35 billion fight for Discover. GE and 3M broke themselves apart. Six missions cover merger types, motives, takeover battles, valuing the target and setting the bid, paying for the deal, and divestitures.',
    pick:'Make your move',start:'',
    opts:[['buy','Acquire','Build the empire',0,'<b>Buy a rival, a supplier or a new line of business.</b> First ask what kind of merger it is (Mission 1), whether the reason creates value (Mission 2), how much to pay (Mission 4) and whether to pay in cash or stock (Mission 5).'],
          ['def','Defend','Fight off a raider',0,'<b>A raider makes an unwelcome offer.</b> Poison pills, staggered boards, greenmail or a white knight? Paramount went hostile for Warner Bros. Mission 3.'],
